@@ -305,28 +305,51 @@
       color: #94a3b8;
     }
 
-    /* ── POPUP ── */
-    .popup-backdrop {
+    /* ── COMMENT PANEL ── */
+    .comment-panel {
       display: none;
       position: fixed;
-      inset: 0;
-      z-index: 40;
-    }
-    .popup-backdrop.open { display: block; }
-
-    .popup {
-      display: none;
-      position: fixed;
-      z-index: 41;
+      top: 48px;
+      right: 0;
+      width: 310px;
+      height: calc(100vh - 48px);
       background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-      width: 340px;
-      max-height: 380px;
-      overflow-y: auto;
+      border-left: 1px solid #e2e8f0;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+      z-index: 41;
+      flex-direction: column;
     }
-    .popup.open { display: block; }
+    .comment-panel.open { display: flex; }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      flex-shrink: 0;
+    }
+    .panel-header-text {}
+    .panel-title { font-weight: 700; font-size: 0.88rem; color: #1e293b; line-height: 1.3; }
+    .panel-subtitle { font-size: 0.72rem; color: #94a3b8; margin-top: 0.15rem; }
+    .panel-close {
+      background: none; border: none; cursor: pointer;
+      color: #94a3b8; font-size: 1.1rem; padding: 0.1rem 0.25rem;
+      border-radius: 4px; flex-shrink: 0; line-height: 1;
+    }
+    .panel-close:hover { color: #1e293b; background: #f1f5f9; }
+
+    .panel-body { flex: 1; overflow-y: auto; }
+
+    .panel-footer {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+    }
 
     .popup-section-label {
       font-size: 0.68rem;
@@ -334,7 +357,7 @@
       text-transform: uppercase;
       letter-spacing: 0.07em;
       color: #94a3b8;
-      padding: 0.55rem 0.85rem 0.2rem;
+      padding: 0.55rem 1rem 0.2rem;
       position: sticky;
       top: 0;
       background: #fff;
@@ -344,7 +367,7 @@
       display: flex;
       align-items: flex-start;
       gap: 0.55rem;
-      padding: 0.42rem 0.85rem;
+      padding: 0.42rem 1rem;
       cursor: pointer;
       font-size: 0.83rem;
       color: #334155;
@@ -668,10 +691,20 @@
   </div>
 </div>
 
-<!-- Popup backdrop -->
-<div class="popup-backdrop" id="popupBackdrop" onclick="closePopup()"></div>
-<!-- Comment popup -->
-<div class="popup" id="popup"></div>
+<!-- Comment panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="panel-header">
+    <div class="panel-header-text">
+      <div class="panel-title" id="panelTitle"></div>
+      <div class="panel-subtitle" id="panelSubtitle"></div>
+    </div>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+  <div class="panel-footer">
+    <button class="btn btn-primary btn-sm" onclick="closePanel()">Done</button>
+  </div>
+</div>
 
 <!-- Customize modal -->
 <div class="modal-overlay" id="customizeModal">
@@ -1018,12 +1051,15 @@ function renderSkills(ci, si) {
         <span class="skill-name">${esc(skill)}</span>
         <div class="skill-btns">
           <button class="skill-btn std" id="btn-std-${sid}"
-            onclick="openPopup(event,${ci},${si},${JSON.stringify(skill)},'standard')">Standard</button>
+            data-ci="${ci}" data-si="${si}" data-skill="${esc(skill)}" data-type="standard">Standard</button>
           <button class="skill-btn cus" id="btn-cus-${sid}"
-            onclick="openPopup(event,${ci},${si},${JSON.stringify(skill)},'custom')">Custom</button>
+            data-ci="${ci}" data-si="${si}" data-skill="${esc(skill)}" data-type="custom">Custom</button>
         </div>
       </div>
       <div class="skill-comments" id="sc-${sid}">${commentsHtml(selected)}</div>`;
+    div.querySelectorAll('.skill-btn').forEach(btn => {
+      btn.addEventListener('click', () => openPanel(btn));
+    });
     container.appendChild(div);
   });
 }
@@ -1042,79 +1078,75 @@ function refreshSkillComments(skill) {
 function skillId(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, '-'); }
 
 // ─────────────────────────────────────────────────────────────────
-// POPUP
+// COMMENT PANEL
 // ─────────────────────────────────────────────────────────────────
-function openPopup(event, ci, si, skill, type) {
-  event.stopPropagation();
-  closePopup();
+function openPanel(btn) {
+  const ci   = parseInt(btn.dataset.ci);
+  const si   = parseInt(btn.dataset.si);
+  const skill = btn.dataset.skill;
+  const type  = btn.dataset.type;
+
   popupCtx = { ci, si, skill, type };
+
+  document.getElementById('panelTitle').textContent = type === 'standard' ? 'Standard Comments' : 'Custom Comments';
+  document.getElementById('panelSubtitle').textContent = skill;
+
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
 
   const d = studentData(ci, si);
   const selected = d.skills[skill] || [];
-  const popup = document.getElementById('popup');
-  popup.innerHTML = '';
 
   if (type === 'standard') {
     const s = STANDARD[skill];
-    appendSection(popup, 'Strengths', s.strengths, selected);
+    appendSection(body, 'Strengths', s.strengths, selected, ci, si, skill);
     const hr = document.createElement('hr');
     hr.className = 'popup-divider';
-    popup.appendChild(hr);
-    appendSection(popup, 'Growth Areas', s.growth, selected);
+    body.appendChild(hr);
+    appendSection(body, 'Growth Areas', s.growth, selected, ci, si, skill);
   } else {
-    // Customize option at top
     const custOpt = document.createElement('div');
     custOpt.className = 'popup-item customize-opt';
     custOpt.innerHTML = '✎ &nbsp;Customize comments…';
-    custOpt.onclick = e => { e.stopPropagation(); closePopup(); openCustomize(skill); };
-    popup.appendChild(custOpt);
+    custOpt.onclick = () => { closePanel(); openCustomize(skill); };
+    body.appendChild(custOpt);
 
     const customs = state.custom[skill] || [];
     if (customs.length > 0) {
       const lbl = document.createElement('div');
       lbl.className = 'popup-section-label';
       lbl.textContent = 'My Custom Comments';
-      popup.appendChild(lbl);
-      customs.forEach(c => appendItem(popup, c, selected.includes(c), () => toggleComment(ci, si, skill, c)));
+      body.appendChild(lbl);
+      customs.forEach(c => appendItem(body, c, selected.includes(c), () => toggleComment(ci, si, skill, c)));
     } else {
       const empty = document.createElement('div');
-      empty.style.cssText = 'padding:0.7rem 0.85rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
+      empty.style.cssText = 'padding:0.85rem 1rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
       empty.textContent = 'No custom comments yet. Click "Customize comments…" to add some.';
-      popup.appendChild(empty);
+      body.appendChild(empty);
     }
   }
 
-  // Position
-  const btnId = type === 'standard' ? `btn-std-${skillId(skill)}` : `btn-cus-${skillId(skill)}`;
-  const btn = document.getElementById(btnId);
-  const rect = btn.getBoundingClientRect();
-  popup.style.top = (rect.bottom + 5) + 'px';
-  const left = Math.min(rect.left, window.innerWidth - 355);
-  popup.style.left = Math.max(8, left) + 'px';
-
-  popup.classList.add('open');
-  document.getElementById('popupBackdrop').classList.add('open');
+  document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  document.getElementById('commentPanel').classList.add('open');
 }
 
-function appendSection(popup, label, comments, selected) {
+function appendSection(container, label, comments, selected, ci, si, skill) {
   const lbl = document.createElement('div');
   lbl.className = 'popup-section-label';
   lbl.textContent = label;
-  popup.appendChild(lbl);
+  container.appendChild(lbl);
   comments.forEach(c => {
-    appendItem(popup, c, selected.includes(c), () => {
-      if (popupCtx) toggleComment(popupCtx.ci, popupCtx.si, popupCtx.skill, c);
-    });
+    appendItem(container, c, selected.includes(c), () => toggleComment(ci, si, skill, c));
   });
 }
 
-function appendItem(popup, comment, checked, onClick) {
+function appendItem(container, comment, checked, onClick) {
   const item = document.createElement('div');
   item.className = 'popup-item' + (checked ? ' checked' : '');
   item.innerHTML = `<span class="popup-checkbox">${checked ? '✓' : ''}</span><span>${esc(comment)}</span>`;
-  item.onclick = e => { e.stopPropagation(); onClick(); };
-  popup.appendChild(item);
+  item.onclick = () => onClick();
+  container.appendChild(item);
 }
 
 function toggleComment(ci, si, skill, comment) {
@@ -1127,8 +1159,8 @@ function toggleComment(ci, si, skill, comment) {
 
   persist();
 
-  // Update popup item
-  document.querySelectorAll('#popup .popup-item:not(.customize-opt)').forEach(item => {
+  // Update panel item checkboxes in place
+  document.querySelectorAll('#panelBody .popup-item:not(.customize-opt)').forEach(item => {
     const span = item.querySelectorAll('span')[1];
     if (span && span.textContent === comment) {
       const now = arr.includes(comment);
@@ -1142,9 +1174,8 @@ function toggleComment(ci, si, skill, comment) {
   showSaved();
 }
 
-function closePopup() {
-  document.getElementById('popup').classList.remove('open');
-  document.getElementById('popupBackdrop').classList.remove('open');
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
   document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
   popupCtx = null;
 }
