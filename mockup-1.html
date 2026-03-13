@@ -623,7 +623,7 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
-  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.07:05</span>
+  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.07:10</span>
 </nav>
 
 <div class="app">
@@ -810,6 +810,19 @@ const CLASSES = [
       "Freya Halvorsen","Arjun Mehta"]
   }
 ];
+
+const REFLECTIONS = {
+  "Marcus Delgado": "I think I've been doing pretty well keeping up with readings, but I know I zone out during discussion sometimes. I want to push myself to share more of my ideas out loud instead of just keeping them in my head.",
+  "Owen Callahan": "Honestly I feel like this class is made for me. I come in ready to poke holes in every theory we look at. My notes are solid and I never miss a deadline. If anything I could probably listen more when others are talking instead of waiting for my turn.",
+  "Fatima Al-Rashid": "I have been working hard to engage with the material critically rather than just accepting or rejecting ideas at face value. Reading closely has helped me see how evidence gets manipulated. I want to keep developing my written analysis and use more precise academic language in my essays.",
+  "Jonas Bergström": "I show up. I do the work. I think I could take more risks in my writing.",
+  "Destiny Washington": "This class has honestly changed how I think. I catch myself questioning sources everywhere now, not just in here. I've been participating more since midterm and I feel like my ideas are getting sharper. Still working on not rushing my revisions before I submit.",
+  "Yuki Tanaka": "I am proud of how carefully I read the assigned texts. I take detailed notes and I always come prepared. My challenge is speaking up in discussion. I have things to say but I hesitate. I want to work on sharing my thinking more before the semester ends.",
+  "Brennan O'Sullivan": "I've missed two deadlines which I'm not proud of. The ideas in this class genuinely interest me and I think my writing shows that when I actually turn things in. Getting organized is my main goal for the second half.",
+  "Sofia Reyes": "I feel confident in discussion and I think I contribute ideas that move the conversation forward. Where I struggle is slowing down enough to revise carefully. I tend to trust my first draft too much.",
+  "Nadia Volkov": "I need to be more consistent. Some weeks I am fully prepared and engaged and other weeks I fall behind and spend class catching up instead of contributing. I know what I need to do.",
+  "Theo Papadopoulos": "Good class. I like arguing. Could probably argue better if I did the readings more carefully instead of skimming. Will try."
+};
 
 const SKILLS = [
   "Academic Skills and Responsibility",
@@ -1084,11 +1097,12 @@ function renderRoster() {
       row.onclick = () => activate(ci, si);
 
       const rcDotClass = st === 'complete' ? 'complete' : st === 'partial' ? 'partial' : '';
+      const hasReflection = !!REFLECTIONS[name];
       row.innerHTML = `
         <span>${esc(name)}</span>
         <span class="status-icons">
           <span class="rc-dot ${rcDotClass}" title="Report card: ${st}"></span>
-          <span class="ref-dot" title="Reflection: not submitted"></span>
+          <span class="ref-dot ${hasReflection ? 'submitted' : ''}" title="Reflection: ${hasReflection ? 'submitted' : 'not submitted'}"></span>
         </span>`;
       roster.appendChild(row);
     });
@@ -1134,6 +1148,16 @@ function activate(ci, si) {
 
   const d = studentData(ci, si);
   document.getElementById('narrativeInput').value = d.narrative || '';
+
+  const reflection = REFLECTIONS[name] || null;
+  const refEl = document.getElementById('reflectionText');
+  if (reflection) {
+    refEl.textContent = reflection;
+    refEl.style.color = '';
+  } else {
+    refEl.textContent = 'Not submitted';
+    refEl.style.color = '#94a3b8';
+  }
 
   persist();
 }
