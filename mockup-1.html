@@ -611,6 +611,7 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
+  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.06:30</span>
 </nav>
 
 <div class="app">
@@ -1081,6 +1082,10 @@ function skillId(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, '-'); }
 // COMMENT PANEL
 // ─────────────────────────────────────────────────────────────────
 function openPanel(btn) {
+  if (btn.classList.contains('active')) {
+    closePanel();
+    return;
+  }
   const ci   = parseInt(btn.dataset.ci);
   const si   = parseInt(btn.dataset.si);
   const skill = btn.dataset.skill;
@@ -1371,6 +1376,15 @@ function showSaved() {
   document.getElementById(id).addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('open');
   });
+});
+
+// Close comment panel on outside click
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('commentPanel');
+  if (!panel.classList.contains('open')) return;
+  if (!panel.contains(e.target) && !e.target.closest('.skill-btn')) {
+    closePanel();
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────
