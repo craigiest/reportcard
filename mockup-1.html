@@ -636,12 +636,12 @@
 
       <div class="field-label">Grading Period</div>
       <select class="term-select" id="termSelect" onchange="onTermChange()">
-        <option>Q1 2024–25</option>
-        <option>Q2 2024–25</option>
-        <option selected>Q3 2024–25</option>
-        <option>Q4 2024–25</option>
-        <option>Semester 1 2024–25</option>
-        <option>Semester 2 2024–25</option>
+        <option>25-26 S1 Midterm</option>
+        <option>25-26 S1 Final</option>
+        <option>25-26 I1 Final</option>
+        <option>25-26 S2 Midterm</option>
+        <option>25-26 S2 Final</option>
+        <option>25-26 I2 Final</option>
       </select>
 
       <div class="nav-row">
@@ -1440,7 +1440,7 @@ document.addEventListener('click', function(e) {
 // ─────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────
-document.getElementById('termSelect').value = state.term || 'Q3 2024–25';
+document.getElementById('termSelect').value = state.term || '25-26 S1 Midterm';
 renderRoster();
 if (state.activeCI !== null && state.activeSI !== null) {
   activate(state.activeCI, state.activeSI);
