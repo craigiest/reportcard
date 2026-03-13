@@ -656,7 +656,7 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
-  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.21:28</span>
+  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.13Mar26</span>
 </nav>
 
 <div class="app">
@@ -1061,7 +1061,7 @@ const STANDARD_HTML = {
 // ─────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'rc_mockup1_v1';
+const STORAGE_KEY = 'rc_mockup1_v2';
 
 let state = loadState();
 let openClassIdx = state.openClassIdx ?? 0;
@@ -1092,7 +1092,7 @@ function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function skey(ci, si) { return `${ci}_${si}`; }
+function skey(ci, si) { return `${state.term}|${ci}_${si}`; }
 
 function studentData(ci, si) {
   const k = skey(ci, si);
@@ -1141,7 +1141,7 @@ function renderRoster() {
       row.onclick = () => activate(ci, si);
 
       const rcDotClass = st !== 'none' ? st : '';
-      const hasReflection = !!REFLECTIONS[name];
+      const hasReflection = state.term === '25-26 S2 Final' && !!REFLECTIONS[name];
       row.innerHTML = `
         <span>${esc(name)}</span>
         <span class="status-icons">
@@ -1193,15 +1193,23 @@ function activate(ci, si) {
   const d = studentData(ci, si);
   document.getElementById('narrativeInput').value = d.narrative || '';
   updateFinalizeUI();
+  updateEditableState();
 
-  const reflection = REFLECTIONS[name] || null;
+  const isFinalTerm = state.term === '25-26 S2 Final';
+  const refBox = document.querySelector('.reflection-box');
   const refEl = document.getElementById('reflectionText');
-  if (reflection) {
-    refEl.textContent = reflection;
-    refEl.style.color = '';
+  if (isFinalTerm) {
+    refBox.style.display = '';
+    const reflection = REFLECTIONS[name] || null;
+    if (reflection) {
+      refEl.textContent = reflection;
+      refEl.style.color = '';
+    } else {
+      refEl.textContent = 'Not submitted';
+      refEl.style.color = '#94a3b8';
+    }
   } else {
-    refEl.textContent = 'Not submitted';
-    refEl.style.color = '#94a3b8';
+    refBox.style.display = 'none';
   }
 
   persist();
@@ -1487,12 +1495,22 @@ function updateFinalizeUI() {
   }
 }
 
+function updateEditableState() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  const locked = !!d.finalized;
+  document.getElementById('narrativeInput').disabled = locked;
+  document.querySelectorAll('.skill-btn').forEach(btn => { btn.disabled = locked; });
+}
+
 function onFinalizeChange() {
   if (activeCI === null) return;
   const d = studentData(activeCI, activeSI);
   d.finalized = document.getElementById('finalizeCheck').checked;
   persist();
   renderRoster();
+  updateEditableState();
+  if (d.finalized) closePanel();
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1514,7 +1532,11 @@ function onNarrativeInput() {
 function onTermChange() {
   state.term = document.getElementById('termSelect').value;
   persist();
-  if (activeCI !== null) activate(activeCI, activeSI);
+  if (activeCI !== null) {
+    activate(activeCI, activeSI);
+  } else {
+    renderRoster();
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────
