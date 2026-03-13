@@ -624,7 +624,7 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
-  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.07:20</span>
+  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.07:25</span>
 </nav>
 
 <div class="app">
@@ -1036,7 +1036,7 @@ function loadState() {
     if (raw) return JSON.parse(raw);
   } catch(e) {}
   return {
-    term: 'Q3 2024–25',
+    term: '25-26 S2 Final',
     openClassIdx: 0,
     activeCI: null,
     activeSI: null,
@@ -1513,7 +1513,7 @@ function doReset() {
   openClassIdx = 0;
   activeCI = null;
   activeSI = null;
-  document.getElementById('termSelect').value = 'Q3 2024–25';
+  document.getElementById('termSelect').value = '25-26 S2 Final';
   document.getElementById('navLabel').textContent = 'No student selected';
   document.getElementById('emptyState').style.display = '';
   document.getElementById('editingArea').style.display = 'none';
@@ -1559,7 +1559,7 @@ document.addEventListener('click', function(e) {
 // ─────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────
-document.getElementById('termSelect').value = state.term || '25-26 S1 Midterm';
+document.getElementById('termSelect').value = state.term || '25-26 S2 Final';
 renderRoster();
 if (state.activeCI !== null && state.activeSI !== null) {
   activate(state.activeCI, state.activeSI);
