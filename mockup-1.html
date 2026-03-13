@@ -526,7 +526,19 @@
       border: 1px solid #e2e8f0;
       font-size: 0.84rem;
       color: #334155;
+      cursor: default;
     }
+    .custom-item.dragging { opacity: 0.4; }
+    .custom-item.drag-over { border-color: #3b82f6; background: #eff6ff; }
+    .drag-handle {
+      cursor: grab;
+      color: #cbd5e1;
+      font-size: 1rem;
+      flex-shrink: 0;
+      user-select: none;
+      line-height: 1;
+    }
+    .drag-handle:hover { color: #94a3b8; }
     .custom-item-text { flex: 1; line-height: 1.4; }
     .custom-del {
       background: none;
@@ -1200,15 +1212,53 @@ function openCustomize(skill) {
 function renderCustomList(skill) {
   const list = document.getElementById('customList');
   const items = state.custom[skill] || [];
+  list.innerHTML = '';
+
   if (items.length === 0) {
     list.innerHTML = '<div class="custom-list-empty">No custom comments yet.</div>';
     return;
   }
-  list.innerHTML = items.map((c, i) => `
-    <div class="custom-item">
+
+  let dragSrcIdx = null;
+
+  items.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'custom-item';
+    div.draggable = true;
+    div.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
       <span class="custom-item-text">${esc(c)}</span>
-      <button class="custom-del" onclick="deleteCustom(${i})" title="Remove">✕</button>
-    </div>`).join('');
+      <button class="custom-del" title="Remove">✕</button>`;
+    div.querySelector('.custom-del').onclick = () => deleteCustom(i);
+
+    div.addEventListener('dragstart', e => {
+      dragSrcIdx = i;
+      div.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    div.addEventListener('dragend', () => {
+      div.classList.remove('dragging');
+      list.querySelectorAll('.custom-item').forEach(el => el.classList.remove('drag-over'));
+    });
+    div.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      list.querySelectorAll('.custom-item').forEach(el => el.classList.remove('drag-over'));
+      div.classList.add('drag-over');
+    });
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrcIdx === null || dragSrcIdx === i) return;
+      const arr = state.custom[skill];
+      const [moved] = arr.splice(dragSrcIdx, 1);
+      arr.splice(i, 0, moved);
+      dragSrcIdx = null;
+      persist();
+      renderCustomList(skill);
+    });
+
+    list.appendChild(div);
+  });
 }
 
 function addCustomComment() {
