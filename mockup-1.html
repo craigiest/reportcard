@@ -911,6 +911,99 @@ const STANDARD = {
   }
 };
 
+// HTML versions of comments for panel display (bold key phrases)
+// Plain text versions above are used for storage and skill list display.
+const STANDARD_HTML = {
+  "Academic Skills and Responsibility": {
+    strengths: [
+      "Your <strong>materials</strong> are <strong>organized</strong> effectively.",
+      "You come to <strong>class prepared</strong>.",
+      "You read <strong>assignment expectations</strong> carefully and follow them closely.",
+      "Your <strong>notes</strong> are <strong>thorough</strong> and capture what matters.",
+      "You <strong>review and revise</strong> your work before submitting it.",
+      "You meet <strong>deadlines</strong> consistently."
+    ],
+    growth: [
+      "Your <strong>materials</strong> would benefit from more consistent <strong>organization</strong>.",
+      "Coming to <strong>class</strong> more <strong>prepared</strong> would strengthen your performance.",
+      "Reading <strong>assignment expectations</strong> more carefully would help you meet them fully.",
+      "Your <strong>notes</strong> would be more useful if they <strong>captured key ideas</strong> more consistently.",
+      "<strong>Reviewing and revising</strong> your work before submitting it would improve your results.",
+      "Meeting <strong>deadlines</strong> more consistently is an area to prioritize."
+    ]
+  },
+  "Ownership of Learning": {
+    strengths: [
+      "You <strong>persist</strong> through <strong>difficulty</strong> and setbacks.",
+      "You recognize when you need <strong>help</strong> and <strong>seek</strong> it out.",
+      "You take advantage of opportunities to <strong>retest and revise</strong>.",
+      "You absorb and <strong>act on feedback</strong>."
+    ],
+    growth: [
+      "Building <strong>resilience</strong> when you encounter <strong>difficulty</strong> would serve you well.",
+      "Recognizing when you need <strong>help</strong> and <strong>seeking</strong> it out sooner would support your progress.",
+      "Taking fuller advantage of opportunities to <strong>retest and revise</strong> would strengthen your learning.",
+      "<strong>Acting on feedback</strong> more deliberately would accelerate your growth."
+    ]
+  },
+  "Collaboration": {
+    strengths: [
+      "You treat others with genuine <strong>respect</strong>.",
+      "You <strong>listen actively</strong> and attentively.",
+      "You are <strong>present and engaged</strong> during class.",
+      "You <strong>contribute</strong> meaningfully to <strong>group work</strong>."
+    ],
+    growth: [
+      "Treating others with more consistent <strong>respect</strong> is something to work toward.",
+      "<strong>Listening</strong> more <strong>actively and attentively</strong> would improve your engagement.",
+      "Being more consistently <strong>present and engaged</strong> during class would benefit your learning.",
+      "<strong>Contributing</strong> more substantively to <strong>group work</strong> is an area for development."
+    ]
+  },
+  "Communication of Ideas": {
+    strengths: [
+      "You draw on precise <strong>vocabulary</strong> and <strong>academic language</strong>.",
+      "You use the <strong>target language</strong> with confidence.",
+      "Your <strong>written work</strong> is <strong>clear</strong> and developed.",
+      "You express <strong>ideas</strong> verbally with <strong>clarity and accuracy</strong>.",
+      "You <strong>share your thinking</strong> during discussion in ways that advance the conversation."
+    ],
+    growth: [
+      "Incorporating more precise <strong>vocabulary</strong> and <strong>academic language</strong> would strengthen your work.",
+      "Using the <strong>target language</strong> more consistently and confidently is a priority.",
+      "Your <strong>written work</strong> would benefit from greater <strong>clarity</strong> and development.",
+      "Expressing your <strong>ideas</strong> verbally with more <strong>clarity and accuracy</strong> is an area to develop.",
+      "<strong>Sharing your thinking</strong> during discussion more frequently would enrich the conversation."
+    ]
+  },
+  "Critical Thinking": {
+    strengths: [
+      "You <strong>read closely</strong> and with care.",
+      "You attend to <strong>accuracy and detail</strong>.",
+      "You select and use <strong>resources, tools, and technology</strong> with skill and purpose.",
+      "You <strong>critique</strong> ideas and solutions with <strong>insight and specificity</strong>."
+    ],
+    growth: [
+      "<strong>Reading more closely</strong> and carefully would deepen your understanding.",
+      "Greater attention to <strong>accuracy and detail</strong> would improve the quality of your work.",
+      "Using <strong>resources, tools, and technology</strong> more purposefully would support your work.",
+      "Your <strong>critiques</strong> would benefit from greater <strong>insight and specificity</strong>."
+    ]
+  },
+  "Creative Thinking and Risk Taking": {
+    strengths: [
+      "You approach learning with <strong>curiosity</strong> and ask <strong>probing questions</strong>.",
+      "You take <strong>intellectual risks</strong>.",
+      "You generate <strong>original ideas</strong> and approaches."
+    ],
+    growth: [
+      "Approaching learning with more <strong>curiosity</strong> and asking <strong>deeper questions</strong> would push your thinking.",
+      "Taking more <strong>intellectual risks</strong> would expand what you are capable of.",
+      "Pushing yourself to generate more <strong>original ideas</strong> and approaches is an area for growth."
+    ]
+  }
+};
+
 // ─────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────
@@ -1116,11 +1209,12 @@ function openPanel(btn) {
 
   if (type === 'standard') {
     const s = STANDARD[skill];
-    appendSection(body, 'Strengths', s.strengths, selected, ci, si, skill);
+    const sh = STANDARD_HTML[skill];
+    appendSection(body, 'Strengths', s.strengths, sh.strengths, selected, ci, si, skill);
     const hr = document.createElement('hr');
     hr.className = 'popup-divider';
     body.appendChild(hr);
-    appendSection(body, 'Growth Areas', s.growth, selected, ci, si, skill);
+    appendSection(body, 'Growth Areas', s.growth, sh.growth, selected, ci, si, skill);
   } else {
     const custOpt = document.createElement('div');
     custOpt.className = 'popup-item customize-opt';
@@ -1148,20 +1242,20 @@ function openPanel(btn) {
   document.getElementById('commentPanel').classList.add('open');
 }
 
-function appendSection(container, label, comments, selected, ci, si, skill) {
+function appendSection(container, label, comments, htmlComments, selected, ci, si, skill) {
   const lbl = document.createElement('div');
   lbl.className = 'popup-section-label';
   lbl.textContent = label;
   container.appendChild(lbl);
-  comments.forEach(c => {
-    appendItem(container, c, selected.includes(c), () => toggleComment(ci, si, skill, c));
+  comments.forEach((c, idx) => {
+    appendItem(container, c, selected.includes(c), () => toggleComment(ci, si, skill, c), htmlComments ? htmlComments[idx] : null);
   });
 }
 
-function appendItem(container, comment, checked, onClick) {
+function appendItem(container, comment, checked, onClick, displayHtml) {
   const item = document.createElement('div');
   item.className = 'popup-item' + (checked ? ' checked' : '');
-  item.innerHTML = `<span class="popup-checkbox">${checked ? '✓' : ''}</span><span>${esc(comment)}</span>`;
+  item.innerHTML = `<span class="popup-checkbox">${checked ? '✓' : ''}</span><span>${displayHtml || esc(comment)}</span>`;
   item.onclick = () => onClick();
   container.appendChild(item);
 }
