@@ -133,6 +133,7 @@
     }
     .class-header:hover { background: #f8fafc; }
     .class-header.open { color: #1d4ed8; background: #eff6ff; border-bottom-color: #bfdbfe; }
+    .class-header.has-active { color: #1d4ed8; background: #eff6ff; border-bottom-color: #bfdbfe; }
 
     .class-chevron {
       font-size: 0.65rem;
@@ -175,11 +176,12 @@
       display: inline-block;
       title: "Report card status";
     }
-    .rc-dot.partial {
+    .rc-dot.in-progress {
       background: linear-gradient(90deg, #f59e0b 50%, transparent 50%);
       border-color: #f59e0b;
     }
     .rc-dot.complete { background: #22c55e; border-color: #22c55e; }
+    .rc-dot.finalized { background: #1d4ed8; border-color: #1d4ed8; }
 
     /* Square dot = reflection status */
     .ref-dot {
@@ -615,6 +617,36 @@
       flex-shrink: 0;
     }
     .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: #94a3b8; }
+
+    /* ── FINALIZE ROW ── */
+    .finalize-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+    }
+    .finalize-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      user-select: none;
+    }
+    .finalize-label input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: #1d4ed8;
+    }
+    .finalize-label input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.45; }
+    .finalize-label:has(input:disabled) { color: #94a3b8; cursor: default; }
+    .finalize-hint { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
   </style>
 </head>
 <body>
@@ -656,8 +688,9 @@
 
     <div class="legend">
       <div class="legend-item"><span class="rc-dot"></span> Not started</div>
-      <div class="legend-item"><span class="rc-dot partial"></span> In progress</div>
+      <div class="legend-item"><span class="rc-dot in-progress"></span> In progress</div>
       <div class="legend-item"><span class="rc-dot complete"></span> Complete</div>
+      <div class="legend-item"><span class="rc-dot finalized"></span> Finalized</div>
       <div class="legend-item"><span class="ref-dot submitted"></span> Reflection</div>
     </div>
   </div>
@@ -694,6 +727,13 @@
             placeholder="Write an overall narrative comment for this student…"
             oninput="onNarrativeInput()"></textarea>
           <div class="save-hint" id="saveHint">Changes saved automatically</div>
+          <div class="finalize-row">
+            <label class="finalize-label">
+              <input type="checkbox" id="finalizeCheck" onchange="onFinalizeChange()" disabled />
+              Mark as finalized
+            </label>
+            <span class="finalize-hint" id="finalizeHint"></span>
+          </div>
         </div>
       </div>
 
@@ -1063,10 +1103,12 @@ function studentData(ci, si) {
 function studentStatus(ci, si) {
   const d = studentData(ci, si);
   const skillsDone = SKILLS.filter(s => (d.skills[s] || []).length > 0).length;
-  const hasNarrative = (d.narrative || '').trim().length > 0;
-  if (skillsDone === 0 && !hasNarrative) return 'none';
-  if (skillsDone === SKILLS.length && hasNarrative) return 'complete';
-  return 'partial';
+  const narrativeLen = (d.narrative || '').trim().length;
+  const meetsComplete = skillsDone >= 3 && narrativeLen >= 20;
+  if (meetsComplete && d.finalized) return 'finalized';
+  if (meetsComplete) return 'complete';
+  if (skillsDone === 0 && narrativeLen === 0) return 'none';
+  return 'in-progress';
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1077,9 +1119,10 @@ function renderRoster() {
   area.innerHTML = '';
   CLASSES.forEach((cls, ci) => {
     const isOpen = ci === openClassIdx;
+    const hasActive = !isOpen && ci === activeCI;
 
     const header = document.createElement('div');
-    header.className = 'class-header' + (isOpen ? ' open' : '');
+    header.className = 'class-header' + (isOpen ? ' open' : '') + (hasActive ? ' has-active' : '');
     header.innerHTML = `<span class="class-chevron">▶</span><span style="flex:1;line-height:1.35">${cls.name}</span>`;
     header.onclick = () => toggleClass(ci);
     area.appendChild(header);
@@ -1097,7 +1140,7 @@ function renderRoster() {
       row.id = `sr-${ci}-${si}`;
       row.onclick = () => activate(ci, si);
 
-      const rcDotClass = st === 'complete' ? 'complete' : st === 'partial' ? 'partial' : '';
+      const rcDotClass = st !== 'none' ? st : '';
       const hasReflection = !!REFLECTIONS[name];
       row.innerHTML = `
         <span>${esc(name)}</span>
@@ -1149,6 +1192,7 @@ function activate(ci, si) {
 
   const d = studentData(ci, si);
   document.getElementById('narrativeInput').value = d.narrative || '';
+  updateFinalizeUI();
 
   const reflection = REFLECTIONS[name] || null;
   const refEl = document.getElementById('reflectionText');
@@ -1211,6 +1255,41 @@ function skillId(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, '-'); }
 // ─────────────────────────────────────────────────────────────────
 // COMMENT PANEL
 // ─────────────────────────────────────────────────────────────────
+function buildPanelBody(body, ci, si, skill, type) {
+  const d = studentData(ci, si);
+  const selected = d.skills[skill] || [];
+
+  if (type === 'standard') {
+    const s = STANDARD[skill];
+    const sh = STANDARD_HTML[skill];
+    appendSection(body, 'Strengths', s.strengths, sh.strengths, selected, ci, si, skill);
+    const hr = document.createElement('hr');
+    hr.className = 'popup-divider';
+    body.appendChild(hr);
+    appendSection(body, 'Growth Areas', s.growth, sh.growth, selected, ci, si, skill);
+  } else {
+    const custOpt = document.createElement('div');
+    custOpt.className = 'popup-item customize-opt';
+    custOpt.innerHTML = '✎ &nbsp;Customize comments…';
+    custOpt.onclick = () => openCustomize(skill);
+    body.appendChild(custOpt);
+
+    const customs = state.custom[skill] || [];
+    if (customs.length > 0) {
+      const lbl = document.createElement('div');
+      lbl.className = 'popup-section-label';
+      lbl.textContent = 'My Custom Comments';
+      body.appendChild(lbl);
+      customs.forEach(c => appendItem(body, c, selected.includes(c), () => toggleComment(ci, si, skill, c)));
+    } else {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding:0.85rem 1rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
+      empty.textContent = 'No custom comments yet. Click "Customize comments…" to add some.';
+      body.appendChild(empty);
+    }
+  }
+}
+
 function openPanel(btn) {
   if (btn.classList.contains('active')) {
     closePanel();
@@ -1228,39 +1307,7 @@ function openPanel(btn) {
 
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
-
-  const d = studentData(ci, si);
-  const selected = d.skills[skill] || [];
-
-  if (type === 'standard') {
-    const s = STANDARD[skill];
-    const sh = STANDARD_HTML[skill];
-    appendSection(body, 'Strengths', s.strengths, sh.strengths, selected, ci, si, skill);
-    const hr = document.createElement('hr');
-    hr.className = 'popup-divider';
-    body.appendChild(hr);
-    appendSection(body, 'Growth Areas', s.growth, sh.growth, selected, ci, si, skill);
-  } else {
-    const custOpt = document.createElement('div');
-    custOpt.className = 'popup-item customize-opt';
-    custOpt.innerHTML = '✎ &nbsp;Customize comments…';
-    custOpt.onclick = () => { closePanel(); openCustomize(skill); };
-    body.appendChild(custOpt);
-
-    const customs = state.custom[skill] || [];
-    if (customs.length > 0) {
-      const lbl = document.createElement('div');
-      lbl.className = 'popup-section-label';
-      lbl.textContent = 'My Custom Comments';
-      body.appendChild(lbl);
-      customs.forEach(c => appendItem(body, c, selected.includes(c), () => toggleComment(ci, si, skill, c)));
-    } else {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'padding:0.85rem 1rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
-      empty.textContent = 'No custom comments yet. Click "Customize comments…" to add some.';
-      body.appendChild(empty);
-    }
-  }
+  buildPanelBody(body, ci, si, skill, type);
 
   document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1308,6 +1355,7 @@ function toggleComment(ci, si, skill, comment) {
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
+  updateFinalizeUI();
 }
 
 function closePanel() {
@@ -1406,7 +1454,45 @@ function deleteCustom(i) {
 
 function closeCustomize() {
   document.getElementById('customizeModal').classList.remove('open');
+  // If the comment panel is open for the same skill in custom mode, refresh its body
+  if (popupCtx && customizeCtx && popupCtx.type === 'custom' && popupCtx.skill === customizeCtx.skill) {
+    const body = document.getElementById('panelBody');
+    body.innerHTML = '';
+    buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill, 'custom');
+  }
   customizeCtx = null;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// FINALIZE
+// ─────────────────────────────────────────────────────────────────
+function updateFinalizeUI() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  const st = studentStatus(activeCI, activeSI);
+  const canFinalize = st === 'complete' || st === 'finalized';
+  const check = document.getElementById('finalizeCheck');
+  check.checked = !!d.finalized;
+  check.disabled = !canFinalize;
+  const hint = document.getElementById('finalizeHint');
+  if (!canFinalize) {
+    const skillsDone = SKILLS.filter(s => (d.skills[s] || []).length > 0).length;
+    const narrativeLen = (d.narrative || '').trim().length;
+    const parts = [];
+    if (skillsDone < 3) parts.push(`comments in ${3 - skillsDone} more skill area${3 - skillsDone !== 1 ? 's' : ''} needed`);
+    if (narrativeLen < 20) parts.push(`overall comment needs ${20 - narrativeLen} more character${20 - narrativeLen !== 1 ? 's' : ''}`);
+    hint.textContent = parts.length ? parts.join('; ') : '';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function onFinalizeChange() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  d.finalized = document.getElementById('finalizeCheck').checked;
+  persist();
+  renderRoster();
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1419,6 +1505,7 @@ function onNarrativeInput() {
   persist();
   renderRoster();
   showSaved();
+  updateFinalizeUI();
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1490,7 +1577,7 @@ function openPreview() {
     <div class="preview-student-name">${esc(name)}</div>
     <div class="preview-meta">${esc(course)}<br>Teacher: Edna Krabappel &nbsp;·&nbsp; ${esc(term)}</div>
     <div class="preview-section-title">Student Reflection</div>
-    <div class="preview-reflection">Not submitted</div>
+    <div class="preview-reflection">${REFLECTIONS[name] ? esc(REFLECTIONS[name]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
     ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
     ${narrativeHtml}`;
 
