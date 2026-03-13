@@ -656,7 +656,7 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
-  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.21:28</span>
+  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.13Mar26</span>
 </nav>
 
 <div class="app">
@@ -1061,7 +1061,7 @@ const STANDARD_HTML = {
 // ─────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'rc_mockup1_v1';
+const STORAGE_KEY = 'rc_mockup1_v2';
 
 let state = loadState();
 let openClassIdx = state.openClassIdx ?? 0;
@@ -1080,8 +1080,9 @@ function loadState() {
     openClassIdx: 0,
     activeCI: null,
     activeSI: null,
-    students: {},       // "ci_si" → { skills: {skill: [comments]}, narrative }
-    custom: {}          // skill → [strings]
+    students: {},       // "term|ci_si" → { skills: {skill: [comments]}, narrative, finalized }
+    custom: {},         // skill → [strings]
+    reflections: {}     // "term|studentName" → string
   };
 }
 
@@ -1092,7 +1093,7 @@ function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function skey(ci, si) { return `${ci}_${si}`; }
+function skey(ci, si) { return `${state.term}|${ci}_${si}`; }
 
 function studentData(ci, si) {
   const k = skey(ci, si);
@@ -1141,7 +1142,7 @@ function renderRoster() {
       row.onclick = () => activate(ci, si);
 
       const rcDotClass = st !== 'none' ? st : '';
-      const hasReflection = !!REFLECTIONS[name];
+      const hasReflection = !!state.reflections[`${state.term}|${name}`];
       row.innerHTML = `
         <span>${esc(name)}</span>
         <span class="status-icons">
@@ -1193,9 +1194,10 @@ function activate(ci, si) {
   const d = studentData(ci, si);
   document.getElementById('narrativeInput').value = d.narrative || '';
   updateFinalizeUI();
+  updateEditableState();
 
-  const reflection = REFLECTIONS[name] || null;
   const refEl = document.getElementById('reflectionText');
+  const reflection = state.reflections[`${state.term}|${name}`] || null;
   if (reflection) {
     refEl.textContent = reflection;
     refEl.style.color = '';
@@ -1487,12 +1489,22 @@ function updateFinalizeUI() {
   }
 }
 
+function updateEditableState() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  const locked = !!d.finalized;
+  document.getElementById('narrativeInput').disabled = locked;
+  document.querySelectorAll('.skill-btn').forEach(btn => { btn.disabled = locked; });
+}
+
 function onFinalizeChange() {
   if (activeCI === null) return;
   const d = studentData(activeCI, activeSI);
   d.finalized = document.getElementById('finalizeCheck').checked;
   persist();
   renderRoster();
+  updateEditableState();
+  if (d.finalized) closePanel();
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1514,7 +1526,11 @@ function onNarrativeInput() {
 function onTermChange() {
   state.term = document.getElementById('termSelect').value;
   persist();
-  if (activeCI !== null) activate(activeCI, activeSI);
+  if (activeCI !== null) {
+    activate(activeCI, activeSI);
+  } else {
+    renderRoster();
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1577,7 +1593,7 @@ function openPreview() {
     <div class="preview-student-name">${esc(name)}</div>
     <div class="preview-meta">${esc(course)}<br>Teacher: Edna Krabappel &nbsp;·&nbsp; ${esc(term)}</div>
     <div class="preview-section-title">Student Reflection</div>
-    <div class="preview-reflection">${REFLECTIONS[name] ? esc(REFLECTIONS[name]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
+    <div class="preview-reflection">${state.reflections[`${term}|${name}`] ? esc(state.reflections[`${term}|${name}`]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
     ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
     ${narrativeHtml}`;
 
@@ -1646,6 +1662,15 @@ document.addEventListener('click', function(e) {
 // ─────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────
+// Ensure reflections object exists (for states loaded from older storage)
+if (!state.reflections) state.reflections = {};
+// Seed pre-filled reflections for 25-26 S2 Final (never overwrite existing entries)
+Object.entries(REFLECTIONS).forEach(([name, text]) => {
+  const k = `25-26 S2 Final|${name}`;
+  if (!state.reflections[k]) state.reflections[k] = text;
+});
+persist();
+
 document.getElementById('termSelect').value = state.term || '25-26 S2 Final';
 renderRoster();
 if (state.activeCI !== null && state.activeSI !== null) {
