@@ -1080,8 +1080,9 @@ function loadState() {
     openClassIdx: 0,
     activeCI: null,
     activeSI: null,
-    students: {},       // "ci_si" → { skills: {skill: [comments]}, narrative }
-    custom: {}          // skill → [strings]
+    students: {},       // "term|ci_si" → { skills: {skill: [comments]}, narrative, finalized }
+    custom: {},         // skill → [strings]
+    reflections: {}     // "term|studentName" → string
   };
 }
 
@@ -1141,7 +1142,7 @@ function renderRoster() {
       row.onclick = () => activate(ci, si);
 
       const rcDotClass = st !== 'none' ? st : '';
-      const hasReflection = state.term === '25-26 S2 Final' && !!REFLECTIONS[name];
+      const hasReflection = !!state.reflections[`${state.term}|${name}`];
       row.innerHTML = `
         <span>${esc(name)}</span>
         <span class="status-icons">
@@ -1195,21 +1196,14 @@ function activate(ci, si) {
   updateFinalizeUI();
   updateEditableState();
 
-  const isFinalTerm = state.term === '25-26 S2 Final';
-  const refBox = document.querySelector('.reflection-box');
   const refEl = document.getElementById('reflectionText');
-  if (isFinalTerm) {
-    refBox.style.display = '';
-    const reflection = REFLECTIONS[name] || null;
-    if (reflection) {
-      refEl.textContent = reflection;
-      refEl.style.color = '';
-    } else {
-      refEl.textContent = 'Not submitted';
-      refEl.style.color = '#94a3b8';
-    }
+  const reflection = state.reflections[`${state.term}|${name}`] || null;
+  if (reflection) {
+    refEl.textContent = reflection;
+    refEl.style.color = '';
   } else {
-    refBox.style.display = 'none';
+    refEl.textContent = 'Not submitted';
+    refEl.style.color = '#94a3b8';
   }
 
   persist();
@@ -1599,7 +1593,7 @@ function openPreview() {
     <div class="preview-student-name">${esc(name)}</div>
     <div class="preview-meta">${esc(course)}<br>Teacher: Edna Krabappel &nbsp;·&nbsp; ${esc(term)}</div>
     <div class="preview-section-title">Student Reflection</div>
-    <div class="preview-reflection">${REFLECTIONS[name] ? esc(REFLECTIONS[name]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
+    <div class="preview-reflection">${state.reflections[`${term}|${name}`] ? esc(state.reflections[`${term}|${name}`]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
     ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
     ${narrativeHtml}`;
 
@@ -1668,6 +1662,15 @@ document.addEventListener('click', function(e) {
 // ─────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────
+// Ensure reflections object exists (for states loaded from older storage)
+if (!state.reflections) state.reflections = {};
+// Seed pre-filled reflections for 25-26 S2 Final (never overwrite existing entries)
+Object.entries(REFLECTIONS).forEach(([name, text]) => {
+  const k = `25-26 S2 Final|${name}`;
+  if (!state.reflections[k]) state.reflections[k] = text;
+});
+persist();
+
 document.getElementById('termSelect').value = state.term || '25-26 S2 Final';
 renderRoster();
 if (state.activeCI !== null && state.activeSI !== null) {
