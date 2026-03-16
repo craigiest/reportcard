@@ -951,7 +951,7 @@ const DEFAULT_CLASSES = [
   }
 ];
 
-// Mutable roster — overridden from state.roster on load, or reset to defaults
+// Mutable roster — overridden from state.rosters[term] on load, or reset to defaults
 let CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
 let teacherName = "Edna Krabappel";
 
@@ -1167,11 +1167,17 @@ const STANDARD_HTML = {
 const STORAGE_KEY = 'rc_mockup1_v2';
 
 let state = loadState();
-// Initialize roster from saved state if present
-if (state.roster) {
-  CLASSES = state.roster.classes;
-  teacherName = state.roster.teacherName;
+// Migrate legacy single-roster to per-term structure
+if (state.roster && !state.rosters) {
+  state.rosters = { [state.term]: state.roster };
+  delete state.roster;
 }
+if (!state.rosters) state.rosters = {};
+// Initialize roster for current term
+(function() {
+  const r = state.rosters[state.term];
+  if (r) { CLASSES = r.classes; teacherName = r.teacherName; }
+})();
 let openClassIdx = state.openClassIdx ?? 0;
 let activeCI = state.activeCI ?? null;
 let activeSI = state.activeSI ?? null;
@@ -1741,7 +1747,7 @@ function showRosterConfirm() {
   const r = pendingRoster;
   const total = r.classes.reduce((n, c) => n + c.students.length, 0);
   let html = `<p style="font-size:0.875rem;color:#64748b;margin-bottom:1rem;line-height:1.55">
-    <strong>Warning:</strong> Loading this roster will replace the current class list and clear all entered report card data. Custom comments will be preserved. This cannot be undone.
+    <strong>Warning:</strong> Loading this roster will replace the class list for <strong>${esc(state.term)}</strong> and clear all entered report card data for that term. Other terms and custom comments are not affected. This cannot be undone.
   </p>
   <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.85rem 1rem;font-size:0.875rem">
     <div style="margin-bottom:0.5rem"><strong>Teacher:</strong> ${esc(r.teacherName)}</div>
@@ -1758,9 +1764,11 @@ function applyRoster() {
   if (!pendingRoster) return;
   CLASSES = pendingRoster.classes;
   teacherName = pendingRoster.teacherName;
-  state.students = {};
-  state.reflections = {};
-  state.roster = { teacherName, classes: CLASSES };
+  // Clear student data and reflections only for the current term
+  const term = state.term;
+  Object.keys(state.students).forEach(k => { if (k.startsWith(term + '|')) delete state.students[k]; });
+  Object.keys(state.reflections).forEach(k => { if (k.startsWith(term + '|')) delete state.reflections[k]; });
+  state.rosters[term] = { teacherName, classes: CLASSES };
   state.openClassIdx = 0;
   state.activeCI = null;
   state.activeSI = null;
@@ -1858,12 +1866,26 @@ function onNarrativeInput() {
 // ─────────────────────────────────────────────────────────────────
 function onTermChange() {
   state.term = document.getElementById('termSelect').value;
-  persist();
-  if (activeCI !== null) {
-    activate(activeCI, activeSI);
+  const r = state.rosters[state.term];
+  if (r) {
+    CLASSES = r.classes;
+    teacherName = r.teacherName;
   } else {
-    renderRoster();
+    CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
+    teacherName = 'Edna Krabappel';
   }
+  document.getElementById('teacherNameDisplay').textContent = teacherName;
+  activeCI = null;
+  activeSI = null;
+  openClassIdx = 0;
+  state.activeCI = null;
+  state.activeSI = null;
+  state.openClassIdx = 0;
+  persist();
+  document.getElementById('navLabel').textContent = 'No student selected';
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('editingArea').style.display = 'none';
+  renderRoster();
 }
 
 // ─────────────────────────────────────────────────────────────────
