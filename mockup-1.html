@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.16Mar26-2200</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.16Mar26-2215</span>
   </div>
 </nav>
 
@@ -1748,11 +1748,11 @@ function closeRosterModal() {
 
 function renderTermsInModal() {
   const list = document.getElementById('rosterTermsList');
-  list.innerHTML = state.terms.map(t => {
+  list.innerHTML = state.terms.map((t, i) => {
     const isCurrent = t === state.term;
     return `<div style="display:flex;align-items:center;gap:0.4rem;padding:0.2rem 0">
       <span style="flex:1;font-size:0.82rem;color:${isCurrent?'#1e40af':'#374151'};font-weight:${isCurrent?'600':'400'}">${esc(t)}${isCurrent?' <span style="font-size:0.7rem;color:#3b82f6;font-weight:400">(current)</span>':''}</span>
-      <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#94a3b8;font-size:0.7rem;padding:0.1rem 0.4rem" onclick="deleteTerm(${JSON.stringify(t)})" title="Delete term">✕</button>
+      <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#94a3b8;font-size:0.7rem;padding:0.1rem 0.4rem" onclick="deleteTerm(${i})" title="Delete term">✕</button>
     </div>`;
   }).join('');
 }
@@ -1769,7 +1769,9 @@ function addTerm() {
   renderTermSelect();
 }
 
-function deleteTerm(name) {
+function deleteTerm(idx) {
+  const name = state.terms[idx];
+  if (!name) return;
   if (state.terms.length <= 1) { alert('You must have at least one grading period.'); return; }
   if (!confirm(`Delete term "${name}"? Any roster and report card data for this term will be removed.`)) return;
   // Clean up data for this term
