@@ -623,24 +623,6 @@
         border-radius: 0;
       }
 
-      /* All-cards print */
-      body.print-all * { visibility: hidden; }
-      body.print-all #printAllContainer,
-      body.print-all #printAllContainer * { visibility: visible; }
-      body.print-all #printAllContainer {
-        display: block !important;
-        position: fixed;
-        inset: 0;
-        overflow: visible;
-        background: #fff;
-      }
-      .print-card {
-        padding: 1.5rem 2rem;
-        break-after: page;
-        font-size: 0.9rem;
-        line-height: 1.7;
-        color: #000;
-      }
       .print-card:last-child { break-after: auto; }
       .print-card .preview-narrative {
         background: none;
@@ -707,11 +689,10 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem">
-    <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllPrint()" title="Print all report cards for current term">Print All</button>
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.16Mar26-2130</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.16Mar26-2200</span>
   </div>
 </nav>
 
@@ -945,7 +926,6 @@
 </div>
 
 <!-- Container for printing all report cards -->
-<div id="printAllContainer" style="display:none"></div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────
@@ -2096,21 +2076,6 @@ function buildReportCardHTML(ci, si) {
     ${narrativeHtml}`;
 }
 
-function exportAllPrint() {
-  const container = document.getElementById('printAllContainer');
-  container.innerHTML = '';
-  CLASSES.forEach((cls, ci) => {
-    cls.students.forEach((_, si) => {
-      const card = document.createElement('div');
-      card.className = 'print-card';
-      card.innerHTML = buildReportCardHTML(ci, si);
-      container.appendChild(card);
-    });
-  });
-  document.body.classList.add('print-all');
-  window.print();
-  setTimeout(() => document.body.classList.remove('print-all'), 1000);
-}
 
 function generateStudentPDF(ci, si) {
   const { jsPDF } = window.jspdf;
@@ -2254,10 +2219,11 @@ async function exportAllZip() {
       });
     }
 
+    const termSlug = state.term.replace(/[^a-zA-Z0-9 \-]/g, '').trim();
     items.forEach(({ cls, si, doc }) => {
       const sName = cls.students[si].replace(/[^a-zA-Z0-9 \-]/g, '').trim();
       const cName = cls.name.replace(/[^a-zA-Z0-9 \-]/g, '').trim().substring(0, 35);
-      zip.file(`${cName}/${sName}.pdf`, doc.output('arraybuffer'));
+      zip.file(`${cName}/${sName}_${cName}_${termSlug}.pdf`, doc.output('arraybuffer'));
     });
 
     const blob = await zip.generateAsync({ type: 'blob' });
