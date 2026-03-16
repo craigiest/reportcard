@@ -600,6 +600,28 @@
       line-height: 1.7;
     }
 
+    /* ── PRINT STYLES ── */
+    @media print {
+      body * { visibility: hidden; }
+      #previewContent, #previewContent * { visibility: visible; }
+      #previewContent {
+        position: fixed;
+        inset: 0;
+        max-height: none;
+        overflow: visible;
+        padding: 1.5rem 2rem;
+        font-size: 0.9rem;
+        line-height: 1.7;
+        color: #000;
+        background: #fff;
+      }
+      .preview-narrative {
+        background: none;
+        border: 1px solid #ccc;
+        border-radius: 0;
+      }
+    }
+
     /* ── CONFIRM MODAL ── */
     .confirm-box { padding: 1.5rem; }
     .confirm-box h3 { font-size: 1rem; margin-bottom: 0.5rem; }
@@ -656,7 +678,7 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
-  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.13Mar26</span>
+  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.16Mar26-1316</span>
 </nav>
 
 <div class="app">
