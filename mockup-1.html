@@ -678,7 +678,7 @@
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
   <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
-  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.16Mar26-1316</span>
+  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.16Mar26-1325</span>
 </nav>
 
 <div class="app">
@@ -801,8 +801,22 @@
         <button class="btn btn-primary btn-sm" onclick="addCustomComment()">Add</button>
       </div>
     </div>
+    <div id="importConfirm" style="display:none;background:#f8fafc;border-top:1px solid #e2e8f0;padding:0.75rem 1.25rem;font-size:0.83rem;color:#374151">
+      <strong id="importConfirmCount"></strong> comments ready to import.
+      How would you like to add them?
+      <div style="display:flex;gap:0.5rem;margin-top:0.55rem">
+        <button class="btn btn-primary btn-sm" onclick="applyImport('append')">Append to existing</button>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #cbd5e1;color:#374151" onclick="applyImport('replace')">Replace all custom comments</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="cancelImport()">Cancel</button>
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeCustomize()">Done</button>
+      <div style="display:flex;gap:0.5rem;margin-left:auto">
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #cbd5e1;color:#374151" onclick="exportCustomCSV()" title="Download all custom comments as CSV">Export CSV</button>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #cbd5e1;color:#374151" onclick="document.getElementById('csvFileInput').click()" title="Import comments from a CSV file">Import CSV</button>
+        <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="handleCSVImport(this)">
+      </div>
     </div>
   </div>
 </div>
@@ -1478,6 +1492,7 @@ function deleteCustom(i) {
 
 function closeCustomize() {
   document.getElementById('customizeModal').classList.remove('open');
+  cancelImport();
   // If the comment panel is open for the same skill in custom mode, refresh its body
   if (popupCtx && customizeCtx && popupCtx.type === 'custom' && popupCtx.skill === customizeCtx.skill) {
     const body = document.getElementById('panelBody');
@@ -1485,6 +1500,109 @@ function closeCustomize() {
     buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill, 'custom');
   }
   customizeCtx = null;
+}
+
+// ─── CSV helpers ───────────────────────────────────────────────────────────
+function csvEscape(val) {
+  const s = String(val);
+  return (s.includes(',') || s.includes('"') || s.includes('\n'))
+    ? '"' + s.replace(/"/g, '""') + '"'
+    : s;
+}
+
+function parseCSV(text) {
+  // Returns array of {skill_area, comment} objects
+  const rows = [];
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  let headerSkipped = false;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    // Split respecting quoted fields
+    const fields = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuote) {
+        if (ch === '"' && line[i+1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQuote = true;
+        else if (ch === ',') { fields.push(cur); cur = ''; }
+        else cur += ch;
+      }
+    }
+    fields.push(cur);
+    if (fields.length < 2) continue;
+    const [f0, ...rest] = fields;
+    const skill = f0.trim();
+    const comment = rest.join(',').trim();
+    // Skip header row
+    if (!headerSkipped && skill.toLowerCase() === 'skill_area' && comment.toLowerCase() === 'comment') {
+      headerSkipped = true;
+      continue;
+    }
+    if (skill && comment) rows.push({ skill, comment });
+  }
+  return rows;
+}
+
+let pendingImportRows = null;
+
+function exportCustomCSV() {
+  const lines = ['skill_area,comment'];
+  for (const [skill, comments] of Object.entries(state.custom)) {
+    for (const c of comments) {
+      lines.push(csvEscape(skill) + ',' + csvEscape(c));
+    }
+  }
+  if (lines.length === 1) { alert('No custom comments to export.'); return; }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'custom_comments.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function handleCSVImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCSV(e.target.result);
+    if (!rows.length) { alert('No valid rows found in the CSV.'); return; }
+    pendingImportRows = rows;
+    document.getElementById('importConfirmCount').textContent = rows.length;
+    document.getElementById('importConfirm').style.display = 'block';
+  };
+  reader.readAsText(file);
+}
+
+function applyImport(mode) {
+  if (!pendingImportRows) return;
+  if (mode === 'replace') state.custom = {};
+  for (const { skill, comment } of pendingImportRows) {
+    if (!state.custom[skill]) state.custom[skill] = [];
+    if (!state.custom[skill].includes(comment)) state.custom[skill].push(comment);
+  }
+  persist();
+  cancelImport();
+  if (customizeCtx) renderCustomList(customizeCtx.skill);
+  if (activeCI !== null) {
+    // Refresh any open panel
+    if (popupCtx && popupCtx.type === 'custom') {
+      const body = document.getElementById('panelBody');
+      body.innerHTML = '';
+      buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill, 'custom');
+    }
+  }
+}
+
+function cancelImport() {
+  pendingImportRows = null;
+  document.getElementById('importConfirm').style.display = 'none';
 }
 
 // ─────────────────────────────────────────────────────────────────
