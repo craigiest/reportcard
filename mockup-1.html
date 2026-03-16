@@ -723,6 +723,7 @@
       <div class="field-label">Teacher</div>
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.85rem">
         <div class="teacher-name" id="teacherNameDisplay" style="margin-bottom:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Edna Krabappel</div>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b;font-size:0.72rem;padding:0.22rem 0.5rem;flex-shrink:0;white-space:nowrap" onclick="downloadRosterTemplate()" title="Download current roster as a CSV template">↓ Template</button>
         <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b;font-size:0.72rem;padding:0.22rem 0.5rem;flex-shrink:0;white-space:nowrap" onclick="document.getElementById('rosterFileInput').click()" title="Upload a CSV file with columns: Teacher, Course, Student">↑ Roster</button>
         <input type="file" id="rosterFileInput" accept=".csv,text/csv" style="display:none" onchange="handleRosterUpload(this)">
       </div>
