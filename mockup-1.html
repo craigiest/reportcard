@@ -602,9 +602,11 @@
 
     /* ── PRINT STYLES ── */
     @media print {
-      body * { visibility: hidden; }
-      #previewContent, #previewContent * { visibility: visible; }
-      #previewContent {
+      /* Single-card print (preview modal) */
+      body:not(.print-all) * { visibility: hidden; }
+      body:not(.print-all) #previewContent,
+      body:not(.print-all) #previewContent * { visibility: visible; }
+      body:not(.print-all) #previewContent {
         position: fixed;
         inset: 0;
         max-height: none;
@@ -615,7 +617,32 @@
         color: #000;
         background: #fff;
       }
-      .preview-narrative {
+      body:not(.print-all) .preview-narrative {
+        background: none;
+        border: 1px solid #ccc;
+        border-radius: 0;
+      }
+
+      /* All-cards print */
+      body.print-all * { visibility: hidden; }
+      body.print-all #printAllContainer,
+      body.print-all #printAllContainer * { visibility: visible; }
+      body.print-all #printAllContainer {
+        display: block !important;
+        position: fixed;
+        inset: 0;
+        overflow: visible;
+        background: #fff;
+      }
+      .print-card {
+        padding: 1.5rem 2rem;
+        break-after: page;
+        font-size: 0.9rem;
+        line-height: 1.7;
+        color: #000;
+      }
+      .print-card:last-child { break-after: auto; }
+      .print-card .preview-narrative {
         background: none;
         border: 1px solid #ccc;
         border-radius: 0;
@@ -670,6 +697,8 @@
     .finalize-label:has(input:disabled) { color: #94a3b8; cursor: default; }
     .finalize-hint { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -677,8 +706,13 @@
   <a href="index.html">← All Mockups</a>
   <span style="color:#e2e8f0">|</span>
   <span class="topnav-title">Mockup 1 — Report Card Generator</span>
-  <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="confirmReset()">Reset All Data</button>
-  <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.75rem">v.16Mar26-1326</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem">
+    <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllPrint()" title="Print all report cards for current term">Print All</button>
+    <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
+    <span style="color:#e2e8f0">|</span>
+    <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
+    <span style="font-size:0.72rem;color:#94a3b8">v.16Mar26-1800</span>
+  </div>
 </nav>
 
 <div class="app">
@@ -687,7 +721,11 @@
   <div class="left-panel">
     <div class="master-area">
       <div class="field-label">Teacher</div>
-      <div class="teacher-name">Edna Krabappel</div>
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.85rem">
+        <div class="teacher-name" id="teacherNameDisplay" style="margin-bottom:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Edna Krabappel</div>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b;font-size:0.72rem;padding:0.22rem 0.5rem;flex-shrink:0;white-space:nowrap" onclick="document.getElementById('rosterFileInput').click()" title="Upload a CSV file with columns: Teacher, Course, Student">↑ Roster</button>
+        <input type="file" id="rosterFileInput" accept=".csv,text/csv" style="display:none" onchange="handleRosterUpload(this)">
+      </div>
 
       <div class="field-label">Grading Period</div>
       <select class="term-select" id="termSelect" onchange="onTermChange()">
@@ -853,11 +891,35 @@
   </div>
 </div>
 
+<!-- Roster upload confirm modal -->
+<div class="modal-overlay" id="rosterModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Upload Course Roster</div>
+        <div class="modal-subtitle">CSV format: Teacher, Course, Student (one student per row)</div>
+      </div>
+      <button class="modal-close" onclick="closeRosterModal()">✕</button>
+    </div>
+    <div class="modal-body" id="rosterConfirmBody"></div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="downloadRosterTemplate()" title="Download the current roster as a CSV template">↓ Download Template</button>
+      <div style="display:flex;gap:0.6rem">
+        <button class="btn btn-ghost" onclick="closeRosterModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="applyRoster()">Load Roster &amp; Clear Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Container for printing all report cards -->
+<div id="printAllContainer" style="display:none"></div>
+
 <script>
 // ─────────────────────────────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────────────────────────────
-const CLASSES = [
+const DEFAULT_CLASSES = [
   {
     name: "Conspiracy Theories: A Critical Examination",
     students: ["Marcus Delgado","Priya Nair","Owen Callahan","Fatima Al-Rashid",
@@ -887,6 +949,10 @@ const CLASSES = [
       "Freya Halvorsen","Arjun Mehta"]
   }
 ];
+
+// Mutable roster — overridden from state.roster on load, or reset to defaults
+let CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
+let teacherName = "Edna Krabappel";
 
 const REFLECTIONS = {
   "Marcus Delgado": "I think I've been doing pretty well keeping up with readings, but I know I zone out during discussion sometimes. I want to push myself to share more of my ideas out loud instead of just keeping them in my head.",
@@ -1100,6 +1166,11 @@ const STANDARD_HTML = {
 const STORAGE_KEY = 'rc_mockup1_v2';
 
 let state = loadState();
+// Initialize roster from saved state if present
+if (state.roster) {
+  CLASSES = state.roster.classes;
+  teacherName = state.roster.teacherName;
+}
 let openClassIdx = state.openClassIdx ?? 0;
 let activeCI = state.activeCI ?? null;
 let activeSI = state.activeSI ?? null;
@@ -1222,7 +1293,7 @@ function activate(ci, si) {
   document.getElementById('studentMeta').innerHTML = `
     <div class="meta-row"><span class="meta-label">Student</span>${esc(name)}</div>
     <div class="meta-row"><span class="meta-label">Course</span>${esc(course)}</div>
-    <div class="meta-row"><span class="meta-label">Teacher</span>Edna Krabappel</div>
+    <div class="meta-row"><span class="meta-label">Teacher</span>${esc(teacherName)}</div>
     <div class="meta-row"><span class="meta-label">Period</span>${esc(term)}</div>`;
 
   renderSkills(ci, si);
@@ -1606,6 +1677,127 @@ function cancelImport() {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// ROSTER CSV UPLOAD
+// ─────────────────────────────────────────────────────────────────
+let pendingRoster = null;
+
+function parseRosterCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const rows = [];
+  let headerSkipped = false;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const fields = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuote) {
+        if (ch === '"' && line[i+1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQuote = true;
+        else if (ch === ',') { fields.push(cur); cur = ''; }
+        else cur += ch;
+      }
+    }
+    fields.push(cur);
+    if (fields.length < 3) continue;
+    const teacher = fields[0].trim();
+    const course  = fields[1].trim();
+    const student = fields[2].trim();
+    if (!headerSkipped && teacher.toLowerCase() === 'teacher' && course.toLowerCase() === 'course') {
+      headerSkipped = true;
+      continue;
+    }
+    if (teacher && course && student) rows.push({ teacher, course, student });
+  }
+  return rows;
+}
+
+function handleRosterUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseRosterCSV(e.target.result);
+    if (!rows.length) { alert('No valid rows found. The CSV must have Teacher, Course, Student columns.'); return; }
+    const teacher = rows[0].teacher;
+    const classMap = new Map();
+    rows.forEach(r => {
+      if (!classMap.has(r.course)) classMap.set(r.course, []);
+      if (!classMap.get(r.course).includes(r.student)) classMap.get(r.course).push(r.student);
+    });
+    const classes = Array.from(classMap.entries()).map(([name, students]) => ({ name, students }));
+    pendingRoster = { teacherName: teacher, classes };
+    showRosterConfirm();
+  };
+  reader.readAsText(file);
+}
+
+function showRosterConfirm() {
+  const r = pendingRoster;
+  const total = r.classes.reduce((n, c) => n + c.students.length, 0);
+  let html = `<p style="font-size:0.875rem;color:#64748b;margin-bottom:1rem;line-height:1.55">
+    <strong>Warning:</strong> Loading this roster will replace the current class list and clear all entered report card data. Custom comments will be preserved. This cannot be undone.
+  </p>
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.85rem 1rem;font-size:0.875rem">
+    <div style="margin-bottom:0.5rem"><strong>Teacher:</strong> ${esc(r.teacherName)}</div>
+    <div style="margin-bottom:0.4rem"><strong>${r.classes.length} class${r.classes.length !== 1 ? 'es' : ''}, ${total} student${total !== 1 ? 's' : ''}:</strong></div>`;
+  r.classes.forEach(cls => {
+    html += `<div style="font-size:0.82rem;color:#475569;padding:0.12rem 0 0.12rem 0.75rem">${esc(cls.name)} <span style="color:#94a3b8">(${cls.students.length})</span></div>`;
+  });
+  html += `</div>`;
+  document.getElementById('rosterConfirmBody').innerHTML = html;
+  document.getElementById('rosterModal').classList.add('open');
+}
+
+function applyRoster() {
+  if (!pendingRoster) return;
+  CLASSES = pendingRoster.classes;
+  teacherName = pendingRoster.teacherName;
+  state.students = {};
+  state.reflections = {};
+  state.roster = { teacherName, classes: CLASSES };
+  state.openClassIdx = 0;
+  state.activeCI = null;
+  state.activeSI = null;
+  openClassIdx = 0;
+  activeCI = null;
+  activeSI = null;
+  pendingRoster = null;
+  persist();
+  document.getElementById('teacherNameDisplay').textContent = teacherName;
+  document.getElementById('navLabel').textContent = 'No student selected';
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('editingArea').style.display = 'none';
+  closePanel();
+  renderRoster();
+  closeRosterModal();
+}
+
+function closeRosterModal() {
+  document.getElementById('rosterModal').classList.remove('open');
+  pendingRoster = null;
+}
+
+function downloadRosterTemplate() {
+  const lines = ['Teacher,Course,Student'];
+  CLASSES.forEach(cls => {
+    cls.students.forEach(s => {
+      lines.push(csvEscape(teacherName) + ',' + csvEscape(cls.name) + ',' + csvEscape(s));
+    });
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'roster_template.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ─────────────────────────────────────────────────────────────────
 // FINALIZE
 // ─────────────────────────────────────────────────────────────────
 function updateFinalizeUI() {
@@ -1731,7 +1923,7 @@ function openPreview() {
 
   document.getElementById('previewContent').innerHTML = `
     <div class="preview-student-name">${esc(name)}</div>
-    <div class="preview-meta">${esc(course)}<br>Teacher: Edna Krabappel &nbsp;·&nbsp; ${esc(term)}</div>
+    <div class="preview-meta">${esc(course)}<br>Teacher: ${esc(teacherName)} &nbsp;·&nbsp; ${esc(term)}</div>
     <div class="preview-section-title">Student Reflection</div>
     <div class="preview-reflection">${state.reflections[`${term}|${name}`] ? esc(state.reflections[`${term}|${name}`]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
     ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
@@ -1745,6 +1937,219 @@ function closePreview() {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// EXPORT ALL
+// ─────────────────────────────────────────────────────────────────
+function buildReportCardHTML(ci, si) {
+  const d = studentData(ci, si);
+  const name = CLASSES[ci].students[si];
+  const course = CLASSES[ci].name;
+  const term = state.term;
+  let skillsHtml = '';
+  SKILLS.forEach(skill => {
+    const sel = d.skills[skill] || [];
+    if (sel.length > 0) {
+      skillsHtml += `
+        <div class="preview-skill-block">
+          <div class="preview-skill-name">${esc(skill)}</div>
+          <ul class="preview-skill-comments">
+            ${sel.map(c => `<li>${esc(c)}</li>`).join('')}
+          </ul>
+        </div>`;
+    }
+  });
+  const narrativeHtml = (d.narrative || '').trim()
+    ? `<div class="preview-section-title">Overall Comment</div>
+       <div class="preview-narrative">${esc(d.narrative)}</div>`
+    : '';
+  const reflection = state.reflections[`${term}|${name}`];
+  return `
+    <div class="preview-student-name">${esc(name)}</div>
+    <div class="preview-meta">${esc(course)}<br>Teacher: ${esc(teacherName)} &nbsp;·&nbsp; ${esc(term)}</div>
+    <div class="preview-section-title">Student Reflection</div>
+    <div class="preview-reflection">${reflection ? esc(reflection) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
+    ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
+    ${narrativeHtml}`;
+}
+
+function exportAllPrint() {
+  const container = document.getElementById('printAllContainer');
+  container.innerHTML = '';
+  CLASSES.forEach((cls, ci) => {
+    cls.students.forEach((_, si) => {
+      const card = document.createElement('div');
+      card.className = 'print-card';
+      card.innerHTML = buildReportCardHTML(ci, si);
+      container.appendChild(card);
+    });
+  });
+  document.body.classList.add('print-all');
+  window.print();
+  setTimeout(() => document.body.classList.remove('print-all'), 1000);
+}
+
+function generateStudentPDF(ci, si) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+  const d = studentData(ci, si);
+  const name = CLASSES[ci].students[si];
+  const course = CLASSES[ci].name;
+  const term = state.term;
+
+  const ML = 20, MT = 22, MR = 20, MB = 22;
+  const PW = 215.9, PH = 279.4, TW = PW - ML - MR;
+  let y = MT;
+
+  const newPageIfNeeded = (h) => {
+    if (y + h > PH - MB) { doc.addPage(); y = MT; }
+  };
+
+  // Header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.text(name, ML, y); y += 8;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  const cLines = doc.splitTextToSize(course, TW);
+  doc.text(cLines, ML, y); y += cLines.length * 5.2;
+
+  doc.setFontSize(8.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Teacher: ${teacherName}  ·  ${term}`, ML, y);
+  doc.setTextColor(0, 0, 0); y += 6;
+
+  doc.setLineWidth(0.25);
+  doc.setDrawColor(200, 210, 220);
+  doc.line(ML, y, PW - MR, y); y += 6;
+
+  // Student Reflection
+  const reflection = state.reflections[`${term}|${name}`];
+  if (reflection) {
+    newPageIfNeeded(16);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(148, 163, 184);
+    doc.text('STUDENT REFLECTION', ML, y);
+    doc.setTextColor(0, 0, 0); y += 4.5;
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    const rLines = doc.splitTextToSize(reflection, TW);
+    newPageIfNeeded(rLines.length * 5 + 8);
+    doc.text(rLines, ML, y);
+    doc.setTextColor(0, 0, 0); y += rLines.length * 5 + 6;
+  }
+
+  // Transferable Skills
+  if (SKILLS.some(sk => (d.skills[sk] || []).length > 0)) {
+    newPageIfNeeded(12);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(148, 163, 184);
+    doc.text('TRANSFERABLE SKILLS', ML, y);
+    doc.setTextColor(0, 0, 0); y += 5;
+
+    SKILLS.forEach(skill => {
+      const comments = d.skills[skill] || [];
+      if (!comments.length) return;
+      newPageIfNeeded(14);
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text(skill, ML, y);
+      doc.setTextColor(0, 0, 0); y += 5.5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      comments.forEach(c => {
+        const lines = doc.splitTextToSize('• ' + c, TW - 4);
+        newPageIfNeeded(lines.length * 4.8 + 1);
+        doc.text(lines, ML + 3, y);
+        y += lines.length * 4.8 + 1;
+      });
+      doc.setTextColor(0, 0, 0); y += 3;
+    });
+  }
+
+  // Narrative Comment
+  const narrative = (d.narrative || '').trim();
+  if (narrative) {
+    newPageIfNeeded(18);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(148, 163, 184);
+    doc.text('OVERALL COMMENT', ML, y);
+    doc.setTextColor(0, 0, 0); y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    const nLines = doc.splitTextToSize(narrative, TW - 6);
+    const boxH = nLines.length * 5.2 + 8;
+    newPageIfNeeded(boxH + 2);
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(ML, y - 2, TW, boxH, 2, 2, 'FD');
+    doc.setTextColor(51, 65, 85);
+    doc.text(nLines, ML + 4, y + 3);
+    doc.setTextColor(0, 0, 0);
+  }
+
+  return doc;
+}
+
+async function exportAllZip() {
+  if (!window.jspdf || !window.JSZip) {
+    alert('PDF libraries are still loading — please try again in a moment.');
+    return;
+  }
+  const btn = document.getElementById('exportZipBtn');
+  const orig = btn.textContent;
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+  try {
+    const zip = new JSZip();
+    const items = [];
+    let maxPages = 1;
+
+    CLASSES.forEach((cls, ci) => {
+      cls.students.forEach((_, si) => {
+        const doc = generateStudentPDF(ci, si);
+        const pages = doc.internal.getNumberOfPages();
+        if (pages > maxPages) maxPages = pages;
+        items.push({ cls, si, doc, pages });
+      });
+    });
+
+    // Equalize page counts so double-sided printing stays in sync
+    if (maxPages > 1) {
+      items.forEach(item => {
+        while (item.doc.internal.getNumberOfPages() < maxPages) {
+          item.doc.addPage();
+        }
+      });
+    }
+
+    items.forEach(({ cls, si, doc }) => {
+      const sName = cls.students[si].replace(/[^a-zA-Z0-9 \-]/g, '').trim();
+      const cName = cls.name.replace(/[^a-zA-Z0-9 \-]/g, '').trim().substring(0, 35);
+      zip.file(`${cName}/${sName}.pdf`, doc.output('arraybuffer'));
+    });
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `report_cards_${state.term.replace(/\s+/g, '_')}.zip`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch(err) {
+    alert('Export failed: ' + err.message);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // RESET
 // ─────────────────────────────────────────────────────────────────
 function confirmReset() { document.getElementById('resetModal').classList.add('open'); }
@@ -1753,6 +2158,10 @@ function closeReset()   { document.getElementById('resetModal').classList.remove
 function doReset() {
   localStorage.removeItem(STORAGE_KEY);
   state = loadState();
+  // Reset roster to defaults
+  CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
+  teacherName = 'Edna Krabappel';
+  document.getElementById('teacherNameDisplay').textContent = teacherName;
   openClassIdx = 0;
   activeCI = null;
   activeSI = null;
@@ -1760,6 +2169,7 @@ function doReset() {
   document.getElementById('navLabel').textContent = 'No student selected';
   document.getElementById('emptyState').style.display = '';
   document.getElementById('editingArea').style.display = 'none';
+  closePanel();
   renderRoster();
   closeReset();
 }
@@ -1784,7 +2194,7 @@ function showSaved() {
 }
 
 // Close modals on backdrop click
-['customizeModal','previewModal','resetModal'].forEach(id => {
+['customizeModal','previewModal','resetModal','rosterModal'].forEach(id => {
   document.getElementById(id).addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('open');
   });
@@ -1812,6 +2222,7 @@ Object.entries(REFLECTIONS).forEach(([name, text]) => {
 persist();
 
 document.getElementById('termSelect').value = state.term || '25-26 S2 Final';
+document.getElementById('teacherNameDisplay').textContent = teacherName;
 renderRoster();
 if (state.activeCI !== null && state.activeSI !== null) {
   activate(state.activeCI, state.activeSI);
