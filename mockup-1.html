@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1200</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1300</span>
   </div>
 </nav>
 
@@ -1419,10 +1419,8 @@ function buildPanelBody(body, ci, si, skill, type) {
     const oneTime = selected.filter(c => !bankComments.includes(c) && !stdAll.includes(c));
     oneTime.forEach(c => {
       const item = document.createElement('div');
-      item.className = 'popup-item checked';
-      const chk = document.createElement('span');
-      chk.className = 'popup-checkbox';
-      chk.textContent = '✓';
+      item.className = 'popup-item';
+      item.style.cursor = 'default';
       const txt = document.createElement('span');
       txt.style.flex = '1';
       txt.textContent = c;
@@ -1430,8 +1428,8 @@ function buildPanelBody(body, ci, si, skill, type) {
       del.className = 'custom-del';
       del.title = 'Remove';
       del.textContent = '−';
+      del.style.color = '#64748b';
       del.onclick = e => { e.stopPropagation(); removeOneTimeComment(ci, si, skill, c); };
-      item.appendChild(chk);
       item.appendChild(txt);
       item.appendChild(del);
       body.appendChild(item);
