@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1000</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1100</span>
   </div>
 </nav>
 
@@ -1413,6 +1413,30 @@ function buildPanelBody(body, ci, si, skill, type) {
     quickRow.appendChild(quickBtn);
     body.appendChild(quickRow);
 
+    // One-time comments: selected for this student but not in any bank
+    const bankComments = state.custom[skill] || [];
+    const stdAll = [...(STANDARD[skill]?.strengths || []), ...(STANDARD[skill]?.growth || [])];
+    const oneTime = selected.filter(c => !bankComments.includes(c) && !stdAll.includes(c));
+    oneTime.forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'popup-item checked';
+      const chk = document.createElement('span');
+      chk.className = 'popup-checkbox';
+      chk.textContent = '✓';
+      const txt = document.createElement('span');
+      txt.style.flex = '1';
+      txt.textContent = c;
+      const del = document.createElement('button');
+      del.className = 'custom-del';
+      del.title = 'Remove';
+      del.textContent = '−';
+      del.onclick = e => { e.stopPropagation(); removeOneTimeComment(ci, si, skill, c); };
+      item.appendChild(chk);
+      item.appendChild(txt);
+      item.appendChild(del);
+      body.appendChild(item);
+    });
+
     const custOpt = document.createElement('div');
     custOpt.className = 'popup-item customize-opt';
     custOpt.innerHTML = '✎ &nbsp;Edit comment bank…';
@@ -1518,6 +1542,20 @@ function addQuickComment(ci, si, skill) {
   if (!d.skills[skill]) d.skills[skill] = [];
   if (!d.skills[skill].includes(text)) d.skills[skill].push(text);
   input.value = '';
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildPanelBody(body, ci, si, skill, 'custom');
+  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  refreshSkillComments(skill);
+  renderRoster();
+  showSaved();
+  updateFinalizeUI();
+}
+
+function removeOneTimeComment(ci, si, skill, comment) {
+  const d = studentData(ci, si);
+  if (d.skills[skill]) d.skills[skill] = d.skills[skill].filter(c => c !== comment);
   persist();
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
