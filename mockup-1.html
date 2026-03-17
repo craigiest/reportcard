@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.16Mar26-2215</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-0900</span>
   </div>
 </nav>
 
@@ -1397,6 +1397,22 @@ function buildPanelBody(body, ci, si, skill, type) {
     body.appendChild(hr);
     appendSection(body, 'Growth Areas', s.growth, sh.growth, selected, ci, si, skill);
   } else {
+    const quickRow = document.createElement('div');
+    quickRow.style.cssText = 'display:flex;gap:0.4rem;padding:0.6rem 0.75rem;border-bottom:1px solid #f1f5f9';
+    const quickInput = document.createElement('input');
+    quickInput.type = 'text';
+    quickInput.id = 'quickCustomInput';
+    quickInput.placeholder = 'Add a comment…';
+    quickInput.style.cssText = 'flex:1;font-size:0.8rem;padding:0.25rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;outline:none;min-width:0';
+    quickInput.onkeydown = e => { if (e.key === 'Enter') addQuickComment(ci, si, skill); };
+    const quickBtn = document.createElement('button');
+    quickBtn.className = 'btn btn-primary btn-sm';
+    quickBtn.textContent = 'Add';
+    quickBtn.onclick = () => addQuickComment(ci, si, skill);
+    quickRow.appendChild(quickInput);
+    quickRow.appendChild(quickBtn);
+    body.appendChild(quickRow);
+
     const custOpt = document.createElement('div');
     custOpt.className = 'popup-item customize-opt';
     custOpt.innerHTML = '✎ &nbsp;Customize comments…';
@@ -1493,6 +1509,28 @@ function closePanel() {
   popupCtx = null;
 }
 
+function addQuickComment(ci, si, skill) {
+  const input = document.getElementById('quickCustomInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  if (!state.custom[skill]) state.custom[skill] = [];
+  if (!state.custom[skill].includes(text)) state.custom[skill].push(text);
+  const d = studentData(ci, si);
+  if (!d.skills[skill]) d.skills[skill] = [];
+  if (!d.skills[skill].includes(text)) d.skills[skill].push(text);
+  input.value = '';
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildPanelBody(body, ci, si, skill, 'custom');
+  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  refreshSkillComments(skill);
+  renderRoster();
+  showSaved();
+  updateFinalizeUI();
+}
+
 // ─────────────────────────────────────────────────────────────────
 // CUSTOMIZE
 // ─────────────────────────────────────────────────────────────────
@@ -1563,7 +1601,15 @@ function addCustomComment() {
   if (!text || !customizeCtx) return;
   const skill = customizeCtx.skill;
   if (!state.custom[skill]) state.custom[skill] = [];
-  state.custom[skill].push(text);
+  if (!state.custom[skill].includes(text)) state.custom[skill].push(text);
+  // Auto-add to the current student's report card
+  if (activeCI !== null && activeSI !== null) {
+    const d = studentData(activeCI, activeSI);
+    if (!d.skills[skill]) d.skills[skill] = [];
+    if (!d.skills[skill].includes(text)) d.skills[skill].push(text);
+    refreshSkillComments(skill);
+    updateFinalizeUI();
+  }
   input.value = '';
   renderCustomList(skill);
   persist();
@@ -1949,6 +1995,12 @@ function renderTermSelect() {
 }
 
 function onTermChange() {
+  // Remember the active student's name so we can re-select them in the new term
+  let prevName = null;
+  if (activeCI !== null && activeSI !== null && CLASSES[activeCI]) {
+    prevName = CLASSES[activeCI].students[activeSI] || null;
+  }
+
   state.term = document.getElementById('termSelect').value;
   const r = state.rosters[state.term];
   if (r) {
@@ -1959,17 +2011,32 @@ function onTermChange() {
     teacherName = 'Edna Krabappel';
   }
   document.getElementById('teacherNameDisplay').textContent = teacherName;
-  activeCI = null;
-  activeSI = null;
-  openClassIdx = 0;
-  state.activeCI = null;
-  state.activeSI = null;
-  state.openClassIdx = 0;
+
+  // Find the same student in the new roster
+  let foundCI = null, foundSI = null;
+  if (prevName) {
+    for (let ci = 0; ci < CLASSES.length; ci++) {
+      const si = CLASSES[ci].students.indexOf(prevName);
+      if (si >= 0) { foundCI = ci; foundSI = si; break; }
+    }
+  }
+
+  activeCI = null; activeSI = null; openClassIdx = 0;
+  state.activeCI = null; state.activeSI = null; state.openClassIdx = 0;
+  closePanel();
   persist();
-  document.getElementById('navLabel').textContent = 'No student selected';
-  document.getElementById('emptyState').style.display = '';
-  document.getElementById('editingArea').style.display = 'none';
-  renderRoster();
+
+  if (foundCI !== null) {
+    openClassIdx = foundCI;
+    state.openClassIdx = foundCI;
+    renderRoster();
+    activate(foundCI, foundSI);
+  } else {
+    document.getElementById('navLabel').textContent = 'No student selected';
+    document.getElementById('emptyState').style.display = '';
+    document.getElementById('editingArea').style.display = 'none';
+    renderRoster();
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────
