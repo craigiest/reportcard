@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1400</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1500</span>
   </div>
 </nav>
 
@@ -1979,8 +1979,11 @@ function applyRoster() {
       });
     });
     // Refresh editing area if current student is in a target term
-    if (targetTerms.includes(state.term) && activeCI !== null) {
-      document.getElementById('narrativeInput').value = studentData(activeCI, activeSI).narrative || '';
+    if (targetTerms.includes(state.term)) {
+      renderRoster();
+      if (activeCI !== null) {
+        document.getElementById('narrativeInput').value = studentData(activeCI, activeSI).narrative || '';
+      }
     }
   } else {
     // Replace mode: clear student data and overwrite roster
@@ -2023,9 +2026,8 @@ function applyRoster() {
 
 function downloadRosterTemplate() {
   const lines = ['Teacher,Course,Student,Comment'];
-  CLASSES.forEach(cls => {
+  CLASSES.forEach((cls, ci) => {
     cls.students.forEach((s, si) => {
-      const ci = CLASSES.indexOf(cls);
       const d = studentData(ci, si);
       lines.push(csvEscape(teacherName) + ',' + csvEscape(cls.name) + ',' + csvEscape(s) + ',' + csvEscape(d.narrative || ''));
     });
