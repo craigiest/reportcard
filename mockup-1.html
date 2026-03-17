@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1600</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1700</span>
   </div>
 </nav>
 
@@ -1966,9 +1966,13 @@ function applyRoster() {
   if (mode === 'comments') {
     // Comments-only: match students by course+name and set narrative, no data clearing
     targetTerms.forEach(term => {
-      const roster = state.rosters[term];
-      if (!roster) return;
-      roster.classes.forEach((cls, ci) => {
+      // For the current term use the live CLASSES array (works even before any roster import);
+      // for other terms fall back to the saved roster.
+      const rosterClasses = (term === state.term)
+        ? CLASSES
+        : state.rosters[term]?.classes;
+      if (!rosterClasses) return;
+      rosterClasses.forEach((cls, ci) => {
         cls.students.forEach((student, si) => {
           const comment = pendingRoster.commentMap.get(cls.name + '|' + student);
           if (comment) {
