@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-0900</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1000</span>
   </div>
 </nav>
 
@@ -1402,7 +1402,7 @@ function buildPanelBody(body, ci, si, skill, type) {
     const quickInput = document.createElement('input');
     quickInput.type = 'text';
     quickInput.id = 'quickCustomInput';
-    quickInput.placeholder = 'Add a comment…';
+    quickInput.placeholder = 'Add comment for this student…';
     quickInput.style.cssText = 'flex:1;font-size:0.8rem;padding:0.25rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;outline:none;min-width:0';
     quickInput.onkeydown = e => { if (e.key === 'Enter') addQuickComment(ci, si, skill); };
     const quickBtn = document.createElement('button');
@@ -1415,7 +1415,7 @@ function buildPanelBody(body, ci, si, skill, type) {
 
     const custOpt = document.createElement('div');
     custOpt.className = 'popup-item customize-opt';
-    custOpt.innerHTML = '✎ &nbsp;Customize comments…';
+    custOpt.innerHTML = '✎ &nbsp;Edit comment bank…';
     custOpt.onclick = () => openCustomize(skill);
     body.appendChild(custOpt);
 
@@ -1429,7 +1429,7 @@ function buildPanelBody(body, ci, si, skill, type) {
     } else {
       const empty = document.createElement('div');
       empty.style.cssText = 'padding:0.85rem 1rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
-      empty.textContent = 'No custom comments yet. Click "Customize comments…" to add some.';
+      empty.textContent = 'No saved comments yet. Click "Edit comment bank…" to add reusable ones.';
       body.appendChild(empty);
     }
   }
@@ -1514,8 +1514,6 @@ function addQuickComment(ci, si, skill) {
   if (!input) return;
   const text = input.value.trim();
   if (!text) return;
-  if (!state.custom[skill]) state.custom[skill] = [];
-  if (!state.custom[skill].includes(text)) state.custom[skill].push(text);
   const d = studentData(ci, si);
   if (!d.skills[skill]) d.skills[skill] = [];
   if (!d.skills[skill].includes(text)) d.skills[skill].push(text);
