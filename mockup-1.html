@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1300</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1400</span>
   </div>
 </nav>
 
@@ -907,16 +907,27 @@
       <!-- UPLOAD -->
       <div style="padding:0.85rem 1.25rem 1.1rem">
         <div class="field-label" style="margin-bottom:0.35rem">Upload Roster</div>
-        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.6rem">CSV format: Teacher, Course, Student — one row per student.</div>
+        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.6rem">CSV format: Teacher, Course, Student, Comment (optional) — one row per student.</div>
         <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="document.getElementById('rosterFileInput').click()">Choose CSV file…</button>
         <input type="file" id="rosterFileInput" accept=".csv,text/csv" style="display:none" onchange="handleRosterUpload(this)">
         <div id="rosterUploadPreview" style="display:none;margin-top:0.85rem">
           <div id="rosterPreviewDetails" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem 1rem;font-size:0.875rem;margin-bottom:0.75rem"></div>
           <div class="field-label" style="margin-bottom:0.35rem">Apply to terms:</div>
           <div id="rosterTermCheckboxes" style="display:flex;flex-direction:column;gap:0.3rem;font-size:0.875rem;margin-bottom:0.85rem"></div>
+          <div class="field-label" style="margin-bottom:0.35rem">Import mode:</div>
+          <div style="display:flex;flex-direction:column;gap:0.35rem;font-size:0.875rem;margin-bottom:0.85rem">
+            <label style="display:flex;align-items:flex-start;gap:0.45rem;cursor:pointer">
+              <input type="radio" name="rosterImportMode" value="replace" checked style="margin-top:2px;width:14px;height:14px" onchange="updateApplyRosterBtn()">
+              <span><strong>Replace roster &amp; clear student data</strong><br><span style="color:#64748b;font-size:0.8rem">Removes all existing comments for the selected terms.</span></span>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.45rem;cursor:pointer">
+              <input type="radio" name="rosterImportMode" value="comments" style="margin-top:2px;width:14px;height:14px" onchange="updateApplyRosterBtn()">
+              <span><strong>Add comments to existing students</strong><br><span style="color:#64748b;font-size:0.8rem">Matches students by name and sets their comment from the CSV. Existing data is kept.</span></span>
+            </label>
+          </div>
           <div style="display:flex;justify-content:flex-end;gap:0.6rem">
             <button class="btn btn-ghost" onclick="resetUploadSection()">Cancel</button>
-            <button class="btn btn-danger" onclick="applyRoster()">Apply Roster &amp; Clear Data</button>
+            <button id="applyRosterBtn" class="btn btn-danger" onclick="applyRoster()">Apply Roster &amp; Clear Data</button>
           </div>
         </div>
       </div>
@@ -1810,7 +1821,8 @@ function parseRosterCSV(text) {
       headerSkipped = true;
       continue;
     }
-    if (teacher && course && student) rows.push({ teacher, course, student });
+    const comment = fields.length >= 4 ? fields[3].trim() : '';
+    if (teacher && course && student) rows.push({ teacher, course, student, comment });
   }
   return rows;
 }
@@ -1885,6 +1897,18 @@ function resetUploadSection() {
   document.getElementById('rosterUploadPreview').style.display = 'none';
 }
 
+function updateApplyRosterBtn() {
+  const mode = document.querySelector('input[name="rosterImportMode"]:checked')?.value || 'replace';
+  const btn = document.getElementById('applyRosterBtn');
+  if (mode === 'comments') {
+    btn.textContent = 'Add Comments to Students';
+    btn.className = 'btn btn-primary';
+  } else {
+    btn.textContent = 'Apply Roster & Clear Data';
+    btn.className = 'btn btn-danger';
+  }
+}
+
 function handleRosterUpload(input) {
   const file = input.files[0];
   if (!file) return;
@@ -1895,16 +1919,19 @@ function handleRosterUpload(input) {
     if (!rows.length) { alert('No valid rows found. The CSV must have Teacher, Course, Student columns.'); return; }
     const teacher = rows[0].teacher;
     const classMap = new Map();
+    const commentMap = new Map(); // "course|student" -> comment
     rows.forEach(r => {
       if (!classMap.has(r.course)) classMap.set(r.course, []);
       if (!classMap.get(r.course).includes(r.student)) classMap.get(r.course).push(r.student);
+      if (r.comment) commentMap.set(r.course + '|' + r.student, r.comment);
     });
     const classes = Array.from(classMap.entries()).map(([name, students]) => ({ name, students }));
-    pendingRoster = { teacherName: teacher, classes };
+    pendingRoster = { teacherName: teacher, classes, commentMap };
     // Render preview
     const total = classes.reduce((n, c) => n + c.students.length, 0);
+    const commentCount = commentMap.size;
     let detailHtml = `<div style="margin-bottom:0.4rem"><strong>Teacher:</strong> ${esc(teacher)}</div>
-      <div style="margin-bottom:0.35rem"><strong>${classes.length} class${classes.length!==1?'es':''}, ${total} student${total!==1?'s':''}:</strong></div>`;
+      <div style="margin-bottom:0.35rem"><strong>${classes.length} class${classes.length!==1?'es':''}, ${total} student${total!==1?'s':''}${commentCount ? `, ${commentCount} with comments` : ''}:</strong></div>`;
     classes.forEach(cls => {
       detailHtml += `<div style="font-size:0.82rem;color:#475569;padding:0.1rem 0 0.1rem 0.75rem">${esc(cls.name)} <span style="color:#94a3b8">(${cls.students.length})</span></div>`;
     });
@@ -1917,6 +1944,12 @@ function handleRosterUpload(input) {
         <span>${esc(t)}${t===state.term?' <span style="font-size:0.75rem;color:#94a3b8">(current)</span>':''}</span>
       </label>`;
     }).join('');
+    // Reset import mode to replace
+    const replaceRadio = document.querySelector('input[name="rosterImportMode"][value="replace"]');
+    if (replaceRadio) { replaceRadio.checked = true; updateApplyRosterBtn(); }
+    // Hide comments-only mode if CSV has no comments
+    document.querySelector('input[name="rosterImportMode"][value="comments"]').closest('label').style.display =
+      commentCount ? '' : 'none';
     document.getElementById('rosterUploadPreview').style.display = '';
   };
   reader.readAsText(file);
@@ -1927,23 +1960,61 @@ function applyRoster() {
   const checkboxes = document.getElementById('rosterTermCheckboxes').querySelectorAll('input[type=checkbox]:checked');
   const targetTerms = Array.from(checkboxes).map(cb => cb.value);
   if (!targetTerms.length) { alert('Select at least one term to apply the roster to.'); return; }
-  targetTerms.forEach(term => {
-    Object.keys(state.students).forEach(k => { if (k.startsWith(term + '|')) delete state.students[k]; });
-    Object.keys(state.reflections).forEach(k => { if (k.startsWith(term + '|')) delete state.reflections[k]; });
-    state.rosters[term] = { teacherName: pendingRoster.teacherName, classes: pendingRoster.classes };
-  });
-  // Reload current term if it was among the targets
-  if (targetTerms.includes(state.term)) {
-    CLASSES = pendingRoster.classes;
-    teacherName = pendingRoster.teacherName;
-    openClassIdx = 0; activeCI = null; activeSI = null;
-    state.openClassIdx = 0; state.activeCI = null; state.activeSI = null;
-    document.getElementById('teacherNameDisplay').textContent = teacherName;
-    document.getElementById('navLabel').textContent = 'No student selected';
-    document.getElementById('emptyState').style.display = '';
-    document.getElementById('editingArea').style.display = 'none';
-    closePanel();
-    renderRoster();
+  const mode = document.querySelector('input[name="rosterImportMode"]:checked')?.value || 'replace';
+
+  if (mode === 'comments') {
+    // Comments-only: match students by course+name and set narrative, no data clearing
+    targetTerms.forEach(term => {
+      const roster = state.rosters[term];
+      if (!roster) return;
+      roster.classes.forEach((cls, ci) => {
+        cls.students.forEach((student, si) => {
+          const comment = pendingRoster.commentMap.get(cls.name + '|' + student);
+          if (comment) {
+            const k = `${term}|${ci}_${si}`;
+            if (!state.students[k]) state.students[k] = { skills: {}, narrative: '' };
+            state.students[k].narrative = comment;
+          }
+        });
+      });
+    });
+    // Refresh editing area if current student is in a target term
+    if (targetTerms.includes(state.term) && activeCI !== null) {
+      document.getElementById('narrativeInput').value = studentData(activeCI, activeSI).narrative || '';
+    }
+  } else {
+    // Replace mode: clear student data and overwrite roster
+    targetTerms.forEach(term => {
+      Object.keys(state.students).forEach(k => { if (k.startsWith(term + '|')) delete state.students[k]; });
+      Object.keys(state.reflections).forEach(k => { if (k.startsWith(term + '|')) delete state.reflections[k]; });
+      state.rosters[term] = { teacherName: pendingRoster.teacherName, classes: pendingRoster.classes };
+      // Apply any CSV comments into freshly created student records
+      if (pendingRoster.commentMap.size) {
+        pendingRoster.classes.forEach((cls, ci) => {
+          cls.students.forEach((student, si) => {
+            const comment = pendingRoster.commentMap.get(cls.name + '|' + student);
+            if (comment) {
+              const k = `${term}|${ci}_${si}`;
+              if (!state.students[k]) state.students[k] = { skills: {}, narrative: '' };
+              state.students[k].narrative = comment;
+            }
+          });
+        });
+      }
+    });
+    // Reload current term if it was among the targets
+    if (targetTerms.includes(state.term)) {
+      CLASSES = pendingRoster.classes;
+      teacherName = pendingRoster.teacherName;
+      openClassIdx = 0; activeCI = null; activeSI = null;
+      state.openClassIdx = 0; state.activeCI = null; state.activeSI = null;
+      document.getElementById('teacherNameDisplay').textContent = teacherName;
+      document.getElementById('navLabel').textContent = 'No student selected';
+      document.getElementById('emptyState').style.display = '';
+      document.getElementById('editingArea').style.display = 'none';
+      closePanel();
+      renderRoster();
+    }
   }
   pendingRoster = null;
   persist();
@@ -1951,10 +2022,12 @@ function applyRoster() {
 }
 
 function downloadRosterTemplate() {
-  const lines = ['Teacher,Course,Student'];
+  const lines = ['Teacher,Course,Student,Comment'];
   CLASSES.forEach(cls => {
-    cls.students.forEach(s => {
-      lines.push(csvEscape(teacherName) + ',' + csvEscape(cls.name) + ',' + csvEscape(s));
+    cls.students.forEach((s, si) => {
+      const ci = CLASSES.indexOf(cls);
+      const d = studentData(ci, si);
+      lines.push(csvEscape(teacherName) + ',' + csvEscape(cls.name) + ',' + csvEscape(s) + ',' + csvEscape(d.narrative || ''));
     });
   });
   const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
