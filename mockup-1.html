@@ -692,7 +692,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1500</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1600</span>
   </div>
 </nav>
 
@@ -914,8 +914,8 @@
           <div id="rosterPreviewDetails" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem 1rem;font-size:0.875rem;margin-bottom:0.75rem"></div>
           <div class="field-label" style="margin-bottom:0.35rem">Apply to terms:</div>
           <div id="rosterTermCheckboxes" style="display:flex;flex-direction:column;gap:0.3rem;font-size:0.875rem;margin-bottom:0.85rem"></div>
-          <div class="field-label" style="margin-bottom:0.35rem">Import mode:</div>
-          <div style="display:flex;flex-direction:column;gap:0.35rem;font-size:0.875rem;margin-bottom:0.85rem">
+          <div id="rosterImportModeLabel" class="field-label" style="margin-bottom:0.35rem">Import mode:</div>
+          <div id="rosterImportModeSection" style="display:flex;flex-direction:column;gap:0.35rem;font-size:0.875rem;margin-bottom:0.85rem">
             <label style="display:flex;align-items:flex-start;gap:0.45rem;cursor:pointer">
               <input type="radio" name="rosterImportMode" value="replace" checked style="margin-top:2px;width:14px;height:14px" onchange="updateApplyRosterBtn()">
               <span><strong>Replace roster &amp; clear student data</strong><br><span style="color:#64748b;font-size:0.8rem">Removes all existing comments for the selected terms.</span></span>
@@ -1947,9 +1947,10 @@ function handleRosterUpload(input) {
     // Reset import mode to replace
     const replaceRadio = document.querySelector('input[name="rosterImportMode"][value="replace"]');
     if (replaceRadio) { replaceRadio.checked = true; updateApplyRosterBtn(); }
-    // Hide comments-only mode if CSV has no comments
-    document.querySelector('input[name="rosterImportMode"][value="comments"]').closest('label').style.display =
-      commentCount ? '' : 'none';
+    // Show import mode section only when CSV has comments to offer a real choice
+    const modeVisible = commentCount ? '' : 'none';
+    document.getElementById('rosterImportModeLabel').style.display = modeVisible;
+    document.getElementById('rosterImportModeSection').style.display = modeVisible;
     document.getElementById('rosterUploadPreview').style.display = '';
   };
   reader.readAsText(file);
