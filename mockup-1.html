@@ -709,7 +709,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.18Mar26-2007</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.18Mar26-2014</span>
   </div>
 </nav>
 
@@ -1425,23 +1425,28 @@ function buildPanelBody(body, ci, si, skill, type) {
     body.appendChild(hr);
     appendSection(body, 'Growth Areas', s.growth, sh.growth, selected, ci, si, skill);
   } else {
+    // Wrap in a form so browsers offer autocomplete suggestions
+    const quickForm = document.createElement('form');
+    quickForm.autocomplete = 'on';
+    quickForm.onsubmit = e => { e.preventDefault(); addQuickComment(ci, si, skill); };
     const quickRow = document.createElement('div');
     quickRow.style.cssText = 'display:flex;gap:0.4rem;padding:0.6rem 0.75rem;border-bottom:1px solid #f1f5f9';
     const quickInput = document.createElement('input');
     quickInput.type = 'text';
     quickInput.id = 'quickCustomInput';
-    quickInput.name = 'student-comment';
+    // Distinct name per skill area so each has its own autocomplete history
+    quickInput.name = 'comment-' + skill.toLowerCase().replace(/\s+/g, '-');
     quickInput.autocomplete = 'on';
     quickInput.placeholder = 'Add comment for this student…';
     quickInput.style.cssText = 'flex:1;font-size:0.8rem;padding:0.25rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;outline:none;min-width:0';
-    quickInput.onkeydown = e => { if (e.key === 'Enter') addQuickComment(ci, si, skill); };
     const quickBtn = document.createElement('button');
+    quickBtn.type = 'submit';
     quickBtn.className = 'btn btn-primary btn-sm';
     quickBtn.textContent = 'Add';
-    quickBtn.onclick = e => { e.stopPropagation(); addQuickComment(ci, si, skill); };
     quickRow.appendChild(quickInput);
     quickRow.appendChild(quickBtn);
-    body.appendChild(quickRow);
+    quickForm.appendChild(quickRow);
+    body.appendChild(quickForm);
 
     // One-time comments: selected for this student but not in any bank
     const bankComments = state.custom[skill] || [];
