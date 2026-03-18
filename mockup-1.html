@@ -602,17 +602,31 @@
 
     /* ── PRINT STYLES ── */
     @media print {
-      /* Single-card print (preview modal) */
-      body:not(.print-all) * { visibility: hidden; }
-      body:not(.print-all) #previewContent,
-      body:not(.print-all) #previewContent * { visibility: visible; }
+      /* Single-card print (preview modal)
+         Strategy: hide everything, then expose the modal as a plain
+         static block with no height/overflow constraints so the
+         content can paginate normally. */
+      body:not(.print-all) > * { display: none !important; }
+      body:not(.print-all) #previewModal {
+        display: block !important;
+        position: static !important;
+        background: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+      body:not(.print-all) #previewModal > .modal {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      body:not(.print-all) #previewModal .modal-header,
+      body:not(.print-all) #previewModal .modal-footer { display: none !important; }
       body:not(.print-all) #previewContent {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        max-height: none;
-        overflow: visible;
+        max-height: none !important;
+        overflow: visible !important;
         padding: 1.5rem 2rem;
         font-size: 0.9rem;
         line-height: 1.7;
@@ -625,6 +639,7 @@
         border-radius: 0;
       }
 
+      /* Bulk print (print-all class on body) */
       .print-card:last-child { break-after: auto; }
       .print-card .preview-narrative {
         background: none;
@@ -694,7 +709,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1900</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.18Mar26-1957</span>
   </div>
 </nav>
 
