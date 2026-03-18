@@ -607,8 +607,10 @@
       body:not(.print-all) #previewContent,
       body:not(.print-all) #previewContent * { visibility: visible; }
       body:not(.print-all) #previewContent {
-        position: fixed;
-        inset: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
         max-height: none;
         overflow: visible;
         padding: 1.5rem 2rem;
@@ -692,7 +694,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1800</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.17Mar26-1900</span>
   </div>
 </nav>
 
@@ -2321,7 +2323,17 @@ function generateStudentPDF(ci, si) {
     SKILLS.forEach(skill => {
       const comments = d.skills[skill] || [];
       if (!comments.length) return;
-      newPageIfNeeded(14);
+      // Pre-calculate total block height so heading never orphans from its comments
+      let blockH = 5.5; // heading line
+      const commentLines = comments.map(c => doc.splitTextToSize('• ' + c, TW - 4));
+      commentLines.forEach(lines => { blockH += lines.length * 4.8 + 1; });
+      blockH += 3; // trailing gap
+      const pageH = PH - MT - MB;
+      if (y + blockH > PH - MB) {
+        // Whole block fits on a fresh page — advance now so heading leads the page
+        // If block is taller than a full page, still advance to put heading at top
+        doc.addPage(); y = MT;
+      }
       doc.setFontSize(9.5);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(30, 41, 59);
@@ -2330,9 +2342,9 @@ function generateStudentPDF(ci, si) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(51, 65, 85);
-      comments.forEach(c => {
-        const lines = doc.splitTextToSize('• ' + c, TW - 4);
-        newPageIfNeeded(lines.length * 4.8 + 1);
+      commentLines.forEach(lines => {
+        // Only break mid-block when the block itself exceeds a full page
+        if (blockH > pageH) newPageIfNeeded(lines.length * 4.8 + 1);
         doc.text(lines, ML + 3, y);
         y += lines.length * 4.8 + 1;
       });
@@ -2343,7 +2355,13 @@ function generateStudentPDF(ci, si) {
   // Narrative Comment
   const narrative = (d.narrative || '').trim();
   if (narrative) {
-    newPageIfNeeded(18);
+    // Calculate full height before drawing so heading + box are never split
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal');
+    const nLines = doc.splitTextToSize(narrative, TW - 6);
+    const boxH = nLines.length * 5.2 + 8;
+    const totalH = 5 + boxH + 4; // label(5) + box + breathing room
+    newPageIfNeeded(totalH);
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(148, 163, 184);
@@ -2351,9 +2369,6 @@ function generateStudentPDF(ci, si) {
     doc.setTextColor(0, 0, 0); y += 5;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
-    const nLines = doc.splitTextToSize(narrative, TW - 6);
-    const boxH = nLines.length * 5.2 + 8;
-    newPageIfNeeded(boxH + 2);
     doc.setFillColor(248, 250, 252);
     doc.setDrawColor(226, 232, 240);
     doc.setLineWidth(0.3);
