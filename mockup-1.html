@@ -709,7 +709,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.18Mar26-1957</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.18Mar26-2007</span>
   </div>
 </nav>
 
@@ -1430,6 +1430,8 @@ function buildPanelBody(body, ci, si, skill, type) {
     const quickInput = document.createElement('input');
     quickInput.type = 'text';
     quickInput.id = 'quickCustomInput';
+    quickInput.name = 'student-comment';
+    quickInput.autocomplete = 'on';
     quickInput.placeholder = 'Add comment for this student…';
     quickInput.style.cssText = 'flex:1;font-size:0.8rem;padding:0.25rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;outline:none;min-width:0';
     quickInput.onkeydown = e => { if (e.key === 'Enter') addQuickComment(ci, si, skill); };
