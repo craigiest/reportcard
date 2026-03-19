@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mockup 1 — Report Card Generator</title>
+  <title>Mockup 2 — Report Card Generator</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -594,7 +594,7 @@
     .skill-col-headers {
       display: flex;
       gap: 0.75rem;
-      padding: 0.3rem 0 0.4rem;
+      padding: 0.3rem 0 0.4rem 0.5rem;
       border-bottom: 1px solid #e2e8f0;
       margin-bottom: 0.4rem;
     }
@@ -776,7 +776,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.19Mar26-0136</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.19Mar26-0224</span>
   </div>
 </nav>
 
@@ -1405,7 +1405,7 @@ function renderSkills(ci, si) {
     const headers = document.createElement('div');
     headers.className = 'skill-col-headers';
     headers.innerHTML = `
-      <div class="skill-col-header strength">You have demonstrated strengths in…</div>
+      <div class="skill-col-header strength">You have demonstrated strength in…</div>
       <div class="skill-col-header growth">Please work to grow and improve in…</div>`;
     container.appendChild(headers);
   }
@@ -1467,7 +1467,7 @@ function renderSkillColHeaders(ci, si) {
     const headers = document.createElement('div');
     headers.className = 'skill-col-headers';
     headers.innerHTML = `
-      <div class="skill-col-header strength">You have demonstrated strengths in…</div>
+      <div class="skill-col-header strength">You have demonstrated strength in…</div>
       <div class="skill-col-header growth">Please work to grow and improve in…</div>`;
     container.insertBefore(headers, container.firstChild);
   } else if (!hasAny && existing) {
@@ -1511,8 +1511,8 @@ function buildPanelBody(body, ci, si, skill) {
       gBox.title = 'Growth';
       gBox.textContent = inGrowth ? 'G' : '';
 
-      sBox.onclick = () => toggleSkillEntry(ci, si, skill, label, 'strengths');
-      gBox.onclick = () => toggleSkillEntry(ci, si, skill, label, 'growth');
+      sBox.onclick = (e) => { e.stopPropagation(); toggleSkillEntry(ci, si, skill, label, 'strengths'); };
+      gBox.onclick = (e) => { e.stopPropagation(); toggleSkillEntry(ci, si, skill, label, 'growth'); };
 
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
@@ -2304,7 +2304,7 @@ function openPreview() {
     <div class="preview-reflection">${state.reflections[`${term}|${name}`] ? esc(state.reflections[`${term}|${name}`]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
     ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>
       <div class="skill-col-headers">
-        <div class="skill-col-header strength">You have demonstrated strengths in…</div>
+        <div class="skill-col-header strength">You have demonstrated strength in…</div>
         <div class="skill-col-header growth">Please work to grow and improve in…</div>
       </div>
       ${skillsHtml}` : ''}
@@ -2353,7 +2353,7 @@ function buildReportCardHTML(ci, si) {
     <div class="preview-reflection">${reflection ? esc(reflection) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
     ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>
       <div class="skill-col-headers">
-        <div class="skill-col-header strength">You have demonstrated strengths in…</div>
+        <div class="skill-col-header strength">You have demonstrated strength in…</div>
         <div class="skill-col-header growth">Please work to grow and improve in…</div>
       </div>
       ${skillsHtml}` : ''}
@@ -2433,7 +2433,7 @@ function generateStudentPDF(ci, si) {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(29, 78, 216);
-    doc.text('You have demonstrated strengths in\u2026', ML, y);
+    doc.text('You have demonstrated strength in\u2026', ML, y);
     doc.setTextColor(21, 128, 61);
     doc.text('Please work to grow and improve in\u2026', col2X, y);
     doc.setTextColor(0, 0, 0); y += 5;
