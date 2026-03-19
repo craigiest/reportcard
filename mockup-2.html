@@ -313,7 +313,7 @@
       position: fixed;
       top: 48px;
       right: 0;
-      width: 310px;
+      width: 419px;
       height: calc(100vh - 48px);
       background: #fff;
       border-left: 1px solid #e2e8f0;
@@ -777,7 +777,7 @@
     <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
     <span style="color:#e2e8f0">|</span>
     <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
-    <span style="font-size:0.72rem;color:#94a3b8">v.19Mar26-0233</span>
+    <span style="font-size:0.72rem;color:#94a3b8">v.19Mar26-0240</span>
   </div>
 </nav>
 
@@ -1517,6 +1517,22 @@ function buildPanelBody(body, ci, si, skill) {
 
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
+      labelEl.style.cursor = 'pointer';
+      labelEl.onclick = (e) => {
+        e.stopPropagation();
+        const d2 = studentData(ci, si);
+        const ent = skillEntries(d2, skill);
+        const inS = ent.strengths.includes(label);
+        const inG = ent.growth.includes(label);
+        // Cycle: neither → strength → growth → neither
+        if (!inS && !inG) {
+          toggleSkillEntry(ci, si, skill, label, 'strengths');
+        } else if (inS) {
+          toggleSkillEntry(ci, si, skill, label, 'growth');
+        } else {
+          toggleSkillEntry(ci, si, skill, label, 'growth');
+        }
+      };
 
       pair.appendChild(sBox);
       pair.appendChild(gBox);
@@ -2144,10 +2160,13 @@ function updateFinalizeUI() {
   check.disabled = !canFinalize;
   const hint = document.getElementById('finalizeHint');
   if (!canFinalize) {
-    const skillsDone = SKILLS.filter(s => (d.skills[s] || []).length > 0).length;
+    const skillsDone = SKILLS.filter(s => {
+      const e = d.skills[s];
+      return e && !Array.isArray(e) && (e.strengths.length > 0 || e.growth.length > 0);
+    }).length;
     const narrativeLen = (d.narrative || '').trim().length;
     const parts = [];
-    if (skillsDone < 3) parts.push(`comments in ${3 - skillsDone} more skill area${3 - skillsDone !== 1 ? 's' : ''} needed`);
+    if (skillsDone < 3) parts.push(`selections in ${3 - skillsDone} more skill area${3 - skillsDone !== 1 ? 's' : ''} needed`);
     if (narrativeLen < 20) parts.push(`overall comment needs ${20 - narrativeLen} more character${20 - narrativeLen !== 1 ? 's' : ''}`);
     hint.textContent = parts.length ? parts.join('; ') : '';
   } else {
