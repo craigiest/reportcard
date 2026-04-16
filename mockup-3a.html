@@ -962,28 +962,6 @@
 
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:0">
 
-      <!-- COMMENT BANK -->
-      <div style="padding:0.85rem 1.25rem">
-        <div class="field-label" style="margin-bottom:0.35rem">Standard Comment Bank</div>
-        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.6rem">Export or replace the bank of standard strength and growth comments. Existing report card selections will not be affected by any changes to the bank.</div>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-          <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="exportCommentBankCSV()">↓ Export Comment Bank CSV</button>
-          <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="document.getElementById('commentBankFileInput').click()">↑ Import Comment Bank CSV</button>
-          <button id="resetCommentBankBtn" class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#94a3b8;display:none" onclick="resetCommentBank()">↺ Restore Defaults</button>
-        </div>
-        <input type="file" id="commentBankFileInput" accept=".csv,text/csv" style="display:none" onchange="handleCommentBankImport(this)">
-        <div id="commentBankImportConfirm" style="display:none;margin-top:0.75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem 1rem;font-size:0.83rem;color:#374151">
-          Ready to import: <strong id="commentBankImportDetails"></strong>.
-          This will replace the standard comment bank. Existing report card selections will not change.
-          <div style="display:flex;gap:0.5rem;margin-top:0.55rem">
-            <button class="btn btn-primary btn-sm" onclick="applyCommentBankImport()">Replace Comment Bank</button>
-            <button class="btn btn-ghost btn-sm" onclick="cancelCommentBankImport()">Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0">
-
       <!-- UPLOAD -->
       <div style="padding:0.85rem 1.25rem 1.1rem">
         <div class="field-label" style="margin-bottom:0.35rem">Upload Roster</div>
@@ -1008,6 +986,28 @@
           <div style="display:flex;justify-content:flex-end;gap:0.6rem">
             <button class="btn btn-ghost" onclick="resetUploadSection()">Cancel</button>
             <button id="applyRosterBtn" class="btn btn-danger" onclick="applyRoster()">Apply Roster &amp; Clear Data</button>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0">
+
+      <!-- COMMENT BANK -->
+      <div style="padding:0.85rem 1.25rem 1.1rem">
+        <div class="field-label" style="margin-bottom:0.35rem">Standard Comment Bank</div>
+        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.6rem">Export or replace the bank of standard strength and growth comments. Existing report card selections will not be affected by any changes to the bank.</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="exportCommentBankCSV()">↓ Export Comment Bank CSV</button>
+          <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="document.getElementById('commentBankFileInput').click()">↑ Import Comment Bank CSV</button>
+          <button id="resetCommentBankBtn" class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#94a3b8;display:none" onclick="resetCommentBank()">↺ Restore Defaults</button>
+        </div>
+        <input type="file" id="commentBankFileInput" accept=".csv,text/csv" style="display:none" onchange="handleCommentBankImport(this)">
+        <div id="commentBankImportConfirm" style="display:none;margin-top:0.75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem 1rem;font-size:0.83rem;color:#374151">
+          Ready to import: <strong id="commentBankImportDetails"></strong>.
+          This will replace the standard comment bank. Existing report card selections will not change.
+          <div style="display:flex;gap:0.5rem;margin-top:0.55rem">
+            <button class="btn btn-primary btn-sm" onclick="applyCommentBankImport()">Replace Comment Bank</button>
+            <button class="btn btn-ghost btn-sm" onclick="cancelCommentBankImport()">Cancel</button>
           </div>
         </div>
       </div>
