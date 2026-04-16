@@ -1202,10 +1202,6 @@ const SKILLS_DATA = {
 
 const SKILLS = Object.keys(SKILLS_DATA);
 
-// Active comment bank — replaced when a custom bank is imported
-let activeSkillsData = SKILLS_DATA;
-let activeSentences = SKILL_SENTENCES;
-
 const SKILL_SENTENCES = {
   "Curiosity-fueled motivation": {
     strength: "You're motivated by curiosity, asking \"why?\" and digging for understanding, rather than just checking steps off for completion.",
@@ -1492,6 +1488,10 @@ const SKILL_SENTENCES = {
     growth: "When drawing a conclusion, make your reasoning explicit: show the steps that connect your evidence to your claim."
   },
 };
+
+// Active comment bank — replaced when a custom bank is imported
+let activeSkillsData = SKILLS_DATA;
+let activeSentences  = SKILL_SENTENCES;
 
 function getSentence(label, subcat, type) {
   const entry = activeSentences[subcat + '::' + label] || activeSentences[label];
