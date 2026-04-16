@@ -990,6 +990,28 @@
         </div>
       </div>
 
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0">
+
+      <!-- COMMENT BANK -->
+      <div style="padding:0.85rem 1.25rem 1.1rem">
+        <div class="field-label" style="margin-bottom:0.35rem">Standard Comment Bank</div>
+        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.6rem">Export or replace the bank of standard strength and growth comments. Existing report card selections will not be affected by any changes to the bank.</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="exportCommentBankCSV()">↓ Export Comment Bank CSV</button>
+          <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="document.getElementById('commentBankFileInput').click()">↑ Import Comment Bank CSV</button>
+          <button id="resetCommentBankBtn" class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#94a3b8;display:none" onclick="resetCommentBank()">↺ Restore Defaults</button>
+        </div>
+        <input type="file" id="commentBankFileInput" accept=".csv,text/csv" style="display:none" onchange="handleCommentBankImport(this)">
+        <div id="commentBankImportConfirm" style="display:none;margin-top:0.75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem 1rem;font-size:0.83rem;color:#374151">
+          Ready to import: <strong id="commentBankImportDetails"></strong>.
+          This will replace the standard comment bank. Existing report card selections will not change.
+          <div style="display:flex;gap:0.5rem;margin-top:0.55rem">
+            <button class="btn btn-primary btn-sm" onclick="applyCommentBankImport()">Replace Comment Bank</button>
+            <button class="btn btn-ghost btn-sm" onclick="cancelCommentBankImport()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1467,8 +1489,12 @@ const SKILL_SENTENCES = {
   },
 };
 
+// Active comment bank — replaced when a custom bank is imported
+let activeSkillsData = SKILLS_DATA;
+let activeSentences  = SKILL_SENTENCES;
+
 function getSentence(label, subcat, type) {
-  const entry = SKILL_SENTENCES[subcat + '::' + label] || SKILL_SENTENCES[label];
+  const entry = activeSentences[subcat + '::' + label] || activeSentences[label];
   if (!entry) return label;
   return type === 'strength' ? (entry.strength || label) : (entry.growth || entry.strength || label);
 }
@@ -1491,6 +1517,11 @@ if (state.roster && !state.rosters) {
 if (!state.rosters) state.rosters = {};
 if (!state.terms) state.terms = ['25-26 S1 Midterm','25-26 S1 Final','25-26 I1 Final','25-26 S2 Midterm','25-26 S2 Final','25-26 I2 Final'];
 if (!state.terms.includes(state.term)) state.term = state.terms[0];
+// Initialize comment bank from saved state (if one was imported)
+if (state.commentBank) {
+  activeSkillsData = state.commentBank.skillsData;
+  activeSentences  = state.commentBank.sentences;
+}
 // Initialize roster for current term
 (function() {
   const r = state.rosters[state.term];
@@ -1546,7 +1577,7 @@ function skillCustom(d, skill) {
 
 function studentStatus(ci, si) {
   const d = studentData(ci, si);
-  const skillsDone = SKILLS.filter(s => {
+  const skillsDone = Object.keys(activeSkillsData).filter(s => {
     return skillSelections(d, s).length > 0 || skillCustom(d, s).length > 0;
   }).length;
   const narrativeLen = (d.narrative || '').trim().length;
@@ -1662,7 +1693,7 @@ function renderSkills(ci, si) {
   container.innerHTML = '';
   const d = studentData(ci, si);
 
-  SKILLS.forEach(skill => {
+  Object.keys(activeSkillsData).forEach(skill => {
     const sid = skillId(skill);
     const div = document.createElement('div');
     div.className = 'skill-item';
@@ -1685,7 +1716,7 @@ function skillCommentsHtml(d, skill) {
   const sel = skillSelections(d, skill);
   const custom = skillCustom(d, skill);
   const all = [
-    ...sel.map(({label, subcat, type}) => esc(getSentence(label, subcat, type))),
+    ...sel.map(({label, subcat, type, text}) => esc(text || getSentence(label, subcat, type))),
     ...custom.map(c => esc(c))
   ];
   return all.map(s => `<div class="skill-comment-pill">${s}</div>`).join('');
@@ -1706,7 +1737,7 @@ function skillId(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, '-'); }
 function buildPanelBody(body, ci, si, skill) {
   const d = studentData(ci, si);
   const sel = skillSelections(d, skill);
-  const subcats = SKILLS_DATA[skill] || {};
+  const subcats = activeSkillsData[skill] || {};
 
   // S/G CHECKBOXES
   Object.entries(subcats).forEach(([subcat, skillLabels]) => {
@@ -1719,7 +1750,7 @@ function buildPanelBody(body, ci, si, skill) {
       const entry = sel.find(s => s.label === label && s.subcat === subcat);
       const inS = entry?.type === 'strength';
       const inG = entry?.type === 'growth';
-      const sEntry = SKILL_SENTENCES[subcat + '::' + label] || SKILL_SENTENCES[label];
+      const sEntry = activeSentences[subcat + '::' + label] || activeSentences[label];
       const sTip = sEntry?.strength || label;
       const gTip = sEntry?.growth || sEntry?.strength || label;
 
@@ -1860,9 +1891,9 @@ function toggleSkillEntry(ci, si, skill, label, subcat, type) {
   const idx = sel.findIndex(s => s.label === label && s.subcat === subcat);
   if (idx >= 0) {
     if (sel[idx].type === type) sel.splice(idx, 1);   // same → remove
-    else sel[idx].type = type;                          // different → switch
+    else { sel[idx].type = type; sel[idx].text = getSentence(label, subcat, type); } // different → switch
   } else {
-    sel.push({label, subcat, type});
+    sel.push({label, subcat, type, text: getSentence(label, subcat, type)});
   }
   persist();
   const body = document.getElementById('panelBody');
@@ -2163,6 +2194,140 @@ function cancelImport() {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// COMMENT BANK CSV EXPORT / IMPORT
+// ─────────────────────────────────────────────────────────────────
+let pendingCommentBank = null;
+
+function parseCommentBankCSV(text) {
+  const skillsData = {};
+  const sentences  = {};
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  let headerSkipped = false;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const fields = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuote) {
+        if (ch === '"' && line[i+1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQuote = true;
+        else if (ch === ',') { fields.push(cur); cur = ''; }
+        else cur += ch;
+      }
+    }
+    fields.push(cur);
+    if (fields.length < 3) continue;
+    const skill    = fields[0].trim();
+    const subcat   = fields[1].trim();
+    const label    = fields[2].trim();
+    const strength = (fields[3] || '').trim();
+    const growth   = (fields[4] || '').trim();
+    if (!headerSkipped && skill.toLowerCase() === 'transferable skill') {
+      headerSkipped = true; continue;
+    }
+    if (!skill || !subcat || !label) continue;
+    if (!skillsData[skill]) skillsData[skill] = {};
+    if (!skillsData[skill][subcat]) skillsData[skill][subcat] = [];
+    if (!skillsData[skill][subcat].includes(label)) skillsData[skill][subcat].push(label);
+    sentences[subcat + '::' + label] = { strength, growth };
+  }
+  return { skillsData, sentences };
+}
+
+function exportCommentBankCSV() {
+  const lines = ['Transferable Skill,Skill Area,Subskill,Strength,Growth'];
+  for (const [skill, subareas] of Object.entries(activeSkillsData)) {
+    for (const [subcat, labels] of Object.entries(subareas)) {
+      for (const label of labels) {
+        const entry = activeSentences[subcat + '::' + label] || activeSentences[label];
+        lines.push([skill, subcat, label, entry?.strength || '', entry?.growth || ''].map(csvEscape).join(','));
+      }
+    }
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'comment_bank.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function handleCommentBankImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const { skillsData, sentences } = parseCommentBankCSV(e.target.result);
+    const skillCount = Object.keys(skillsData).length;
+    let subskillCount = 0;
+    Object.values(skillsData).forEach(areas => Object.values(areas).forEach(labels => subskillCount += labels.length));
+    if (!skillCount) { alert('No valid rows found. The CSV must have Transferable Skill, Skill Area, and Subskill columns.'); return; }
+    pendingCommentBank = { skillsData, sentences };
+    document.getElementById('commentBankImportDetails').textContent =
+      `${skillCount} transferable skill${skillCount !== 1 ? 's' : ''}, ${subskillCount} subskill${subskillCount !== 1 ? 's' : ''}`;
+    document.getElementById('commentBankImportConfirm').style.display = '';
+  };
+  reader.readAsText(file);
+}
+
+function applyCommentBankImport() {
+  if (!pendingCommentBank) return;
+  // Snapshot resolved text for all existing selections so report cards are unaffected
+  Object.values(state.students).forEach(d => {
+    Object.keys(d.skills || {}).forEach(skill => {
+      (d.skills[skill]?.selections || []).forEach(entry => {
+        if (!entry.text) entry.text = getSentence(entry.label, entry.subcat, entry.type);
+      });
+    });
+  });
+  state.commentBank = pendingCommentBank;
+  activeSkillsData  = pendingCommentBank.skillsData;
+  activeSentences   = pendingCommentBank.sentences;
+  persist();
+  cancelCommentBankImport();
+  document.getElementById('resetCommentBankBtn').style.display = '';
+  if (activeCI !== null) renderSkills(activeCI, activeSI);
+  if (popupCtx) {
+    const body = document.getElementById('panelBody');
+    body.innerHTML = '';
+    buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill);
+  }
+}
+
+function cancelCommentBankImport() {
+  pendingCommentBank = null;
+  document.getElementById('commentBankImportConfirm').style.display = 'none';
+}
+
+function resetCommentBank() {
+  if (!confirm('Reset to the built-in comment bank? Existing report card selections will not change.')) return;
+  // Snapshot before switching banks
+  Object.values(state.students).forEach(d => {
+    Object.keys(d.skills || {}).forEach(skill => {
+      (d.skills[skill]?.selections || []).forEach(entry => {
+        if (!entry.text) entry.text = getSentence(entry.label, entry.subcat, entry.type);
+      });
+    });
+  });
+  delete state.commentBank;
+  activeSkillsData = SKILLS_DATA;
+  activeSentences  = SKILL_SENTENCES;
+  persist();
+  document.getElementById('resetCommentBankBtn').style.display = 'none';
+  if (activeCI !== null) renderSkills(activeCI, activeSI);
+  if (popupCtx) {
+    const body = document.getElementById('panelBody');
+    body.innerHTML = '';
+    buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // ROSTER CSV UPLOAD
 // ─────────────────────────────────────────────────────────────────
 let pendingRoster = null;
@@ -2205,12 +2370,15 @@ function parseRosterCSV(text) {
 function openRosterModal() {
   renderTermsInModal();
   resetUploadSection();
+  cancelCommentBankImport();
+  document.getElementById('resetCommentBankBtn').style.display = state.commentBank ? '' : 'none';
   document.getElementById('rosterModal').classList.add('open');
 }
 
 function closeRosterModal() {
   document.getElementById('rosterModal').classList.remove('open');
   pendingRoster = null;
+  cancelCommentBankImport();
 }
 
 function renderTermsInModal() {
@@ -2429,7 +2597,7 @@ function updateFinalizeUI() {
   check.disabled = !canFinalize;
   const hint = document.getElementById('finalizeHint');
   if (!canFinalize) {
-    const skillsDone = SKILLS.filter(s => {
+    const skillsDone = Object.keys(activeSkillsData).filter(s => {
       return skillSelections(d, s).length > 0 || skillCustom(d, s).length > 0;
     }).length;
     const narrativeLen = (d.narrative || '').trim().length;
@@ -2564,12 +2732,12 @@ function openPreview() {
   document.getElementById('previewSubtitle').textContent = name;
 
   let skillsHtml = '';
-  SKILLS.forEach(skill => {
+  Object.keys(activeSkillsData).forEach(skill => {
     const sel = skillSelections(d, skill);
     const custom = skillCustom(d, skill);
     if (!sel.length && !custom.length) return;
     const bullets = [
-      ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+      ...sel.map(({label, subcat, type, text}) => text || getSentence(label, subcat, type)),
       ...custom
     ];
     skillsHtml += `<div class="preview-skill-block">
@@ -2607,12 +2775,12 @@ function buildReportCardHTML(ci, si) {
   const course = CLASSES[ci].name;
   const term = state.term;
   let skillsHtml = '';
-  SKILLS.forEach(skill => {
+  Object.keys(activeSkillsData).forEach(skill => {
     const sel = skillSelections(d, skill);
     const custom = skillCustom(d, skill);
     if (!sel.length && !custom.length) return;
     const bullets = [
-      ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+      ...sel.map(({label, subcat, type, text}) => text || getSentence(label, subcat, type)),
       ...custom
     ];
     skillsHtml += `<div class="preview-skill-block">
@@ -2689,7 +2857,7 @@ function generateStudentPDF(ci, si) {
   }
 
   // Transferable Skills
-  const hasSkills = SKILLS.some(sk => {
+  const hasSkills = Object.keys(activeSkillsData).some(sk => {
     return skillSelections(d, sk).length > 0 || skillCustom(d, sk).length > 0;
   });
   if (hasSkills) {
@@ -2700,12 +2868,12 @@ function generateStudentPDF(ci, si) {
     doc.text('TRANSFERABLE SKILLS', ML, y);
     doc.setTextColor(0, 0, 0); y += 5;
 
-    SKILLS.forEach(skill => {
+    Object.keys(activeSkillsData).forEach(skill => {
       const sel = skillSelections(d, skill);
       const custom = skillCustom(d, skill);
       if (!sel.length && !custom.length) return;
       const sentences = [
-        ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+        ...sel.map(({label, subcat, type, text}) => text || getSentence(label, subcat, type)),
         ...custom
       ];
       const commentLines = sentences.map(s => doc.splitTextToSize('\u2022 ' + s, TW - 4));
@@ -2824,6 +2992,10 @@ function doReset() {
   if (!state.rosters) state.rosters = {};
   if (!state.terms) state.terms = ['25-26 S1 Midterm','25-26 S1 Final','25-26 I1 Final','25-26 S2 Midterm','25-26 S2 Final','25-26 I2 Final'];
   if (!state.reflections) state.reflections = {};
+  // Reset comment bank to built-in defaults
+  delete state.commentBank;
+  activeSkillsData = SKILLS_DATA;
+  activeSentences  = SKILL_SENTENCES;
   Object.entries(REFLECTIONS).forEach(([name, text]) => {
     const k = `25-26 S2 Final|${name}`;
     if (!state.reflections[k]) state.reflections[k] = text;
