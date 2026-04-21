@@ -109,37 +109,49 @@ Admin configures term structure, including:
 
 ### Comment Banks
 
-Admin can create and upload multiple standard comment bank sets. Each set is a collection of comments organized by skill. These comment banks can be applied at multiple levels via a selection tool in outline format:
+There are two types of comment banks: **Standard** (created and managed by admin) and **Custom** (created by individual teachers).
 
-- **School-wide application**: All courses use this comment bank
-- **Department application**: All courses in a department use this comment bank
-- **Subdepartment application**: A subset of courses within a department use this comment bank (e.g., "Spanish for Native Speakers" within World Languages)
-- **Individual class override**: A specific class can optionally use a different comment bank than the default for its department
+#### Standard Comment Banks
 
-**Important**: Each course uses exactly one standard comment bank. A course cannot have both department-level and course-specific comments applied simultaneously; the more specific level always overrides.
+Admin can create and upload multiple standard comment bank sets. Each set is a CSV file with five columns representing the skill hierarchy and comment types:
 
+**Standard Comment Bank CSV Format:**
 ```
-Standard Comment Banks (admin-created sets)
-├── Bank Set 1 (e.g., default school-wide)
-│   ├── Skill: Communication
-│   │   ├── Comment 1
-│   │   ├── Comment 2
-│   │   └── ...
-│   ├── Skill: Collaboration
-│   └── ...
-├── Bank Set 2 (e.g., World Languages specific)
-│   ├── Skill: Communication
-│   └── ...
-└── Bank Set 3 (e.g., Spanish for Native Speakers specific)
-    └── ...
-
-Custom Comments (per teacher, personal use)
-├── Teacher 1 Personal Comments (only visible to that teacher)
-├── Teacher 2 Personal Comments (only visible to that teacher)
-└── ...
+Transferable Skill,Skill Area,Subskill,Strength,Growth
+Self-awareness and Growth Mindset,Motivation,Curiosity-fueled motivation,"You're motivated by curiosity, asking ""why?"" and digging for understanding, rather than just checking steps off for completion.","Work on asking ""why"" more consistently rather than just completing tasks—push yourself to dig into the reasoning behind what you're learning, not just the steps."
+Self-awareness and Growth Mindset,Motivation,Awareness of personal motivations,"You understand and notice your intrinsic and external motivations.","Spend time identifying what actually drives you to engage with schoolwork. Notice when you're acting from external pressure versus genuine interest, and try to cultivate more of the latter."
+Critical Thinking,Question Asking,Asking complex or nuanced questions,"You ask questions that...","Work on asking questions that..."
 ```
 
-Teachers can export their personal custom comment banks as CSV and share with colleagues for their own customization.
+**By default, the entire school uses a single standard comment bank.** However, customization is possible at department or course level when needed:
+
+- **School-wide (default)**: All courses use the default comment bank
+- **Department customization**: A specific department can opt to use a different comment bank instead of the school-wide default (e.g., World Languages uses a different bank)
+- **Subdepartment customization**: A subset of courses within a department can use yet another bank (e.g., "Spanish for Native Speakers" uses a specialized bank while other languages use the department bank)
+- **Individual course customization**: A specific course can optionally use a different comment bank
+
+**Important**: Each course uses exactly one standard comment bank. The hierarchy works top-down: school default → department override → subdepartment override → individual course override. More specific selections override broader defaults.
+
+When teachers select comments in the interface, they see them organized by:
+1. Transferable Skill (top level)
+2. Skill Area (grouping)
+3. Subskill (the comment selector)
+
+For each subskill, they can choose from the Strength comment, Growth comment, or both.
+
+#### Custom Comments
+
+Teachers create and maintain their own personal custom comments. These are exported and can be shared with colleagues for their own customization.
+
+**Custom Comment CSV Format:**
+```
+skill_area,comment
+Curiosity-fueled motivation,"Needs to ask more why questions"
+Collaboration,"Excellent group project leadership"
+Organization of materials,"Keep physical and digital materials better organized"
+```
+
+Teachers export their personal custom comment banks as CSV and can share with colleagues, who import them into their own personal comment collections. The import process allows merging with existing comments or replacing them entirely.
 
 ### Skills & Rubric
 
@@ -452,33 +464,43 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
 - Admin can still see and export
 - Used before distributing final report cards
 
-#### 3. Comment Bank Management
+#### 3. Comment Bank Management (Standard Comment Banks)
 
 **View Comment Banks**
-- Tree view showing department/course hierarchy
-- For each level, show:
+- List all standard comment bank sets
+- For each bank, show:
   - Bank name
-  - Associated skills
-  - Number of comments
+  - Associated department/course level
+  - Number of subskills included
   - Last modified date
+  - Applied to: which departments/courses use this bank
 
-**Create Comment Bank**
-- Select level (department or course)
-- Input bank name
-- Input associated skills
-- Add comments (bulk or one-by-one)
-- Set any customization options
+**Create/Upload Comment Bank**
+- Upload CSV file with columns: Transferable Skill, Skill Area, Subskill, Strength, Growth
+- Or input comments manually through form
+- System organizes comments into the skill hierarchy automatically
 
-**Manage Comments**
-- Add new comment to existing bank
-- Edit comment text
-- Delete comment
-- Reorder comments within bank
+**Set School-wide Default Comment Bank**
+- Select the primary comment bank that all courses will use by default
+- This applies unless overridden at department or course level
 
-**Organize by Department/Course**
-- Create department-level banks (e.g., "World Languages")
-- Create course-specific banks (e.g., "Spanish", "Spanish for Native Speakers")
-- Set hierarchy so course-specific comments are available alongside department comments
+**Customize Comment Banks by Department/Course**
+- Override the school default for specific departments (e.g., "World Languages" uses a different bank)
+- Override department selection for specific subdepartments or courses (e.g., "Spanish for Native Speakers" within World Languages)
+- Override for individual courses if needed
+- Each course uses exactly one standard comment bank
+- More specific selections override broader defaults
+
+**Manage Standard Comments**
+- Edit comment text within a bank
+- Add new subskill with strength/growth comments
+- Delete subskills or comments
+- View which courses are using each bank
+
+**Note on Custom Comments**
+- Individual teachers' custom comments are not managed here
+- Teachers export/import their own custom comments for sharing with colleagues
+- Custom comments are stored per teacher and not shared by default
 
 #### 4. Student Prompts Configuration
 
@@ -508,10 +530,16 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
 
 **Import Rosters**
 - CSV import:
-  - Upload CSV file
-  - Map columns (Student ID, Name, Grade, Class, Teacher)
-  - Preview import
-  - Confirm and apply
+  - Upload CSV file with format: `teacher,course,student[,comment]`
+  - Preview import showing number of rows/classes/students
+  - Confirm and apply (with option to replace or merge)
+  - Example:
+    ```
+    teacher,course,student,comment
+    "John Smith","Biology 101","Alice Johnson","Ready for grading"
+    "John Smith","Biology 101","Bob Davis",""
+    "Jane Doe","English 10","Charlie Brown",""
+    ```
 - Blackbaud/Canvas integration (TBD: specifics for database manager)
   - Authenticate with external system
   - Select classes/students to sync
