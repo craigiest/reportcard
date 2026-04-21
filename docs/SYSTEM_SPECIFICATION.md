@@ -100,9 +100,11 @@ All users have universal roles across the school. A person can transition betwee
 
 ## Authentication
 
-All users log in using their Google account (Google OAuth 2.0). This applies to teachers, advisors, students, and admin users. There is no separate local password system.
+All users log in using their school-issued Google account (Google OAuth 2.0). This applies to teachers, advisors, students, and admin users. There is no separate local password system.
 
-On first login, user accounts are created automatically with the email address from their Google account. Roles can be assigned or changed by admin users.
+Users are authenticated via their existing school Google accounts, which should match their identities in other school systems (Blackbaud, Canvas, etc.). This allows the system to automatically match users to their roles and enrollments from imported roster data.
+
+On first login, user accounts are created automatically with the email address from their school Google account. Roles can be assigned or changed by admin users.
 
 Admin users have the ability to spoof other users by assuming their login temporarily (for purposes like adding external student comments or completing incomplete submissions).
 
