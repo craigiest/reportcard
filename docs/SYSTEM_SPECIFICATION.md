@@ -73,7 +73,6 @@ All users have universal roles across the school. A person can transition betwee
 
 ### Student
 
-- Log in with Google account
 - View enrolled classes for current term
 - Draft and submit self-reflection for each class
 - Revise reflection while in draft status
@@ -96,6 +95,16 @@ All users have universal roles across the school. A person can transition betwee
 - Lock terms for read-only access
 - Search and manage users
 - Export and trim data 5+ years old (manual process, not automatic)
+
+---
+
+## Authentication
+
+All users log in using their Google account (Google OAuth 2.0). This applies to teachers, advisors, students, and admin users. There is no separate local password system.
+
+On first login, user accounts are created automatically with the email address from their Google account. Roles can be assigned or changed by admin users.
+
+Admin users have the ability to spoof other users by assuming their login temporarily (for purposes like adding external student comments or completing incomplete submissions).
 
 ---
 
