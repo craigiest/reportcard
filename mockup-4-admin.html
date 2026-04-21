@@ -618,6 +618,53 @@
     .export-row:last-child { border-bottom: none; }
     .export-row-label { color: #374151; }
     .export-row-sub   { font-size: 0.74rem; color: #94a3b8; }
+
+    /* ── STUDENT PROMPTS ── */
+    .prompt-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+    }
+    .prompt-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0.8rem 1rem;
+    }
+    .prompt-card-meta { flex: 1; }
+    .prompt-card-title {
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: #1e293b;
+      margin-bottom: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .prompt-card-terms { font-size: 0.75rem; color: #94a3b8; }
+    .prompt-preview {
+      font-size: 0.82rem;
+      color: #475569;
+      line-height: 1.5;
+      padding: 0 1rem 0.8rem 1rem;
+      border-top: 1px solid #f8fafc;
+      padding-top: 0.6rem;
+    }
+    .prompt-chars {
+      display: flex;
+      gap: 1.25rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      padding: 0.5rem 1rem;
+      border-top: 1px solid #f1f5f9;
+      background: #f8fafc;
+    }
+    .prompt-chars strong { color: #64748b; }
+    .level-tag-universal { background: #ede9fe; color: #5b21b6; }
+    .level-tag-dept      { background: #dbeafe; color: #1e40af; }
+    .level-tag-course    { background: #dcfce7; color: #166534; }
   </style>
 </head>
 <body>
@@ -646,6 +693,9 @@
       </div>
       <div class="nav-item" data-section="banks" onclick="showSection('banks')">
         <span class="nav-icon">💬</span> Comment Banks
+      </div>
+      <div class="nav-item" data-section="prompts" onclick="showSection('prompts')">
+        <span class="nav-icon">✏️</span> Student Prompts
       </div>
       <div class="nav-item" data-section="rosters" onclick="showSection('rosters')">
         <span class="nav-icon">📋</span> Rosters &amp; Import
@@ -1400,6 +1450,114 @@
         </div>
       </div>
     </div>
+    <div class="section" id="section-prompts">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Student Prompts</div>
+          <div class="section-subtitle">Configure the reflection prompts shown to students by term, department, or course</div>
+        </div>
+        <button class="btn btn-primary" onclick="openPromptModal()">+ New Prompt</button>
+      </div>
+
+      <div class="filter-bar">
+        <select class="filter-select" id="prompt-term-filter" onchange="renderPrompts()">
+          <option value="">All Terms</option>
+          <option>25–26 S2</option>
+          <option>25–26 S1</option>
+        </select>
+        <select class="filter-select" id="prompt-level-filter" onchange="renderPrompts()">
+          <option value="">All Levels</option>
+          <option>Universal</option>
+          <option>Department</option>
+          <option>Course</option>
+        </select>
+      </div>
+
+      <div id="prompts-list"></div>
+
+    </div><!-- /section-prompts -->
+
+    <!-- New / Edit Prompt Modal -->
+    <div class="modal-overlay" id="promptModal">
+      <div class="modal" style="width:540px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="promptModalTitle">New Prompt</div>
+            <div class="modal-subtitle">Students see this prompt when writing their reflection</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('promptModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+
+          <div>
+            <label class="form-label">Level</label>
+            <div style="display:flex;gap:1.5rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+                <input type="radio" name="promptLevel" value="universal" checked onchange="updatePromptFields()"> Universal
+              </label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+                <input type="radio" name="promptLevel" value="dept" onchange="updatePromptFields()"> Department
+              </label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+                <input type="radio" name="promptLevel" value="course" onchange="updatePromptFields()"> Course
+              </label>
+            </div>
+          </div>
+
+          <div id="promptDeptRow" style="display:none">
+            <label class="form-label">Department</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>English</option><option>Math</option><option>Science</option>
+              <option>History &amp; Social Studies</option><option>World Languages</option>
+            </select>
+          </div>
+
+          <div id="promptCourseRow" style="display:none">
+            <label class="form-label">Course</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>Biology 101</option><option>English 10</option><option>Algebra II</option>
+              <option>World History</option><option>Spanish III</option><option>AP Literature</option><option>Chemistry</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label">Terms</label>
+            <div style="display:flex;gap:1.25rem;flex-wrap:wrap;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> 25–26 S2</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> 25–26 S1</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> All future terms</label>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Prompt Text</label>
+            <textarea class="form-input" rows="4" style="resize:vertical" placeholder="e.g. Reflect on your growth in this class. What are you most proud of, and what would you do differently?"></textarea>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div>
+              <label class="form-label">Min Characters</label>
+              <input class="form-input" type="number" min="0" value="150" placeholder="0 = no minimum">
+              <div class="form-hint">0 = no minimum enforced</div>
+            </div>
+            <div>
+              <label class="form-label">Max Characters</label>
+              <input class="form-input" type="number" min="0" value="700" placeholder="0 = no limit">
+              <div class="form-hint">0 = no limit enforced</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('promptModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('promptModal')">Save Prompt</button>
+        </div>
+      </div>
+    </div>
+
     <div class="section" id="section-rosters">
 
       <div class="section-header">
@@ -2200,6 +2358,100 @@
     document.getElementById(prefix + panel).classList.add('active');
     event.target.classList.add('active');
   }
+
+  // ── STUDENT PROMPTS ──
+  const PROMPTS = [
+    {
+      level: 'Universal', appliedTo: 'All classes', terms: ['25–26 S2','25–26 S1'],
+      text: 'Reflect on your learning in this class over the term. What are you most proud of, and what is one thing you would approach differently?',
+      minChars: 150, maxChars: 700,
+    },
+    {
+      level: 'Department', appliedTo: 'World Languages', terms: ['25–26 S2'],
+      text: 'Reflect on your growth as a language learner this term. In what moments did you feel most confident using the language, and where do you still feel challenged?',
+      minChars: 150, maxChars: 600,
+    },
+    {
+      level: 'Course', appliedTo: 'AP Literature', terms: ['25–26 S2'],
+      text: 'Choose one text we studied this term and reflect on how it changed or challenged your thinking. What ideas from it are you still sitting with?',
+      minChars: 200, maxChars: 800,
+    },
+    {
+      level: 'Course', appliedTo: 'Spanish for Native Speakers', terms: ['25–26 S1','25–26 S2'],
+      text: 'Reflexiona sobre tu identidad como hablante de herencia este trimestre. ¿Qué has aprendido sobre tu propia lengua y cultura?',
+      minChars: 100, maxChars: 500,
+    },
+  ];
+
+  const LEVEL_TAG = {
+    Universal: 'level-tag-universal',
+    Department: 'level-tag-dept',
+    Course:     'level-tag-course',
+  };
+
+  function renderPrompts() {
+    const termF  = document.getElementById('prompt-term-filter').value;
+    const levelF = document.getElementById('prompt-level-filter').value;
+
+    const filtered = PROMPTS.filter(p => {
+      if (levelF && p.level !== levelF) return false;
+      if (termF  && !p.terms.includes(termF)) return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      document.getElementById('prompts-list').innerHTML =
+        '<p style="color:#94a3b8;font-size:0.85rem;padding:1rem 0">No prompts match the current filters.</p>';
+      return;
+    }
+
+    document.getElementById('prompts-list').innerHTML = filtered.map((p, i) => `
+      <div class="prompt-card">
+        <div class="prompt-card-header">
+          <div class="prompt-card-meta">
+            <div class="prompt-card-title">
+              <span class="role-tag ${LEVEL_TAG[p.level]}">${p.level}</span>
+              ${p.appliedTo}
+            </div>
+            <div class="prompt-card-terms">Terms: ${p.terms.join(', ')}</div>
+          </div>
+          <div class="actions-cell">
+            <button class="btn btn-secondary btn-sm" onclick="openEditPrompt(${PROMPTS.indexOf(p)})">Edit</button>
+            <button class="btn btn-danger btn-sm">Delete</button>
+          </div>
+        </div>
+        <div class="prompt-preview">${p.text}</div>
+        <div class="prompt-chars">
+          <span><strong>Min:</strong> ${p.minChars ? p.minChars + ' chars' : 'none'}</span>
+          <span><strong>Max:</strong> ${p.maxChars ? p.maxChars + ' chars' : 'none'}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openPromptModal() {
+    document.getElementById('promptModalTitle').textContent = 'New Prompt';
+    document.querySelector('[name="promptLevel"][value="universal"]').checked = true;
+    updatePromptFields();
+    openModal('promptModal');
+  }
+
+  function openEditPrompt(idx) {
+    const p = PROMPTS[idx];
+    document.getElementById('promptModalTitle').textContent = 'Edit Prompt';
+    const levelVal = p.level === 'Universal' ? 'universal' : p.level === 'Department' ? 'dept' : 'course';
+    document.querySelector(`[name="promptLevel"][value="${levelVal}"]`).checked = true;
+    updatePromptFields();
+    openModal('promptModal');
+  }
+
+  function updatePromptFields() {
+    const val = document.querySelector('[name="promptLevel"]:checked')?.value;
+    document.getElementById('promptDeptRow').style.display   = (val === 'dept' || val === 'course') ? '' : 'none';
+    document.getElementById('promptCourseRow').style.display = (val === 'course') ? '' : 'none';
+  }
+
+  renderPrompts();
 
   // ── ROSTERS ──
   const CLASSES = [
