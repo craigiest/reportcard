@@ -239,6 +239,7 @@
       cursor: default;
       resize: none;
       min-height: unset;
+      overflow: hidden;
     }
 
     /* ── CHAR COUNT + SAVE HINT ── */
@@ -308,12 +309,7 @@
       color: #166534;
       line-height: 1.55;
     }
-    .submitted-notice-title { font-weight: 700; margin-bottom: 0.25rem; }
-    .submitted-contact {
-      margin-top: 0.45rem;
-      font-size: 0.8rem;
-      color: #64748b;
-    }
+    .submitted-notice-title { font-weight: 700; }
 
     /* ── MODALS ── */
     .modal-overlay {
@@ -695,6 +691,12 @@ function refreshReflectionUI() {
 
   textarea.value    = ref.text;
   textarea.disabled = ref.submitted;
+  if (ref.submitted) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  } else {
+    textarea.style.height = '';
+  }
 
   updateCharCount(len, ref.submitted);
   updateStatusBadge(ref);
@@ -757,8 +759,6 @@ function updateSubmittedNotice(ref) {
   if (!ref.submitted) { el.innerHTML = ""; return; }
   el.innerHTML = `<div class="submitted-notice">
     <div class="submitted-notice-title">✓ Submitted ${esc(ref.timestamp || "")}</div>
-    Your reflection has been submitted and is now visible to your teacher.
-    <div class="submitted-contact">You cannot edit after submitting. Contact your teacher if you need to make changes.</div>
   </div>`;
 }
 

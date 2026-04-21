@@ -490,12 +490,18 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These are set once and inherited by all terms automatically.
 
+**Teacher comment requirements:**
 - Minimum number of skill areas that must have at least one comment
 - Minimum total comments required per report card
 - Maximum comments allowed per skill
 - Maximum character limit for custom comments
 - Required skills (must have at least one comment)
 - Rules set to zero are not enforced and not shown to teachers
+
+**Student reflection requirements:**
+- Minimum character count required before submission is enabled
+- Maximum character count allowed for a reflection
+- Rules set to zero are not enforced
 
 **Lock Term**
 - Makes term read-only for teachers and advisors
@@ -550,7 +556,7 @@ Admin maintains two global validation configurations — one for Midterm reporti
 - Select customization level: Universal, Department, or Course
 - Input prompt text
 - Assign to term(s)
-- Set minimum character requirement for student submission
+- Set minimum and maximum character requirements for student submission
 
 **Edit Prompt**
 - Update prompt text
