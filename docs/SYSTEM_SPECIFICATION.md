@@ -55,10 +55,10 @@ All users have universal roles across the school. A person can transition betwee
 - View student reflections (read-only once submitted)
 - Edit/add comments for each skill using:
   - Standard comment bank (department or course-specific)
-  - Custom comments (personal or shared within class)
+  - Custom comments (personal, not shared)
 - Write narrative comments
-- Mark report card as "reviewed" (enables advisor access)
-- Finalize report card (locks from advisor editing until unfinalizing)
+- Finalize report card (locks from own editing and enables advisor access)
+- Mark report card as "reviewed" (after advisor has reviewed it)
 - Export their own students'/advisees' report cards as PDF (local download)
 - View unfinalized report cards for their advisees (as advisor)
 
@@ -66,11 +66,11 @@ All users have universal roles across the school. A person can transition betwee
 
 - View all assigned advisees' report cards across all classes in a term
 - Edit comments on any advisee's report card (if teacher has finalized)
-- Mark report card as "reviewed" (only available when teacher's finalize box is checked)
+- Mark report card as "reviewed" (after reviewing, only available when teacher's finalize box is checked)
 - If teacher unchecks finalize after advisor has made edits, teacher receives notification
 - Jump between advisees while staying on the same term and class (if available in previous advisee)
 - View historical report cards for context across terms
-- Cannot export; shares view with teacher for PDF generation
+- Export their advisees' report cards as PDF (local download)
 
 ### Admin
 
@@ -97,7 +97,7 @@ All users have universal roles across the school. A person can transition betwee
 
 Data is organized hierarchically:
 - **School Year**: e.g., 2025-2026
-- **Term**: Flexible naming and ordering (e.g., S1, I1, S2, I2 OR T1, T2, T3)
+- **Term**: Flexible naming and ordering (e.g., S1, I1, S2, I2 OR T1, T2, T3 OR other custom naming)
 - **Report Card Type**: Midterm and/or Final (configurable per term)
 
 Admin configures term structure, including:
@@ -109,22 +109,37 @@ Admin configures term structure, including:
 
 ### Comment Banks
 
-Comment banks are organized hierarchically:
+Admin can create and upload multiple standard comment bank sets. Each set is a collection of comments organized by skill. These comment banks can be applied at multiple levels via a selection tool in outline format:
+
+- **School-wide application**: All courses use this comment bank
+- **Department application**: All courses in a department use this comment bank
+- **Subdepartment application**: A subset of courses within a department use this comment bank (e.g., "Spanish for Native Speakers" within World Languages)
+- **Individual class override**: A specific class can optionally use a different comment bank than the default for its department
+
+**Important**: Each course uses exactly one standard comment bank. A course cannot have both department-level and course-specific comments applied simultaneously; the more specific level always overrides.
 
 ```
-Standard Comment Bank (for standard comments)
-├── Department Level (e.g., World Languages)
-│   ├── Department Comments (available to all courses)
-│   ├── Course-Specific Comments (Spanish)
-│   ├── Course-Specific Comments (Spanish for Native Speakers)
+Standard Comment Banks (admin-created sets)
+├── Bank Set 1 (e.g., default school-wide)
+│   ├── Skill: Communication
+│   │   ├── Comment 1
+│   │   ├── Comment 2
+│   │   └── ...
+│   ├── Skill: Collaboration
 │   └── ...
-└── Skill-Specific Comments (within each course/department)
+├── Bank Set 2 (e.g., World Languages specific)
+│   ├── Skill: Communication
+│   └── ...
+└── Bank Set 3 (e.g., Spanish for Native Speakers specific)
+    └── ...
 
-Custom Comments (per teacher or shared)
-├── Teacher Personal (only they can see/use)
-├── Class-Shared (all teachers in the class can use)
+Custom Comments (per teacher, personal use)
+├── Teacher 1 Personal Comments (only visible to that teacher)
+├── Teacher 2 Personal Comments (only visible to that teacher)
 └── ...
 ```
+
+Teachers can export their personal custom comment banks as CSV and share with colleagues for their own customization.
 
 ### Skills & Rubric
 
@@ -166,8 +181,8 @@ Skills are derived from the comment bank structure. Each skill can have:
 **Right Sidebar (Comment Panel)**
 - Opens when clicking on a skill's comment section
 - Shows:
-  - Standard comments grouped by subcategory
-  - Custom comments (personal + class-shared)
+  - Standard comments from the applied comment bank, grouped by subcategory
+  - Custom comments (personal to this teacher)
   - Ability to select/deselect comments
   - Option to add new custom comments
   - Input field for quick one-time comments
@@ -179,8 +194,9 @@ Skills are derived from the comment bank structure. Each skill can have:
 1. Teacher clicks term dropdown in master area
 2. Available terms load (filtered to currently-assigned terms)
 3. Roster updates to show classes for selected term
-4. If previously on a student in this term, return to that student
-5. If first time in this term, show empty state
+4. If previously on a class in this term, return to that class and student (if available)
+5. If the class is not available in the new term, show empty state
+6. If first time in this term, show empty state
 
 #### Drafting a Report Card
 
@@ -194,15 +210,17 @@ Skills are derived from the comment bank structure. Each skill can have:
 6. If internet connection is lost, changes queue locally and sync when back online
 7. "Changes saved automatically" hint confirms sync
 
-#### Reviewing & Finalizing
+#### Finalizing & Advisor Review
 
-1. Teacher checks "Mark as reviewed" 
-   - This enables the advisor review button for this report card
-2. Teacher checks "Finalize"
-   - Report card is locked; advisor cannot edit unless teacher unchecks
-3. If advisor edits while finalized, teacher sees notification when unchecking finalize
-   - Callout box: "This report card has been edited by [Advisor Name]. Page will reload to show current version."
-   - After teacher acknowledges, page reloads with advisor edits
+1. Teacher checks "Finalize"
+   - Report card is locked for teacher editing and becomes available for advisor review
+   - Advisor can now access and edit the report card
+2. Advisor reviews and edits the report card
+3. Advisor checks "Mark as reviewed"
+   - Indicates advisor has completed their review
+4. If teacher unchecks finalize after advisor has made edits, teacher sees notification
+   - Callout box: "This report card has been edited by [Advisor Name]. Unfinalize again to edit, or reload to see their changes?"
+   - Teacher can reload to see advisor edits or unfinalize to make their own edits
 
 #### Exporting (Local)
 
@@ -301,10 +319,8 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
 
 **Main Content Area**
 - Student editing area (identical to teacher, but with "Reviewed" option available)
-- Advisor can see:
-  - Draft report cards (if teacher has not finalized)
-  - Finalized report cards (if teacher has checked finalize)
-- Advisor CANNOT see report cards if teacher has not finalized
+- Advisor can only access finalized report cards (teacher has checked the finalize box)
+- For unfinalized report cards, advisor sees read-only view with note: "Awaiting teacher finalization"
 
 **Right Sidebar**
 - Comment panel (identical to teacher)
@@ -319,6 +335,7 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
 4. Clicking a class shows that advisee's report card from that teacher
 5. If no report card exists yet, shows "Not started"
 6. If report card is not finalized, shows read-only view with note: "Awaiting teacher finalization"
+7. If report card is finalized, advisor can view and edit
 
 #### Editing a Report Card
 
@@ -328,7 +345,7 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
    - Custom comments
    - Narrative field
 3. Advisor CANNOT unfinalize a report card
-4. Advisor CAN check "Reviewed" checkbox (only when finalize is checked)
+4. Advisor can check "Reviewed" checkbox (only when finalize is checked, to indicate they've completed their review)
 5. Changes sync with same local-first + periodic sync strategy as teacher
 
 #### Conflict Handling
