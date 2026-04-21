@@ -109,16 +109,18 @@ Admin configures term structure, including:
 
 ### Comment Banks
 
-Admin can create and upload multiple standard comment bank sets. Each set is a simple CSV file with two columns: skill area and comment text.
+There are two types of comment banks: **Standard** (created and managed by admin) and **Custom** (created by individual teachers).
+
+#### Standard Comment Banks
+
+Admin can create and upload multiple standard comment bank sets. Each set is a CSV file with five columns representing the skill hierarchy and comment types:
 
 **Standard Comment Bank CSV Format:**
 ```
-skill_area,comment
-Communication,"Excellent participation in class discussions"
-Communication,"Shows respect for diverse perspectives"
-Collaboration,"Works effectively with peers"
-Collaboration,"Contributes ideas to group projects"
-...
+Transferable Skill,Skill Area,Subskill,Strength,Growth
+Self-awareness and Growth Mindset,Motivation,Curiosity-fueled motivation,"You're motivated by curiosity, asking ""why?"" and digging for understanding, rather than just checking steps off for completion.","Work on asking ""why"" more consistently rather than just completing tasks—push yourself to dig into the reasoning behind what you're learning, not just the steps."
+Self-awareness and Growth Mindset,Motivation,Awareness of personal motivations,"You understand and notice your intrinsic and external motivations.","Spend time identifying what actually drives you to engage with schoolwork. Notice when you're acting from external pressure versus genuine interest, and try to cultivate more of the latter."
+Critical Thinking,Question Asking,Asking complex or nuanced questions,"You ask questions that...","Work on asking questions that..."
 ```
 
 These comment banks can be applied at multiple levels via a selection tool in the admin interface:
@@ -130,17 +132,26 @@ These comment banks can be applied at multiple levels via a selection tool in th
 
 **Important**: Each course uses exactly one standard comment bank. A course cannot have both department-level and course-specific comments applied simultaneously; the more specific selection always overrides.
 
-**Custom Comments (per teacher, personal use):**
+When teachers select comments in the interface, they see them organized by:
+1. Transferable Skill (top level)
+2. Skill Area (grouping)
+3. Subskill (the comment selector)
 
-Teachers export and share their personal custom comments using the same two-column CSV format:
+For each subskill, they can choose from the Strength comment, Growth comment, or both.
+
+#### Custom Comments
+
+Teachers create and maintain their own personal custom comments. These are exported and can be shared with colleagues for their own customization.
+
+**Custom Comment CSV Format:**
 ```
 skill_area,comment
-Communication,"Needs to speak up more in discussions"
-Collaboration,"Great job leading the group project"
-...
+Curiosity-fueled motivation,"Needs to ask more why questions"
+Collaboration,"Excellent group project leadership"
+Organization of materials,"Keep physical and digital materials better organized"
 ```
 
-Teachers can export their personal custom comment banks as CSV and share with colleagues, who can then import them into their own personal comment collections.
+Teachers export their personal custom comment banks as CSV and can share with colleagues, who import them into their own personal comment collections. The import process allows merging with existing comments or replacing them entirely.
 
 ### Skills & Rubric
 
@@ -453,33 +464,42 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
 - Admin can still see and export
 - Used before distributing final report cards
 
-#### 3. Comment Bank Management
+#### 3. Comment Bank Management (Standard Comment Banks)
 
 **View Comment Banks**
-- Tree view showing department/course hierarchy
-- For each level, show:
+- List all standard comment bank sets
+- For each bank, show:
   - Bank name
-  - Associated skills
-  - Number of comments
+  - Associated department/course level
+  - Number of subskills included
   - Last modified date
+  - Applied to: which departments/courses use this bank
 
-**Create Comment Bank**
-- Select level (department or course)
-- Input bank name
-- Input associated skills
-- Add comments (bulk or one-by-one)
-- Set any customization options
+**Create/Upload Comment Bank**
+- Upload CSV file with columns: Transferable Skill, Skill Area, Subskill, Strength, Growth
+- Or input comments manually through form
+- System organizes comments into the skill hierarchy automatically
 
-**Manage Comments**
-- Add new comment to existing bank
-- Edit comment text
-- Delete comment
-- Reorder comments within bank
+**Apply Comment Bank to Departments/Courses**
+- Select which bank to apply
+- Choose application level:
+  - School-wide (all courses)
+  - Department-level (e.g., "World Languages")
+  - Subdepartment-level (e.g., "Spanish for Native Speakers" within World Languages)
+  - Individual class override
+- Each course uses exactly one standard comment bank
+- More specific selections override broader ones
 
-**Organize by Department/Course**
-- Create department-level banks (e.g., "World Languages")
-- Create course-specific banks (e.g., "Spanish", "Spanish for Native Speakers")
-- Set hierarchy so course-specific comments are available alongside department comments
+**Manage Standard Comments**
+- Edit comment text within a bank
+- Add new subskill with strength/growth comments
+- Delete subskills or comments
+- View which courses are using each bank
+
+**Note on Custom Comments**
+- Individual teachers' custom comments are not managed here
+- Teachers export/import their own custom comments for sharing with colleagues
+- Custom comments are stored per teacher and not shared by default
 
 #### 4. Student Prompts Configuration
 
