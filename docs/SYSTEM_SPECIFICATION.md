@@ -46,7 +46,7 @@ The Report Card System is a school-wide digital platform for creating, reviewing
 
 ## User Roles & Permissions
 
-All users have universal roles across the school. A person can transition between roles over time (e.g., was a student, now a teacher).
+All users have universal roles across the school. A person can transition between roles over time (e.g., was a student, now a teacher). Roles are not strictly separate user types — they are a function of what a person is assigned to. A teacher with no advisees has no advisory functionality; an advisor with no classes has no teacher functionality; a person can hold both simultaneously.
 
 ### Teacher
 
@@ -62,6 +62,8 @@ All users have universal roles across the school. A person can transition betwee
 - View unfinalized report cards for their advisees (as advisor)
 
 ### Advisor
+
+An advisor is any adult staff member (teacher, counselor, or other staff) assigned long-term to a group of students. Advisors do not need to be teachers; a teacher is not necessarily an advisor either.
 
 - View all assigned advisees' report cards across all classes in a term
 - Edit comments on any advisee's report card (if teacher has finalized)
@@ -117,11 +119,13 @@ Admin users have the ability to spoof other users by assuming their login tempor
 Data is organized hierarchically:
 - **School Year**: e.g., 2025-2026
 - **Term**: Flexible naming and ordering (e.g., S1, I1, S2, I2 OR T1, T2, T3 OR other custom naming)
-- **Report Card Type**: Midterm and/or Final (configurable per term)
+- **Reporting Period**: Midterm and/or Final within each term — both share the same class roster
+
+A term (e.g., S1) has one roster of students and classes. Within that term, admin configures whether teachers complete a Midterm report card, a Final report card, or both. In the grading period dropdown, teachers see these as separate selectable periods (e.g., "25-26 S1 Midterm" and "25-26 S1 Final"), but the underlying class roster is the same for both.
 
 Admin configures term structure, including:
 - Term names and order
-- Whether the term includes midterm, final, or both
+- Whether the term includes a Midterm reporting period, a Final reporting period, or both
 - Start and end dates
 - Freeze dates for student reflections (if applicable)
 - Whether the term is locked (read-only to teachers/advisors)
@@ -210,7 +214,9 @@ Skills are derived from the comment bank structure. Each skill can have:
       - Selected comments displayed as text below the button
   - Narrative textarea (for general comments)
   - Save hint: "Changes saved automatically"
-  - Checkbox: "Mark as finalized" (locks teacher editing and enables advisor access; disabled with a hint message until minimum requirements are met)
+  - Checkbox: "Mark as finalized" — active for teacher; visible but inactive for advisor
+  - Checkbox: "Reviewed" — active for advisor (only when finalized); visible but inactive for teacher
+  - The finalize checkbox is disabled with an inline hint until minimum requirements are met
   - Preview Report Card button (opens a preview modal; Print / Save PDF available from the preview)
 
 **Right Sidebar (Comment Panel)**
@@ -310,8 +316,8 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 4. Sees the admin-configured prompt
 5. Types reflection in textarea
 6. As they type, changes are saved locally and synced periodically
-7. Status shows "Draft" with no submit button visible
-8. Clear UI cue: button only appears and becomes active when reflection is substantive (e.g., minimum character count set by admin)
+7. Status shows "Draft"; Submit button is visible but disabled
+8. Submit button becomes active once the reflection meets the minimum character count set by admin
 
 #### Submitting a Reflection
 
@@ -345,16 +351,15 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 **Left Sidebar**
 - Advisor name
-- Term selector (dropdown)
+- Grading Period selector (dropdown)
 - Advisee list (instead of class roster)
-  - Each advisee shows number of classes
   - Clicking an advisee shows their report cards organized by class
   - Selecting a specific class/report card activates it
 
 **Main Content Area**
-- Student editing area (identical to teacher, but with "Reviewed" option available)
-- Advisor can only access finalized report cards (teacher has checked the finalize box)
-- For unfinalized report cards, advisor sees read-only view with note: "Awaiting teacher finalization"
+- Identical to teacher interface; both "Mark as finalized" and "Reviewed" checkboxes are visible, with active/inactive states reversed: advisor can check "Reviewed" (when finalized); "Mark as finalized" is visible but inactive for advisor
+- Advisor can edit comments and narrative only on finalized report cards
+- For unfinalized report cards, the content area is read-only with a note: "Awaiting teacher finalization"
 
 **Right Sidebar**
 - Comment panel (identical to teacher)
@@ -378,8 +383,8 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
    - Selected comments
    - Custom comments
    - Narrative field
-3. Advisor CANNOT unfinalize a report card
-4. Advisor can check "Reviewed" checkbox (only when finalize is checked, to indicate they've completed their review)
+3. Advisor CANNOT unfinalize a report card; the "Mark as finalized" checkbox is visible but inactive
+4. Advisor can check "Reviewed" checkbox (only when finalized, to indicate they've completed their review); teacher sees this checkbox too but it is inactive for them
 5. Changes sync with same local-first + periodic sync strategy as teacher
 
 #### Conflict Handling
@@ -388,6 +393,9 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
    - Teacher sees callout box: "This report card has been edited by [Advisor Name] since you finalized it. Unfinalize again to edit, or reload to see their changes."
    - Page does NOT automatically reload; teacher must acknowledge and reload manually
    - Upon reload, teacher sees advisor edits and can decide to finalize again or make changes
+2. If teacher unfinalizes while an advisor is actively viewing the report card:
+   - The advisor's editing access is revoked on the next sync event (blur or save attempt)
+   - Advisor sees a notification that the report card has been unfinalized by the teacher and is no longer editable
 
 #### Jumping Between Advisees
 
@@ -467,14 +475,16 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Input school year
 - Input term name
 - Input order in sequence
-- Select report card types (midterm and/or final)
+- Select reporting periods to include (Midterm and/or Final); both share the same roster
 - Set student reflection freeze dates (if applicable)
-- Configure:
-  - Minimum comments required
+- Configure validation rules (applied per reporting period):
+  - Minimum number of skill areas that must have at least one comment
+  - Minimum total comments required per report card
   - Maximum comments allowed per skill
   - Maximum character limit for custom comments
-  - Required skills (list of skill IDs)
+  - Required skills (list of skill IDs that must have a comment)
   - Minimum/maximum comment length
+  - Note: any rule set to zero is not enforced and not shown to teachers
 
 **Edit Term**
 - Modify term name, order, dates, structure
@@ -552,15 +562,15 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 **Import Rosters**
 - CSV import:
-  - Upload CSV file with format: `teacher,course,student[,comment]`
+  - Upload CSV file with format: `teacher,course,student`
   - Preview import showing number of rows/classes/students
   - Confirm and apply (with option to replace or merge)
   - Example:
     ```
-    teacher,course,student,comment
-    "John Smith","Biology 101","Alice Johnson","Ready for grading"
-    "John Smith","Biology 101","Bob Davis",""
-    "Jane Doe","English 10","Charlie Brown",""
+    teacher,course,student
+    "John Smith","Biology 101","Alice Johnson"
+    "John Smith","Biology 101","Bob Davis"
+    "Jane Doe","English 10","Charlie Brown"
     ```
 - Blackbaud/Canvas integration (TBD: specifics for database manager)
   - Authenticate with external system
@@ -675,14 +685,16 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Start date
 - End date
 - Locked (boolean)
-- Report card types (Array: Midterm, Final)
+- Reporting periods (Array: Midterm, Final — which are enabled for this term)
 - Student reflection freeze date (if applicable)
-- Validation rules:
-  - Min comments required
+- Validation rules (applied per reporting period within this term):
+  - Min skill areas required (must have ≥1 comment each)
+  - Min total comments required per report card
   - Max comments per skill
   - Max character limit for custom comments
   - Required skills (Array of skill IDs)
   - Min/max comment lengths
+  - Rules set to zero are not enforced or shown to teachers
 
 #### Class
 - ID
@@ -700,33 +712,19 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Class ID
 - Term ID
 
-#### Skill
-- ID
-- Name
-- Description
-- Associated comment bank ID(s)
-
 #### Comment Bank
 - ID
 - Name
-- Level (Department, Course)
-- Parent bank ID (if course-specific under department)
-- Associated skills (Array of skill IDs)
-- Comments (Array of comment objects):
-  - Text
-  - Subcategory
-  - Type (Standard, Custom)
-  - Created date
-  - Created by (user ID, if custom)
+- Level (School-wide default, Department, or Course)
+- Parent bank ID (for department or course overrides)
+- Skills (Array of skill objects, derived from the bank's CSV or manual entries):
+  - Transferable Skill name
+  - Skill Area name
+  - Subskill name
+  - Strength comment text
+  - Growth comment text
 
-#### Comment
-- ID
-- Bank ID
-- Text
-- Subcategory
-- Type (Standard or Custom)
-- Created date
-- Created by (user ID)
+The school-wide default comment bank is loaded from a separate default file. Additional banks are created by admin upload or manual entry. Each bank owns its full skill hierarchy — transferable skills, skill areas, and subskills are not shared entities across banks.
 
 #### Student Prompt
 - ID
@@ -741,20 +739,20 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Term ID
 - Student ID
 - Class ID (teacher's class)
-- Report card type (Midterm or Final)
+- Reporting period (Midterm or Final)
 - Status (Draft, Finalized)
 - Teacher ID
 - Advisor ID (if reviewed by advisor)
 - Finalized by (user ID)
 - Finalized timestamp
 - Reviewed by advisor (boolean)
-- Reviewed by admin (boolean, if applicable)
 - Reviewed timestamp (advisor)
 - Report card data:
   - Skills:
-    - Skill ID
-    - Selected comments (Array of comment IDs)
-    - Custom comments (Array of text strings)
+    - Skill name (stored as text snapshot, not a foreign key, so bank edits don't alter existing cards)
+    - Selected standard comments (Array of comment references — subskill name + strength/growth type — resolved to text at display time from the bank, or snapshotted at finalization)
+    - One-time custom comments (Array of text strings added for this student only; stored directly as text in the database)
+    - Saved custom comments applied (Array of text strings from the teacher's reusable bank, also stored as text snapshots)
   - Narrative field (text)
   - Student reflection ID (reference to submitted reflection)
 
@@ -807,10 +805,9 @@ Student (User) (1) → (many) Report Card
 Student (User) (1) → (many) Student Reflection
 Student (User) (1) → (many) Student Enrollment
 
-Skill (1) → (many) Comment Bank
-Comment Bank (1) → (many) Comment
+Comment Bank (1) → (many) Skills (embedded within the bank)
 
-Report Card (1) → (many) Comments (selected)
+Report Card (1) → (many) comment selections and text strings
 Report Card (1) → (1) Student Reflection
 
 Student Reflection (1) → (1) Student Prompt
@@ -891,7 +888,7 @@ On each sync:
 
 ### Real-time Notifications
 
-**Notification**: Teacher gets notified when advisor has edited a report card they've unfinalizing
+**Notification**: Teacher gets notified when they try to unfinalize a report card that the advisor has edited since finalization
 
 **[FLAG FOR DATABASE MANAGER]** Specify:
 - WebSocket vs polling vs long-polling for notifications
@@ -1074,7 +1071,7 @@ All interfaces must be:
 ## Appendix: Glossary
 
 - **Finalize**: Teacher locks a report card, enabling advisor access and preventing further teacher edits unless unfinalizing
-- **Reviewed**: Advisor or admin marks a report card as reviewed (only available when teacher has finalized)
+- **Reviewed**: Advisor marks a report card as reviewed (only available when teacher has finalized)
 - **Spoof**: Admin temporarily assumes the identity of another user
 - **Local-first**: Design pattern where all changes feel instantaneous locally; syncing happens in background
 - **Comment Bank**: Collection of standard comments available for selection, organized by department/course
@@ -1082,7 +1079,7 @@ All interfaces must be:
 - **Term**: A reporting period (e.g., semester, trimester) within a school year
 - **Report Card Type**: Midterm or Final report within a term
 - **Prompt**: Admin-configured text guidance for student reflections
-- **Advisor**: Teacher who also reviews report cards for assigned advisees from other teachers
+- **Advisor**: Any adult staff member (teacher, counselor, or other staff) assigned long-term to a group of students for the purpose of reviewing their report cards
 
 ---
 
