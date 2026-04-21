@@ -276,6 +276,54 @@
       color: #78350f;
       margin-bottom: 1rem;
     }
+
+    /* ── ROLE TAGS ── */
+    .role-tag {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-right: 0.2rem;
+    }
+    .role-teacher  { background: #dbeafe; color: #1e40af; }
+    .role-advisor  { background: #ede9fe; color: #5b21b6; }
+    .role-admin    { background: #fee2e2; color: #991b1b; }
+    .role-student  { background: #dcfce7; color: #166534; }
+
+    /* ── FORM ROWS ── */
+    .form-row { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
+    .form-input {
+      width: 100%;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: #1e293b;
+    }
+    .form-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .form-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+
+    /* ── SEARCH INPUT ── */
+    .search-input {
+      padding: 0.38rem 0.7rem;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      width: 220px;
+    }
+    .search-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+    /* ── ROLE CHECKBOXES ── */
+    .role-check-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .role-check-group label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; cursor: pointer; }
+
+    /* ── USER STATUS ── */
+    .status-active   { color: #16a34a; font-size: 0.78rem; font-weight: 600; }
+    .status-archived { color: #94a3b8; font-size: 0.78rem; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -322,7 +370,133 @@
 
   <!-- Main Content -->
   <main class="main">
-    <div class="section" id="section-users">Users (coming soon)</div>
+    <div class="section" id="section-users">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Users</div>
+          <div class="section-subtitle">Manage accounts, roles, and access</div>
+        </div>
+        <button class="btn btn-primary" onclick="openUserModal()">+ New User</button>
+      </div>
+
+      <!-- Search + filter -->
+      <div class="filter-bar">
+        <input class="search-input" type="text" id="user-search" placeholder="Search name or email…" oninput="renderUsers()">
+        <div class="filter-sep"></div>
+        <select class="filter-select" id="user-role-filter" onchange="renderUsers()">
+          <option value="">All Roles</option>
+          <option>Teacher</option>
+          <option>Advisor</option>
+          <option>Admin</option>
+          <option>Student</option>
+        </select>
+        <select class="filter-select" id="user-status-filter" onchange="renderUsers()">
+          <option value="">Active &amp; Archived</option>
+          <option value="active">Active Only</option>
+          <option value="archived">Archived Only</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th>Status</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+
+    </div><!-- /section-users -->
+
+    <!-- New / Edit User Modal -->
+    <div class="modal-overlay" id="userModal">
+      <div class="modal" style="width:480px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="userModalTitle">New User</div>
+            <div class="modal-subtitle">User will log in via Google OAuth with their school account</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label class="form-label">Full Name</label>
+            <input class="form-input" id="uName" type="text" placeholder="e.g. Jane Smith">
+          </div>
+          <div class="form-row">
+            <label class="form-label">School Email</label>
+            <input class="form-input" id="uEmail" type="email" placeholder="e.g. jsmith@riverside.edu">
+            <div class="form-hint">Must match their school Google account.</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Roles</label>
+            <div class="role-check-group">
+              <label><input type="checkbox" id="uRoleTeacher"> Teacher</label>
+              <label><input type="checkbox" id="uRoleAdvisor"> Advisor</label>
+              <label><input type="checkbox" id="uRoleAdmin"> Admin</label>
+              <label><input type="checkbox" id="uRoleStudent"> Student</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveUser()">Save User</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spoof Confirm Modal -->
+    <div class="modal-overlay" id="spoofModal">
+      <div class="modal" style="width:400px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Spoof User</div>
+            <div class="modal-subtitle" id="spoofSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('spoofModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            You will temporarily assume this user's identity. The interface will switch to their view. A banner will remind you that you are spoofing, and you can exit at any time to return to the admin view.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('spoofModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('spoofModal')">Enter as User</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Archive Confirm Modal -->
+    <div class="modal-overlay" id="archiveModal">
+      <div class="modal" style="width:400px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Archive User</div>
+            <div class="modal-subtitle" id="archiveSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('archiveModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            This user will be deactivated and will no longer be able to log in. Their data and history will be preserved. You can re-activate them at any time.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('archiveModal')">Cancel</button>
+          <button class="btn btn-danger" onclick="confirmArchive()">Archive User</button>
+        </div>
+      </div>
+    </div>
     <div class="section" id="section-terms">Terms &amp; Settings (coming soon)</div>
     <div class="section" id="section-banks">Comment Banks (coming soon)</div>
     <div class="section" id="section-rosters">Rosters &amp; Import (coming soon)</div>
@@ -574,6 +748,100 @@
     .forEach(el => el.addEventListener('change', renderRCTable));
 
   renderRCTable();
+
+  // ── USERS DATA ──
+  const USERS = [
+    { name: 'Sarah Chen',      email: 'schen@riverside.edu',     roles: ['Teacher'],           status: 'active',   lastLogin: 'Apr 20, 2026' },
+    { name: 'Marcus Webb',     email: 'mwebb@riverside.edu',     roles: ['Teacher','Advisor'],  status: 'active',   lastLogin: 'Apr 21, 2026' },
+    { name: 'Priya Nair',      email: 'pnair@riverside.edu',     roles: ['Teacher'],           status: 'active',   lastLogin: 'Apr 19, 2026' },
+    { name: 'Tom Okafor',      email: 'tokafor@riverside.edu',   roles: ['Teacher','Advisor'],  status: 'active',   lastLogin: 'Apr 18, 2026' },
+    { name: 'Alex Johnson',    email: 'ajohnson@riverside.edu',  roles: ['Admin'],             status: 'active',   lastLogin: 'Apr 21, 2026' },
+    { name: 'Diana Park',      email: 'dpark@riverside.edu',     roles: ['Admin','Teacher'],   status: 'active',   lastLogin: 'Apr 15, 2026' },
+    { name: 'Aisha Patel',     email: 'aisha.patel@students.riverside.edu', roles: ['Student'], status: 'active',  lastLogin: 'Apr 20, 2026' },
+    { name: 'Ben Kowalski',    email: 'ben.kowalski@students.riverside.edu', roles: ['Student'], status: 'active', lastLogin: 'Apr 17, 2026' },
+    { name: 'Robert Stills',   email: 'rstills@riverside.edu',   roles: ['Teacher'],           status: 'archived', lastLogin: 'Jan 10, 2026' },
+  ];
+
+  const ROLE_CLASS = { Teacher:'role-teacher', Advisor:'role-advisor', Admin:'role-admin', Student:'role-student' };
+
+  function renderUsers() {
+    const q      = document.getElementById('user-search').value.toLowerCase();
+    const role   = document.getElementById('user-role-filter').value;
+    const status = document.getElementById('user-status-filter').value;
+
+    const rows = USERS.filter((u, idx) => {
+      u._idx = idx;
+      if (q && !u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q)) return false;
+      if (role && !u.roles.includes(role)) return false;
+      if (status === 'active'   && u.status !== 'active')   return false;
+      if (status === 'archived' && u.status !== 'archived') return false;
+      return true;
+    });
+
+    document.getElementById('users-tbody').innerHTML = rows.map((u, i) => `
+      <tr>
+        <td class="td-name">${u.name}</td>
+        <td class="td-muted">${u.email}</td>
+        <td>${u.roles.map(r => `<span class="role-tag ${ROLE_CLASS[r]}">${r}</span>`).join('')}</td>
+        <td>${u.status === 'active'
+          ? '<span class="status-active">● Active</span>'
+          : '<span class="status-archived">● Archived</span>'}</td>
+        <td class="td-muted">${u.lastLogin}</td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn btn-secondary btn-sm" onclick="openEditUser(${USERS.indexOf(u)})">Edit</button>
+            ${u.status === 'active' ? `<button class="btn btn-secondary btn-sm" onclick="openSpoof('${u.name}')">Spoof</button>` : ''}
+            ${u.status === 'active' ? `<button class="btn btn-danger btn-sm" onclick="openArchive(${USERS.indexOf(u)}, '${u.name}')">Archive</button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openUserModal() {
+    document.getElementById('userModalTitle').textContent = 'New User';
+    document.getElementById('uName').value = '';
+    document.getElementById('uEmail').value = '';
+    ['Teacher','Advisor','Admin','Student'].forEach(r => {
+      document.getElementById('uRole' + r).checked = false;
+    });
+    openModal('userModal');
+  }
+
+  function openEditUser(idx) {
+    const u = USERS[idx];
+    document.getElementById('userModalTitle').textContent = 'Edit User';
+    document.getElementById('uName').value  = u.name;
+    document.getElementById('uEmail').value = u.email;
+    ['Teacher','Advisor','Admin','Student'].forEach(r => {
+      document.getElementById('uRole' + r).checked = u.roles.includes(r);
+    });
+    openModal('userModal');
+  }
+
+  function saveUser() {
+    closeModal('userModal');
+    renderUsers();
+  }
+
+  function openSpoof(name) {
+    document.getElementById('spoofSubtitle').textContent = name;
+    openModal('spoofModal');
+  }
+
+  let archiveIdx = -1;
+  function openArchive(idx, name) {
+    archiveIdx = idx;
+    document.getElementById('archiveSubtitle').textContent = name;
+    openModal('archiveModal');
+  }
+  function confirmArchive() {
+    if (archiveIdx >= 0) USERS[archiveIdx].status = 'archived';
+    closeModal('archiveModal');
+    renderUsers();
+  }
+
+  renderUsers();
 </script>
 </body>
 </html>
