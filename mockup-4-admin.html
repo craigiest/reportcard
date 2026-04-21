@@ -496,6 +496,35 @@
     .assign-course-row:last-child { border-bottom: none; }
     .assign-course-name { flex: 1; }
     .assign-inherited { font-size: 0.72rem; color: #94a3b8; font-style: italic; }
+
+    /* ── ROSTERS ── */
+    .import-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+    .import-panel-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.1rem;
+    }
+    .import-panel-title { font-weight: 700; font-size: 0.875rem; color: #1e293b; margin-bottom: 0.85rem; }
+    .preview-table-wrap {
+      margin-top: 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .preview-stats {
+      display: flex;
+      gap: 1.5rem;
+      padding: 0.6rem 1rem;
+      font-size: 0.78rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fff;
+    }
+    .preview-stat { color: #374151; }
+    .preview-stat strong { color: #1e293b; }
+    .import-options { display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem; margin: 0.75rem 0; }
+    .import-options label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -1278,7 +1307,203 @@
         </div>
       </div>
     </div>
-    <div class="section" id="section-rosters">Rosters &amp; Import (coming soon)</div>
+    <div class="section" id="section-rosters">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Rosters &amp; Import</div>
+          <div class="section-subtitle">View class rosters, import from CSV, and manage students</div>
+        </div>
+      </div>
+
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('rosters','roster')">Roster</div>
+        <div class="sub-tab" onclick="showSubTab('rosters','import')">Import</div>
+      </div>
+
+      <!-- Roster panel -->
+      <div class="sub-panel active" id="rosters-roster">
+        <div class="filter-bar" style="margin-bottom:1rem">
+          <select class="filter-select" id="roster-term" onchange="renderRoster()">
+            <option>25–26 S2</option>
+            <option>25–26 S1</option>
+            <option>24–25 S2</option>
+          </select>
+          <select class="filter-select" id="roster-dept" onchange="renderRoster()">
+            <option value="">All Departments</option>
+            <option>English</option>
+            <option>Math</option>
+            <option>Science</option>
+            <option>History &amp; Social Studies</option>
+            <option>World Languages</option>
+          </select>
+          <div style="margin-left:auto">
+            <button class="btn btn-primary" onclick="openModal('addClassModal')">+ Add Class</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Teacher</th>
+                <th>Department</th>
+                <th>Students</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="roster-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Import panel -->
+      <div class="sub-panel" id="rosters-import">
+        <div class="import-layout">
+
+          <div class="import-panel-card">
+            <div class="import-panel-title">Import from CSV</div>
+            <div class="drop-zone" id="importDropZone" onclick="showImportPreview()">
+              <div style="font-size:1.5rem;margin-bottom:0.4rem">📂</div>
+              <div>Click to select a CSV file</div>
+              <div style="font-size:0.75rem;color:#818cf8;margin-top:0.25rem">or drag and drop here</div>
+            </div>
+            <div style="font-size:0.75rem;color:#64748b;margin-top:0.75rem">
+              Expected columns: <code>teacher, course, student</code>
+            </div>
+
+            <!-- Preview (hidden until file selected) -->
+            <div id="importPreview" style="display:none">
+              <div class="preview-table-wrap">
+                <div class="preview-stats">
+                  <span class="preview-stat"><strong>3</strong> teachers</span>
+                  <span class="preview-stat"><strong>5</strong> classes</span>
+                  <span class="preview-stat"><strong>47</strong> students</span>
+                  <span class="preview-stat"><strong>89</strong> rows</span>
+                </div>
+                <table style="font-size:0.78rem">
+                  <thead><tr><th>Teacher</th><th>Course</th><th>Student</th></tr></thead>
+                  <tbody>
+                    <tr><td>Sarah Chen</td><td>Biology 101</td><td>Aisha Patel</td></tr>
+                    <tr><td>Sarah Chen</td><td>Biology 101</td><td>Ben Kowalski</td></tr>
+                    <tr><td>Marcus Webb</td><td>English 10</td><td>Clara Russo</td></tr>
+                    <tr><td>Marcus Webb</td><td>English 10</td><td>Dante Osei</td></tr>
+                    <tr><td style="color:#94a3b8" colspan="3">… 85 more rows</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="import-options">
+                <label><input type="radio" name="importMode" value="merge" checked> Merge with existing roster</label>
+                <label><input type="radio" name="importMode" value="replace"> Replace existing roster for this term</label>
+              </div>
+              <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+                <button class="btn btn-secondary" onclick="hideImportPreview()">Cancel</button>
+                <button class="btn btn-primary">Apply Import</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="import-panel-card">
+            <div class="import-panel-title">Export Roster</div>
+            <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">Download the current roster as a CSV file.</p>
+            <div style="display:flex;flex-direction:column;gap:0.6rem">
+              <div>
+                <label class="form-label">Term</label>
+                <select class="filter-select" style="width:100%">
+                  <option>25–26 S2</option>
+                  <option>25–26 S1</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Format</label>
+                <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.85rem">
+                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="exportFmt" checked> Class roster (teacher, course, student)</label>
+                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="exportFmt"> Student list only</label>
+                </div>
+              </div>
+              <div style="margin-top:0.25rem">
+                <button class="btn btn-secondary">⬇ Download CSV</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /section-rosters -->
+
+    <!-- Add Class Modal -->
+    <div class="modal-overlay" id="addClassModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Add Class</div>
+            <div class="modal-subtitle">Manually add a class to the current term's roster</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('addClassModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div>
+            <label class="form-label">Term</label>
+            <select class="filter-select" style="width:100%">
+              <option>25–26 S2</option><option>25–26 S1</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Course Name</label>
+            <input class="form-input" type="text" placeholder="e.g. AP Chemistry">
+          </div>
+          <div>
+            <label class="form-label">Department</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>English</option><option>Math</option><option>Science</option>
+              <option>History &amp; Social Studies</option><option>World Languages</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Teacher</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>Sarah Chen</option><option>Marcus Webb</option>
+              <option>Priya Nair</option><option>Tom Okafor</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('addClassModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('addClassModal')">Add Class</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Students Modal -->
+    <div class="modal-overlay" id="studentsModal">
+      <div class="modal" style="width:500px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="studentsModalTitle">Students</div>
+            <div class="modal-subtitle" id="studentsModalSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('studentsModal')">✕</button>
+        </div>
+        <div class="modal-body" style="padding:0">
+          <div style="padding:0.75rem 1rem;border-bottom:1px solid #e2e8f0;display:flex;gap:0.5rem">
+            <input class="search-input" style="flex:1" type="text" placeholder="Search students…">
+            <button class="btn btn-primary btn-sm">+ Add Student</button>
+          </div>
+          <div style="max-height:320px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+              <tbody id="studentsModalBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('studentsModal')">Close</button>
+        </div>
+      </div>
+    </div>
     <div class="section active" id="section-reportcards">
 
       <div class="section-header">
@@ -1632,6 +1857,61 @@
     document.getElementById(prefix + panel).classList.add('active');
     event.target.classList.add('active');
   }
+
+  // ── ROSTERS ──
+  const CLASSES = [
+    { course:'Biology 101',       teacher:'Sarah Chen',  dept:'Science',                   students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
+    { course:'English 10',        teacher:'Marcus Webb', dept:'English',                   students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
+    { course:'Algebra II',        teacher:'Priya Nair',  dept:'Math',                      students:['Hassan Ali','Ingrid Svensson','James Carter'] },
+    { course:'World History',     teacher:'Tom Okafor',  dept:'History & Social Studies',  students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
+    { course:'Spanish III',       teacher:'Priya Nair',  dept:'World Languages',           students:['Ben Kowalski','Clara Russo','Dante Osei'] },
+    { course:'AP Literature',     teacher:'Marcus Webb', dept:'English',                   students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
+    { course:'Chemistry',         teacher:'Sarah Chen',  dept:'Science',                   students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
+  ];
+
+  function renderRoster() {
+    const dept = document.getElementById('roster-dept').value;
+    const rows = CLASSES.filter(c => !dept || c.dept === dept);
+    document.getElementById('roster-tbody').innerHTML = rows.map((c, i) => `
+      <tr>
+        <td class="td-name">${c.course}</td>
+        <td>${c.teacher}</td>
+        <td class="td-muted">${c.dept}</td>
+        <td>${c.students.length}</td>
+        <td><div class="actions-cell">
+          <button class="btn btn-secondary btn-sm" onclick="openStudents(${CLASSES.indexOf(c)})">Students</button>
+          <button class="btn btn-secondary btn-sm">Edit</button>
+          <button class="btn btn-danger btn-sm">Remove</button>
+        </div></td>
+      </tr>
+    `).join('');
+  }
+
+  function openStudents(idx) {
+    const cls = CLASSES[idx];
+    document.getElementById('studentsModalTitle').textContent = cls.course;
+    document.getElementById('studentsModalSubtitle').textContent = cls.teacher + ' · ' + cls.students.length + ' students';
+    document.getElementById('studentsModalBody').innerHTML = cls.students.map(s => `
+      <tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:0.55rem 1rem;font-weight:600;color:#1e293b">${s}</td>
+        <td style="padding:0.55rem 1rem;text-align:right">
+          <button class="btn btn-danger btn-sm">Remove</button>
+        </td>
+      </tr>
+    `).join('');
+    openModal('studentsModal');
+  }
+
+  function showImportPreview() {
+    document.getElementById('importDropZone').style.display = 'none';
+    document.getElementById('importPreview').style.display = 'block';
+  }
+  function hideImportPreview() {
+    document.getElementById('importDropZone').style.display = '';
+    document.getElementById('importPreview').style.display = 'none';
+  }
+
+  renderRoster();
 
   // ── COMMENT BANKS ──
   function toggleDept(header) {
