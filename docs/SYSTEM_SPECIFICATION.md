@@ -156,10 +156,7 @@ When teachers select comments in the interface, they see them organized by:
 2. Skill Area (grouping)
 3. Subskill (the comment selector)
 
-For each subskill, clicking cycles through three states:
-1. Strength comment selected
-2. Growth comment selected
-3. Neither selected (deselected)
+For each subskill, two toggle buttons are shown: **S** (Strength) and **G** (Growth). Clicking S or G directly selects that type of comment; clicking the same button again deselects it; clicking the other button switches to that type. Clicking the subskill label text cycles through states: none → Strength → Growth → none.
 
 Only one comment per subskill can be selected at a time (either Strength or Growth, not both).
 
@@ -192,47 +189,48 @@ Skills are derived from the comment bank structure. Each skill can have:
 
 **Left Sidebar (Master Area)**
 - Teacher name
-- Term selector (dropdown)
+- Grading Period selector (dropdown)
+- Navigation arrows (▲/▼) to step to the previous or next student across all classes
 - Class roster (collapsible list)
-  - Each class shows student count
-  - Classes collapse/expand to show students
-  - Clicking a class or student activates that student
+  - Classes collapse/expand to show students; clicking a class header toggles its expand/collapse state only
+  - Clicking a student in the list activates that student in the main content area
+- Status legend at the bottom of the sidebar:
+  - Round dot: report card status (not started, in-progress, complete, finalized)
+  - Square dot: student reflection submitted
 
 **Main Content Area**
 - Empty state: "← Select a student to begin" if no student is selected
 - Student editing area (when student is selected):
-  - Student metadata (name, ID, grade level)
+  - Student metadata (name, course, teacher, grading period)
   - Student reflection (if submitted; read-only)
   - Skills section:
-    - For each skill:
+    - For each transferable skill:
       - Skill name
-      - Comments panel (shows selected comments + add option)
-      - Custom comment field for quick additions
+      - "Skill Selection" button — opens the comment panel for that skill
+      - Selected comments displayed as text below the button
   - Narrative textarea (for general comments)
-  - Checkbox: "Mark as reviewed" (enables advisor review)
-  - Checkbox: "Finalize" (locks from advisor editing)
   - Save hint: "Changes saved automatically"
-  - Export to PDF button (for this student)
+  - Checkbox: "Mark as finalized" (locks teacher editing and enables advisor access; disabled with a hint message until minimum requirements are met)
+  - Preview Report Card button (opens a preview modal; Print / Save PDF available from the preview)
 
 **Right Sidebar (Comment Panel)**
-- Opens when clicking on a skill's comment section
+- Opens when clicking the "Skill Selection" button for a transferable skill; panel header displays the skill name
 - Shows:
-  - Standard comments from the applied comment bank, grouped by subcategory
-  - Custom comments (personal to this teacher)
-  - Ability to select/deselect comments
-  - Option to add new custom comments
-  - Input field for quick one-time comments
+  - Standard comments organized by Skill Area, with each Subskill shown as a row containing two toggle buttons — **S** (Strength) and **G** (Growth)
+  - A quick-add input field for one-time comments: text entered here is saved only for the current student, not added to the reusable comment bank
+  - An "Edit comment bank…" link that opens the custom comment bank manager for adding or removing reusable comments
+  - Saved custom comments (personal to this teacher, reusable across students) shown as a checklist — checked comments are applied to the current student
 
 ### Core Workflows
 
 #### Selecting a Term & Class
 
-1. Teacher clicks term dropdown in master area
-2. Available terms load (filtered to currently-assigned terms)
-3. Roster updates to show classes for selected term
-4. If previously on a class in this term, return to that class and student (if available)
-5. If the class is not available in the new term, show empty state
-6. If first time in this term, show empty state
+1. Teacher clicks grading period dropdown in master area
+2. Available grading periods load (filtered to currently-assigned terms)
+3. Roster updates to show classes for the selected grading period
+4. If a student was previously active, the system searches the new roster for that student by name; if found, activates them in their class
+5. If the student is not found in the new grading period, show empty state
+6. If no student was previously selected, show empty state
 
 #### Drafting a Report Card
 
@@ -248,7 +246,7 @@ Skills are derived from the comment bank structure. Each skill can have:
 
 #### Finalizing & Advisor Review
 
-1. Teacher checks "Finalize"
+1. Teacher checks "Mark as finalized"
    - Report card is locked for teacher editing and becomes available for advisor review
    - Advisor can now access and edit the report card
 2. Advisor reviews and edits the report card
@@ -260,9 +258,9 @@ Skills are derived from the comment bank structure. Each skill can have:
 
 #### Exporting (Local)
 
-1. Teacher clicks "Export to PDF" button
-2. PDF generates with current student's report card (advisor-reviewed version)
-3. File downloads to user's computer
+1. Teacher clicks "Preview Report Card" button
+2. Preview modal opens showing the current student's report card
+3. Teacher clicks "Print / Save PDF" to download the PDF to their computer
 
 ### Validation & Constraints
 
@@ -273,7 +271,7 @@ All validation rules are configurable per term by admin:
 - Required skills (must have at least one comment)
 - Whether all skills must have comments or some can be blank
 
-If a report card doesn't meet validation criteria, the "Finalize" checkbox is disabled with a message: "Report card must meet the following requirements: [list unmet requirements]"
+If a report card doesn't meet validation criteria, the "Mark as finalized" checkbox is disabled with an inline hint listing the specific unmet requirements (e.g., "selections in 2 more skill areas needed; overall comment needs 15 more characters").
 
 ---
 
