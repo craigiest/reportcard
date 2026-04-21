@@ -109,37 +109,38 @@ Admin configures term structure, including:
 
 ### Comment Banks
 
-Admin can create and upload multiple standard comment bank sets. Each set is a collection of comments organized by skill. These comment banks can be applied at multiple levels via a selection tool in outline format:
+Admin can create and upload multiple standard comment bank sets. Each set is a simple CSV file with two columns: skill area and comment text.
+
+**Standard Comment Bank CSV Format:**
+```
+skill_area,comment
+Communication,"Excellent participation in class discussions"
+Communication,"Shows respect for diverse perspectives"
+Collaboration,"Works effectively with peers"
+Collaboration,"Contributes ideas to group projects"
+...
+```
+
+These comment banks can be applied at multiple levels via a selection tool in the admin interface:
 
 - **School-wide application**: All courses use this comment bank
 - **Department application**: All courses in a department use this comment bank
 - **Subdepartment application**: A subset of courses within a department use this comment bank (e.g., "Spanish for Native Speakers" within World Languages)
 - **Individual class override**: A specific class can optionally use a different comment bank than the default for its department
 
-**Important**: Each course uses exactly one standard comment bank. A course cannot have both department-level and course-specific comments applied simultaneously; the more specific level always overrides.
+**Important**: Each course uses exactly one standard comment bank. A course cannot have both department-level and course-specific comments applied simultaneously; the more specific selection always overrides.
 
+**Custom Comments (per teacher, personal use):**
+
+Teachers export and share their personal custom comments using the same two-column CSV format:
 ```
-Standard Comment Banks (admin-created sets)
-├── Bank Set 1 (e.g., default school-wide)
-│   ├── Skill: Communication
-│   │   ├── Comment 1
-│   │   ├── Comment 2
-│   │   └── ...
-│   ├── Skill: Collaboration
-│   └── ...
-├── Bank Set 2 (e.g., World Languages specific)
-│   ├── Skill: Communication
-│   └── ...
-└── Bank Set 3 (e.g., Spanish for Native Speakers specific)
-    └── ...
-
-Custom Comments (per teacher, personal use)
-├── Teacher 1 Personal Comments (only visible to that teacher)
-├── Teacher 2 Personal Comments (only visible to that teacher)
-└── ...
+skill_area,comment
+Communication,"Needs to speak up more in discussions"
+Collaboration,"Great job leading the group project"
+...
 ```
 
-Teachers can export their personal custom comment banks as CSV and share with colleagues for their own customization.
+Teachers can export their personal custom comment banks as CSV and share with colleagues, who can then import them into their own personal comment collections.
 
 ### Skills & Rubric
 
@@ -508,10 +509,16 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
 
 **Import Rosters**
 - CSV import:
-  - Upload CSV file
-  - Map columns (Student ID, Name, Grade, Class, Teacher)
-  - Preview import
-  - Confirm and apply
+  - Upload CSV file with format: `teacher,course,student[,comment]`
+  - Preview import showing number of rows/classes/students
+  - Confirm and apply (with option to replace or merge)
+  - Example:
+    ```
+    teacher,course,student,comment
+    "John Smith","Biology 101","Alice Johnson","Ready for grading"
+    "John Smith","Biology 101","Bob Davis",""
+    "Jane Doe","English 10","Charlie Brown",""
+    ```
 - Blackbaud/Canvas integration (TBD: specifics for database manager)
   - Authenticate with external system
   - Select classes/students to sync
