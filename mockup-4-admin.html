@@ -324,6 +324,111 @@
     /* ── USER STATUS ── */
     .status-active   { color: #16a34a; font-size: 0.78rem; font-weight: 600; }
     .status-archived { color: #94a3b8; font-size: 0.78rem; font-weight: 600; }
+
+    /* ── SUB-TABS ── */
+    .sub-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 1.5rem;
+    }
+    .sub-tab {
+      padding: 0.55rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      user-select: none;
+      transition: all 0.12s;
+    }
+    .sub-tab:hover { color: #4f46e5; }
+    .sub-tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+    .sub-panel { display: none; }
+    .sub-panel.active { display: block; }
+
+    /* ── TERM YEAR GROUP ── */
+    .year-group { margin-bottom: 1.75rem; }
+    .year-heading {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      padding: 0 0 0.5rem 0;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── TERM ROW ── */
+    .term-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .term-name { font-weight: 700; font-size: 0.9rem; color: #1e293b; min-width: 60px; }
+    .term-dates { font-size: 0.78rem; color: #64748b; flex: 1; }
+    .term-periods { display: flex; gap: 0.35rem; }
+    .period-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .term-locked {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+    .term-actions { display: flex; gap: 0.35rem; margin-left: auto; }
+
+    /* ── VALIDATION CARDS ── */
+    .val-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .val-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .val-card-header {
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1e293b;
+    }
+    .val-card-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+    .val-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .val-row-label { font-size: 0.82rem; color: #374151; flex: 1; }
+    .val-input {
+      width: 72px;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      text-align: center;
+      color: #1e293b;
+    }
+    .val-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .val-hint { font-size: 0.72rem; color: #94a3b8; margin-top: 0.75rem; }
+    .val-save-row { display: flex; justify-content: flex-end; margin-top: 0.25rem; }
   </style>
 </head>
 <body>
@@ -497,7 +602,257 @@
         </div>
       </div>
     </div>
-    <div class="section" id="section-terms">Terms &amp; Settings (coming soon)</div>
+    <div class="section" id="section-terms">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Terms &amp; Settings</div>
+          <div class="section-subtitle">Configure school terms and global validation rules</div>
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('terms','termsList')">Terms</div>
+        <div class="sub-tab" onclick="showSubTab('terms','validation')">Validation Rules</div>
+      </div>
+
+      <!-- Terms list sub-panel -->
+      <div class="sub-panel active" id="terms-termsList">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+          <button class="btn btn-primary" onclick="openModal('newTermModal')">+ New Term</button>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2025–2026</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 3, 2025 – Jan 16, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 27 – Jun 12, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" onclick="openModal('editTermModal')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="lockTerm(this)">Lock</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2024–2025</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 4, 2024 – Jan 17, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 28 – Jun 6, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation rules sub-panel -->
+      <div class="sub-panel" id="terms-validation">
+        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1.25rem">
+          These two configurations apply automatically to all Midterm and Final reporting periods respectively. Set any value to <strong>0</strong> to disable that rule.
+        </p>
+        <div class="val-grid">
+
+          <!-- Midterm -->
+          <div class="val-card">
+            <div class="val-card-header">Midterm</div>
+            <div class="val-card-body">
+              <div class="val-row">
+                <span class="val-row-label">Min skill areas with at least one comment</span>
+                <input class="val-input" type="number" min="0" value="2">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min total comments per report card</span>
+                <input class="val-input" type="number" min="0" value="3">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max comments per skill</span>
+                <input class="val-input" type="number" min="0" value="3">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max characters per custom comment</span>
+                <input class="val-input" type="number" min="0" value="300">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="100">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="500">
+              </div>
+              <div class="val-hint">0 = rule not enforced</div>
+              <div class="val-save-row">
+                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Final -->
+          <div class="val-card">
+            <div class="val-card-header">Final</div>
+            <div class="val-card-body">
+              <div class="val-row">
+                <span class="val-row-label">Min skill areas with at least one comment</span>
+                <input class="val-input" type="number" min="0" value="3">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min total comments per report card</span>
+                <input class="val-input" type="number" min="0" value="5">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max comments per skill</span>
+                <input class="val-input" type="number" min="0" value="4">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max characters per custom comment</span>
+                <input class="val-input" type="number" min="0" value="300">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="150">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="700">
+              </div>
+              <div class="val-hint">0 = rule not enforced</div>
+              <div class="val-save-row">
+                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /section-terms -->
+
+    <!-- New Term Modal -->
+    <div class="modal-overlay" id="newTermModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">New Term</div>
+            <div class="modal-subtitle">Add a term to a school year</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('newTermModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div class="form-row" style="margin:0">
+            <label class="form-label">School Year</label>
+            <input class="form-input" type="text" value="2025-2026" placeholder="e.g. 2025-2026">
+          </div>
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Term Name</label>
+            <input class="form-input" type="text" placeholder="e.g. S1, T2, Q3">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div>
+              <label class="form-label">Start Date</label>
+              <input class="form-input" type="date">
+            </div>
+            <div>
+              <label class="form-label">End Date</label>
+              <input class="form-input" type="date">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Reporting Periods</label>
+            <div style="display:flex;gap:1.5rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Midterm</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Final</label>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Student Reflection Freeze Date <span style="font-weight:400;color:#94a3b8">(optional)</span></label>
+            <input class="form-input" type="date">
+            <div class="form-hint">Students cannot edit reflections after this date.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('newTermModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('newTermModal')">Create Term</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Term Modal (reused layout) -->
+    <div class="modal-overlay" id="editTermModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Term — 25–26 S2</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('editTermModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Term Name</label>
+            <input class="form-input" type="text" value="S2">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div>
+              <label class="form-label">Start Date</label>
+              <input class="form-input" type="date" value="2026-01-27">
+            </div>
+            <div>
+              <label class="form-label">End Date</label>
+              <input class="form-input" type="date" value="2026-06-12">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Reporting Periods</label>
+            <div style="display:flex;gap:1.5rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Midterm</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Final</label>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Student Reflection Freeze Date <span style="font-weight:400;color:#94a3b8">(optional)</span></label>
+            <input class="form-input" type="date" value="2026-06-01">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('editTermModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('editTermModal')">Save Changes</button>
+        </div>
+      </div>
+    </div>
     <div class="section" id="section-banks">Comment Banks (coming soon)</div>
     <div class="section" id="section-rosters">Rosters &amp; Import (coming soon)</div>
     <div class="section active" id="section-reportcards">
@@ -842,6 +1197,31 @@
   }
 
   renderUsers();
+
+  // ── SUB-TABS ──
+  function showSubTab(section, panel) {
+    const prefix = section + '-';
+    document.querySelectorAll('#section-' + section + ' .sub-panel')
+      .forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#section-' + section + ' .sub-tab')
+      .forEach(t => t.classList.remove('active'));
+    document.getElementById(prefix + panel).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ── LOCK TERM ──
+  function lockTerm(btn) {
+    const row = btn.closest('.term-row');
+    btn.remove();
+    const editBtn = row.querySelector('.btn-secondary');
+    editBtn.disabled = true;
+    editBtn.style.opacity = '0.4';
+    editBtn.style.cursor = 'not-allowed';
+    const locked = document.createElement('span');
+    locked.className = 'term-locked';
+    locked.textContent = 'Locked';
+    row.querySelector('.term-actions').before(locked);
+  }
 </script>
 </body>
 </html>
