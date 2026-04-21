@@ -156,7 +156,12 @@ When teachers select comments in the interface, they see them organized by:
 2. Skill Area (grouping)
 3. Subskill (the comment selector)
 
-For each subskill, they can choose from the Strength comment, Growth comment, or both.
+For each subskill, clicking cycles through three states:
+1. Strength comment selected
+2. Growth comment selected
+3. Neither selected (deselected)
+
+Only one comment per subskill can be selected at a time (either Strength or Growth, not both).
 
 #### Custom Comments
 
