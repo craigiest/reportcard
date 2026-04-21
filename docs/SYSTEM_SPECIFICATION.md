@@ -228,9 +228,9 @@ Skills are derived from the comment bank structure. Each skill can have:
 1. Teacher clicks grading period dropdown in master area
 2. Available grading periods load (filtered to currently-assigned terms)
 3. Roster updates to show classes for the selected grading period
-4. If a student was previously active, the system searches the new roster for that student by name; if found, activates them in their class
-5. If the student is not found in the new grading period, show empty state
-6. If no student was previously selected, show empty state
+4. If a student was previously active, the system first looks for that student in the same class (by class name) in the new grading period; if found there, activates them in that class
+5. If the student is not in the same class, the system searches the rest of the roster for the student by name; if found in another class, activates them there
+6. If the student is not found anywhere in the new grading period, or if no student was previously selected, show empty state
 
 #### Drafting a Report Card
 
