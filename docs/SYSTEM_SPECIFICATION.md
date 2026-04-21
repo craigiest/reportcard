@@ -58,7 +58,6 @@ All users have universal roles across the school. A person can transition betwee
   - Custom comments (personal, not shared)
 - Write narrative comments
 - Finalize report card (locks from own editing and enables advisor access)
-- Mark report card as "reviewed" (after advisor has reviewed it)
 - Export their own students'/advisees' report cards as PDF (local download)
 - View unfinalized report cards for their advisees (as advisor)
 
