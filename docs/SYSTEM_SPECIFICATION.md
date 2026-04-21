@@ -123,14 +123,14 @@ Self-awareness and Growth Mindset,Motivation,Awareness of personal motivations,"
 Critical Thinking,Question Asking,Asking complex or nuanced questions,"You ask questions that...","Work on asking questions that..."
 ```
 
-These comment banks can be applied at multiple levels via a selection tool in the admin interface:
+**By default, the entire school uses a single standard comment bank.** However, customization is possible at department or course level when needed:
 
-- **School-wide application**: All courses use this comment bank
-- **Department application**: All courses in a department use this comment bank
-- **Subdepartment application**: A subset of courses within a department use this comment bank (e.g., "Spanish for Native Speakers" within World Languages)
-- **Individual class override**: A specific class can optionally use a different comment bank than the default for its department
+- **School-wide (default)**: All courses use the default comment bank
+- **Department customization**: A specific department can opt to use a different comment bank instead of the school-wide default (e.g., World Languages uses a different bank)
+- **Subdepartment customization**: A subset of courses within a department can use yet another bank (e.g., "Spanish for Native Speakers" uses a specialized bank while other languages use the department bank)
+- **Individual course customization**: A specific course can optionally use a different comment bank
 
-**Important**: Each course uses exactly one standard comment bank. A course cannot have both department-level and course-specific comments applied simultaneously; the more specific selection always overrides.
+**Important**: Each course uses exactly one standard comment bank. The hierarchy works top-down: school default → department override → subdepartment override → individual course override. More specific selections override broader defaults.
 
 When teachers select comments in the interface, they see them organized by:
 1. Transferable Skill (top level)
@@ -480,15 +480,16 @@ If a report card doesn't meet validation criteria, the "Finalize" checkbox is di
 - Or input comments manually through form
 - System organizes comments into the skill hierarchy automatically
 
-**Apply Comment Bank to Departments/Courses**
-- Select which bank to apply
-- Choose application level:
-  - School-wide (all courses)
-  - Department-level (e.g., "World Languages")
-  - Subdepartment-level (e.g., "Spanish for Native Speakers" within World Languages)
-  - Individual class override
+**Set School-wide Default Comment Bank**
+- Select the primary comment bank that all courses will use by default
+- This applies unless overridden at department or course level
+
+**Customize Comment Banks by Department/Course**
+- Override the school default for specific departments (e.g., "World Languages" uses a different bank)
+- Override department selection for specific subdepartments or courses (e.g., "Spanish for Native Speakers" within World Languages)
+- Override for individual courses if needed
 - Each course uses exactly one standard comment bank
-- More specific selections override broader ones
+- More specific selections override broader defaults
 
 **Manage Standard Comments**
 - Edit comment text within a bank
