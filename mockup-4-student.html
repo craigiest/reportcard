@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup 4 — Student Reflection Interface</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    /* ── TOP NAV ── */
+    .topnav {
+      height: 48px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      gap: 1rem;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .topnav a { text-decoration: none; color: #64748b; font-size: 0.85rem; }
+    .topnav a:hover { color: #1d4ed8; }
+    .topnav-sep { color: #e2e8f0; }
+    .topnav-school { font-weight: 700; font-size: 0.95rem; color: #1e293b; }
+    .topnav-title { color: #64748b; font-size: 0.875rem; }
+    .topnav-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+    .topnav-username { font-size: 0.875rem; color: #64748b; }
+    .btn-topnav {
+      font-size: 0.78rem;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: #fff;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+    }
+    .btn-topnav:hover { background: #f8fafc; color: #1e293b; }
+    .btn-topnav.danger { color: #dc2626; border-color: #fecaca; background: #fff; }
+    .btn-topnav.danger:hover { background: #fee2e2; }
+
+    /* ── LAYOUT ── */
+    .app { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      width: 260px;
+      flex-shrink: 0;
+      background: #1e293b;
+      border-right: 1px solid #0f172a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .master-area {
+      flex-shrink: 0;
+      padding: 1rem;
+      border-bottom: 2px solid #334155;
+      background: #0f172a;
+    }
+
+    .field-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin-bottom: 0.2rem;
+    }
+
+    .student-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #e2e8f0;
+      margin-bottom: 0.85rem;
+    }
+
+    .period-select {
+      width: 100%;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      color: #e2e8f0;
+      background: #293548;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .period-select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+
+    /* ── CLASS LIST ── */
+    .class-list { flex: 1; overflow-y: auto; padding: 0.4rem 0; }
+
+    .class-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.6rem 0.85rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      border-left: 3px solid transparent;
+      transition: background 0.1s;
+    }
+    .class-row:hover { background: #293548; }
+    .class-row.active {
+      background: #1d4ed8;
+      border-left-color: #60a5fa;
+      color: #fff;
+    }
+    .class-row-info { flex: 1; min-width: 0; }
+    .class-row-name { font-size: 0.84rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .class-row-teacher { font-size: 0.74rem; color: #94a3b8; margin-top: 0.1rem; }
+    .class-row.active .class-row-teacher { color: #bfdbfe; }
+
+    .status-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      border: 1.5px solid #64748b;
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .status-dot.draft    { background: #f59e0b; border-color: #f59e0b; }
+    .status-dot.submitted { background: #6366f1; border-color: #6366f1; }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.75rem;
+      padding: 0.45rem 0.85rem;
+      border-top: 1px solid #334155;
+      background: #0f172a;
+      flex-shrink: 0;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: #64748b; }
+
+    /* ── MAIN CONTENT ── */
+    .main-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .editing-area {
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 0.7rem 1.2rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #64748b;
+    }
+    .card-body { padding: 1.1rem 1.2rem; }
+
+    /* ── CLASS INFO ── */
+    .class-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1.5rem;
+      font-size: 0.875rem;
+      color: #334155;
+    }
+    .info-row { display: flex; gap: 0.4rem; align-items: baseline; }
+    .info-label { color: #94a3b8; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+
+    /* ── PROMPT ── */
+    .prompt-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .prompt-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #0369a1;
+      margin-bottom: 0.35rem;
+    }
+    .prompt-text { font-size: 0.875rem; color: #1e40af; line-height: 1.65; }
+
+    /* ── TEXTAREA ── */
+    .reflection-textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #1e293b;
+      resize: vertical;
+      line-height: 1.7;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .reflection-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .reflection-textarea:disabled {
+      background: #f8fafc;
+      color: #334155;
+      cursor: default;
+      resize: none;
+      min-height: unset;
+    }
+
+    /* ── CHAR COUNT + SAVE HINT ── */
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.45rem;
+      font-size: 0.75rem;
+      min-height: 1.2em;
+    }
+    .char-count         { color: #94a3b8; }
+    .char-count.warn    { color: #f59e0b; font-weight: 600; }
+    .char-count.met     { color: #22c55e; }
+    .save-hint          { color: #94a3b8; transition: color 0.2s; }
+    .save-hint.saving   { color: #94a3b8; font-style: italic; }
+    .save-hint.saved    { color: #22c55e; }
+
+    /* ── STATUS + SUBMIT ROW ── */
+    .action-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f1f5f9;
+      gap: 0.75rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+    }
+    .status-badge.not-started { background: #f1f5f9; color: #64748b; }
+    .status-badge.draft       { background: #fef3c7; color: #92400e; }
+    .status-badge.submitted   { background: #ede9fe; color: #5b21b6; }
+
+    .btn-submit {
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.55rem 1.35rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #1d4ed8;
+      color: #fff;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-submit:hover:not(:disabled) { background: #1e40af; }
+    .btn-submit:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+
+    /* ── SUBMITTED NOTICE ── */
+    .submitted-notice {
+      margin-top: 0.9rem;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.845rem;
+      color: #166534;
+      line-height: 1.55;
+    }
+    .submitted-notice-title { font-weight: 700; margin-bottom: 0.25rem; }
+    .submitted-contact {
+      margin-top: 0.45rem;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    /* ── MODALS ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 440px;
+      max-width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+      overflow: hidden;
+    }
+    .confirm-box { padding: 1.5rem; }
+    .confirm-box h3 { font-size: 1rem; margin-bottom: 0.5rem; color: #1e293b; }
+    .confirm-box p  { font-size: 0.875rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+    .btn { border: none; cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 600; border-radius: 8px; padding: 0.55rem 1.1rem; transition: all 0.15s; }
+    .btn-primary { background: #1d4ed8; color: #fff; }
+    .btn-primary:hover { background: #1e40af; }
+    .btn-ghost { background: #f1f5f9; color: #475569; }
+    .btn-ghost:hover { background: #e2e8f0; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+  </style>
+</head>
+<body>
+
+<!-- ── TOP NAV ── -->
+<nav class="topnav">
+  <a href="index.html">← All Mockups</a>
+  <span class="topnav-sep">|</span>
+  <span class="topnav-school">Westbrook Academy</span>
+  <span class="topnav-sep">|</span>
+  <span class="topnav-title">My Reflections</span>
+  <div class="topnav-right">
+    <span class="topnav-username">Maya Okafor</span>
+    <button class="btn-topnav danger" onclick="confirmReset()">Reset Data</button>
+    <button class="btn-topnav">Log out</button>
+  </div>
+</nav>
+
+<div class="app">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left-panel">
+    <div class="master-area">
+      <div class="field-label">Student</div>
+      <div class="student-name">Maya Okafor</div>
+      <div class="field-label">Grading Period</div>
+      <select class="period-select" id="periodSelect" onchange="onPeriodChange()"></select>
+    </div>
+
+    <div class="class-list" id="classList"></div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="status-dot"></span> Not started</div>
+      <div class="legend-item"><span class="status-dot draft"></span> Draft</div>
+      <div class="legend-item"><span class="status-dot submitted"></span> Submitted</div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div class="main-content">
+    <div class="empty-state" id="emptyState">← Select a class to begin</div>
+
+    <div class="editing-area" id="editingArea" style="display:none">
+
+      <!-- Class info -->
+      <div class="card">
+        <div class="card-header">Class</div>
+        <div class="card-body">
+          <div class="class-info-grid" id="classInfoGrid"></div>
+        </div>
+      </div>
+
+      <!-- Reflection -->
+      <div class="card">
+        <div class="card-header">Reflection</div>
+        <div class="card-body">
+          <div class="prompt-box">
+            <div class="prompt-label">Prompt</div>
+            <div class="prompt-text" id="promptText"></div>
+          </div>
+          <textarea class="reflection-textarea" id="reflectionInput"
+            placeholder="Write your reflection here…"
+            oninput="onInput()"></textarea>
+          <div class="meta-row">
+            <span class="char-count" id="charCount"></span>
+            <span class="save-hint" id="saveHint"></span>
+          </div>
+          <div class="action-row">
+            <span class="status-badge" id="statusBadge"></span>
+            <button class="btn-submit" id="submitBtn" onclick="openSubmitModal()">Submit</button>
+          </div>
+          <div id="submittedNotice"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ── SUBMIT CONFIRMATION MODAL ── -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal">
+    <div class="confirm-box">
+      <h3>Submit your reflection?</h3>
+      <p>Once submitted, you won't be able to edit this reflection. Your teacher will be able to see it. Make sure you're happy with what you've written before submitting.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" onclick="closeSubmitModal()">Go back</button>
+        <button class="btn btn-primary" onclick="doSubmit()">Yes, submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESET CONFIRMATION MODAL ── -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <div class="confirm-box">
+      <h3>Reset all data?</h3>
+      <p>This will clear all reflections and restore the demo data. This cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" onclick="closeResetModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="doReset()">Yes, reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────────────────────────────────
+const STUDENT_NAME   = "Maya Okafor";
+const MIN_CHARS      = 100;
+const STORAGE_KEY    = "rc_mockup4_student_v1";
+
+const GRADING_PERIODS = [
+  "25-26 S1 Midterm",
+  "25-26 S1 Final",
+  "25-26 I1 Final",
+  "25-26 S2 Midterm",
+  "25-26 S2 Final",
+  "25-26 I2 Final"
+];
+
+const CLASSES = {
+  "25-26 S1 Midterm": [
+    { course: "AP English Literature",           teacher: "Ms. Chen"     },
+    { course: "Pre-Calculus",                    teacher: "Mr. Rivera"   },
+    { course: "Biology",                         teacher: "Dr. Thompson" },
+    { course: "World History",                   teacher: "Mr. Nakamura" },
+    { course: "Studio Art",                      teacher: "Ms. Patel"    }
+  ],
+  "25-26 S1 Final": [
+    { course: "AP English Literature",           teacher: "Ms. Chen"     },
+    { course: "Pre-Calculus",                    teacher: "Mr. Rivera"   },
+    { course: "Biology",                         teacher: "Dr. Thompson" },
+    { course: "World History",                   teacher: "Mr. Nakamura" },
+    { course: "Studio Art",                      teacher: "Ms. Patel"    }
+  ],
+  "25-26 I1 Final": [
+    { course: "Environmental Science Field Study", teacher: "Dr. Thompson" }
+  ],
+  "25-26 S2 Midterm": [
+    { course: "AP English Literature",           teacher: "Ms. Chen"     },
+    { course: "Calculus",                        teacher: "Mr. Rivera"   },
+    { course: "Chemistry",                       teacher: "Dr. Thompson" },
+    { course: "Contemporary Issues",             teacher: "Mr. Nakamura" },
+    { course: "Photography",                     teacher: "Ms. Patel"    }
+  ],
+  "25-26 S2 Final": [
+    { course: "AP English Literature",           teacher: "Ms. Chen"     },
+    { course: "Calculus",                        teacher: "Mr. Rivera"   },
+    { course: "Chemistry",                       teacher: "Dr. Thompson" },
+    { course: "Contemporary Issues",             teacher: "Mr. Nakamura" },
+    { course: "Photography",                     teacher: "Ms. Patel"    }
+  ],
+  "25-26 I2 Final": [
+    { course: "Creative Writing Workshop",       teacher: "Ms. Chen"     }
+  ]
+};
+
+const PROMPT = "Reflect on your learning and growth in this class this term. Consider: What are you most proud of? What challenged you, and how did you respond? What skills or habits are you working on developing?";
+
+// ─────────────────────────────────────────────────────────────────
+// SEED DATA
+// ─────────────────────────────────────────────────────────────────
+const SEED = {
+  "25-26 S1 Midterm|AP English Literature": {
+    text: "This term in AP English Literature has pushed me to think more carefully about the way authors construct meaning. The most challenging part was the comparative essay, where I had to hold two complex texts in my mind at the same time. I think my close reading skills have genuinely improved — I notice things in texts now that I would have glossed over before. Going forward, I want to work on my thesis statements, which still feel vague sometimes even when I have a clear idea.",
+    submitted: true, timestamp: "Oct 15, 2025 at 10:34 AM"
+  },
+  "25-26 S1 Midterm|Pre-Calculus": {
+    text: "Pre-Calculus has been challenging but I feel like I've made real progress with trigonometry, which I was dreading. I've been using tutorial more consistently and it's made a difference. I still struggle with remembering which identity to apply in proofs, but I'm getting faster. I'm proud that I retook the unit 2 test and improved my score significantly.",
+    submitted: true, timestamp: "Oct 14, 2025 at 9:12 AM"
+  },
+  "25-26 S1 Midterm|Biology": {
+    text: "Biology has been one of my favorite classes this semester. I really enjoy the lab work — especially the cell membrane experiment. The genetics unit challenged me because there's a lot of vocabulary to keep straight. I'm proud of the osmosis lab report, which Dr. Thompson said showed strong scientific reasoning. I want to keep working on connecting concepts across units rather than treating each topic separately.",
+    submitted: true, timestamp: "Oct 16, 2025 at 2:58 PM"
+  },
+  "25-26 S1 Midterm|World History": {
+    text: "I've been working hard to improve my discussion contributions. At the start of the semester I mostly listened, but I've been pushing myself to speak up more, even when I'm not totally sure of my answer. The unit on colonialism was uncomfortable but important. My biggest challenge has been keeping up with the reading — I sometimes fall behind and then feel lost in class. That's something I need to address in the second half of the term.",
+    submitted: true, timestamp: "Oct 15, 2025 at 4:20 PM"
+  },
+  "25-26 S1 Midterm|Studio Art": {
+    text: "Studio Art has been a space where I take risks I don't take in other classes. I've been experimenting with mixed media and it doesn't always work, but I've learned that failing at something visually is less scary than I thought. I'm proud of the self-portrait project. My challenge is time management — I sometimes run out of class time and have to rush finishing pieces at home.",
+    submitted: true, timestamp: "Oct 13, 2025 at 11:07 AM"
+  },
+  "25-26 S1 Final|AP English Literature": {
+    text: "Looking back at the whole semester, I'm most proud of my final essay on Toni Morrison. It was the first time I felt like my argument was genuinely mine and not just restating what we discussed in class. Reading closely has become more automatic — I find myself annotating books I read for fun now, which feels good. The skill I most want to carry forward is revision; I tend to submit first drafts and call them done.",
+    submitted: true, timestamp: "Jan 22, 2026 at 1:15 PM"
+  },
+  "25-26 S1 Final|Pre-Calculus": {
+    text: "By the end of the semester I felt much more confident with trig than I did at midterm. The thing that helped most was working with a study group — explaining concepts to others forced me to actually understand them rather than just memorizing steps. I'm still not fast enough on tests, which is something I want to work on in Calculus next semester.",
+    submitted: true, timestamp: "Jan 20, 2026 at 10:00 AM"
+  },
+  "25-26 S1 Final|Biology": {
+    text: "The second half of Biology felt harder than the first, mostly because evolution is such a large topic. I kept confusing natural selection with genetic drift. But the final project helped me pull it together. Working with a lab partner on the research poster was a good challenge — we didn't always agree and had to figure out how to compromise. I feel more prepared going into Chemistry.",
+    submitted: true, timestamp: "Jan 21, 2026 at 3:44 PM"
+  },
+  "25-26 S1 Final|World History": {
+    text: "I did get better at participating in discussions by the end of the semester. I also got more comfortable saying 'I'm not sure, but I think…' rather than staying silent. The final essay on imperialism felt like my strongest history writing yet. I want to keep working on reading the assigned texts more carefully instead of just skimming before class.",
+    submitted: true, timestamp: "Jan 23, 2026 at 9:30 AM"
+  },
+  "25-26 S1 Final|Studio Art": {
+    text: "My Studio Art portfolio this semester represents a lot of risk-taking that I'm proud of. I tried three media I'd never used before — not all of it worked, but the process was valuable. My biggest growth was accepting feedback: at the start of the year I got defensive when Ms. Patel critiqued my work, and by the end I was actually asking for more specific feedback. That feels like a real change.",
+    submitted: true, timestamp: "Jan 22, 2026 at 2:10 PM"
+  },
+  "25-26 I1 Final|Environmental Science Field Study": {
+    text: "The field study intensive was unlike anything I've done academically before. Being outside every day and collecting real data made the science feel meaningful in a way that classroom work sometimes doesn't. The hardest part was the water quality report — pulling together two weeks of data into a coherent argument was genuinely difficult. I'm proud that our group's findings were included in the final summary. I want to bring more of that real-world connection into my regular classes.",
+    submitted: true, timestamp: "Feb 7, 2026 at 5:00 PM"
+  },
+  "25-26 S2 Midterm|AP English Literature": {
+    text: "Second semester has started with even more challenging texts. Reading Faulkner has been genuinely hard — the non-linear structure throws me off and I've had to reread passages more than usual. But that difficulty is making me a more careful reader. I'm most proud of my seminar contribution last week where I connected Light in August to something we read in World History. Ms. Chen seemed genuinely surprised, which felt good.",
+    submitted: true, timestamp: "Apr 3, 2026 at 11:20 AM"
+  },
+  "25-26 S2 Midterm|Chemistry": {
+    text: "Chemistry is harder than Biology was, but I think I came in prepared. I've been really consistent about note-taking this term. Stoichiometry took me two weeks to fully understand, but I think I have it now. I want to be more proactive about going to tutorial before tests rather than after.",
+    submitted: true, timestamp: "Apr 4, 2026 at 3:05 PM"
+  },
+  "25-26 S2 Midterm|Calculus": {
+    text: "Derivatives make sense to me now, but I need to keep practicing with the chain rule. I've been spending more time on this class than any other this term.",
+    submitted: false, timestamp: null
+  }
+  // Photography and Contemporary Issues: not started (no entry = not started)
+};
+
+// ─────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────
+function buildDefaultState() {
+  const reflections = {};
+  for (const [k, v] of Object.entries(SEED)) {
+    reflections[k] = { text: v.text, submitted: v.submitted, timestamp: v.timestamp };
+  }
+  return { period: "25-26 S2 Midterm", activeClass: null, reflections };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return buildDefaultState();
+}
+
+let state = loadState();
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function refKey(period, course) { return `${period}|${course}`; }
+
+function getRef(period, course) {
+  const k = refKey(period, course);
+  if (!state.reflections[k]) state.reflections[k] = { text: "", submitted: false, timestamp: null };
+  return state.reflections[k];
+}
+
+function dotStatus(period, course) {
+  const r = state.reflections[refKey(period, course)];
+  if (!r || !r.text.trim()) return "";
+  return r.submitted ? "submitted" : "draft";
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function nowTimestamp() {
+  const d = new Date();
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} at ${time}`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────
+function renderPeriodSelect() {
+  const sel = document.getElementById("periodSelect");
+  sel.innerHTML = GRADING_PERIODS.map(p =>
+    `<option value="${esc(p)}"${p === state.period ? " selected" : ""}>${esc(p)}</option>`
+  ).join("");
+}
+
+function renderClassList() {
+  const list = document.getElementById("classList");
+  const classes = CLASSES[state.period] || [];
+  list.innerHTML = "";
+  classes.forEach(cls => {
+    const status  = dotStatus(state.period, cls.course);
+    const isActive = cls.course === state.activeClass;
+    const row = document.createElement("div");
+    row.className = "class-row" + (isActive ? " active" : "");
+    row.innerHTML = `
+      <span class="status-dot ${esc(status)}"></span>
+      <span class="class-row-info">
+        <div class="class-row-name">${esc(cls.course)}</div>
+        <div class="class-row-teacher">${esc(cls.teacher)}</div>
+      </span>`;
+    row.onclick = () => activate(cls.course);
+    list.appendChild(row);
+  });
+}
+
+let activeCls = null; // cached class object
+
+function activate(course) {
+  const classes = CLASSES[state.period] || [];
+  const cls = classes.find(c => c.course === course);
+  if (!cls) return;
+  activeCls = cls;
+  state.activeClass = course;
+  persist();
+
+  renderClassList();
+
+  document.getElementById("emptyState").style.display = "none";
+  const area = document.getElementById("editingArea");
+  area.style.display = "flex";
+  area.style.flexDirection = "column";
+  area.style.gap = "1.25rem";
+
+  // Class info
+  document.getElementById("classInfoGrid").innerHTML = `
+    <div class="info-row"><span class="info-label">Course</span> ${esc(cls.course)}</div>
+    <div class="info-row"><span class="info-label">Teacher</span> ${esc(cls.teacher)}</div>
+    <div class="info-row"><span class="info-label">Period</span> ${esc(state.period)}</div>`;
+
+  // Prompt
+  document.getElementById("promptText").textContent = PROMPT;
+
+  // Reflection
+  refreshReflectionUI();
+}
+
+function refreshReflectionUI() {
+  if (!activeCls) return;
+  const ref      = getRef(state.period, activeCls.course);
+  const textarea = document.getElementById("reflectionInput");
+  const len      = ref.text.length;
+
+  textarea.value    = ref.text;
+  textarea.disabled = ref.submitted;
+
+  updateCharCount(len, ref.submitted);
+  updateStatusBadge(ref);
+  updateSubmitBtn(ref);
+  updateSubmittedNotice(ref);
+
+  const hint = document.getElementById("saveHint");
+  if (ref.submitted) {
+    hint.textContent = "";
+    hint.className   = "save-hint";
+  } else {
+    hint.textContent = "Changes saved automatically";
+    hint.className   = "save-hint";
+  }
+}
+
+function updateCharCount(len, submitted) {
+  const el = document.getElementById("charCount");
+  if (submitted) {
+    el.textContent = `${len} characters`;
+    el.className   = "char-count met";
+  } else if (len >= MIN_CHARS) {
+    el.textContent = `${len} characters — minimum met`;
+    el.className   = "char-count met";
+  } else if (len > 0) {
+    el.textContent = `${len} / ${MIN_CHARS} minimum`;
+    el.className   = "char-count warn";
+  } else {
+    el.textContent = `${MIN_CHARS} character minimum`;
+    el.className   = "char-count";
+  }
+}
+
+function updateStatusBadge(ref) {
+  const badge = document.getElementById("statusBadge");
+  if (ref.submitted) {
+    badge.className   = "status-badge submitted";
+    badge.textContent = "Submitted";
+  } else if (ref.text.trim()) {
+    badge.className   = "status-badge draft";
+    badge.textContent = "Draft";
+  } else {
+    badge.className   = "status-badge not-started";
+    badge.textContent = "Not started";
+  }
+}
+
+function updateSubmitBtn(ref) {
+  const btn = document.getElementById("submitBtn");
+  if (ref.submitted) {
+    btn.style.display = "none";
+  } else {
+    btn.style.display  = "";
+    btn.disabled       = ref.text.trim().length < MIN_CHARS;
+  }
+}
+
+function updateSubmittedNotice(ref) {
+  const el = document.getElementById("submittedNotice");
+  if (!ref.submitted) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="submitted-notice">
+    <div class="submitted-notice-title">✓ Submitted ${esc(ref.timestamp || "")}</div>
+    Your reflection has been submitted and is now visible to your teacher.
+    <div class="submitted-contact">You cannot edit after submitting. Contact your teacher if you need to make changes.</div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// INPUT HANDLING
+// ─────────────────────────────────────────────────────────────────
+let saveTimer = null;
+
+function onInput() {
+  if (!activeCls) return;
+  const textarea = document.getElementById("reflectionInput");
+  const ref      = getRef(state.period, activeCls.course);
+  ref.text       = textarea.value;
+  persist();
+
+  updateCharCount(textarea.value.length, false);
+  updateStatusBadge(ref);
+  updateSubmitBtn(ref);
+  renderClassList();
+
+  const hint = document.getElementById("saveHint");
+  hint.textContent = "Saving…";
+  hint.className   = "save-hint saving";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    hint.textContent = "Changes saved automatically";
+    hint.className   = "save-hint saved";
+    setTimeout(() => { hint.className = "save-hint"; }, 1500);
+  }, 800);
+}
+
+function onPeriodChange() {
+  state.period      = document.getElementById("periodSelect").value;
+  state.activeClass = null;
+  activeCls         = null;
+  persist();
+  renderClassList();
+  document.getElementById("emptyState").style.display = "";
+  document.getElementById("editingArea").style.display = "none";
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SUBMIT
+// ─────────────────────────────────────────────────────────────────
+function openSubmitModal()  { document.getElementById("submitModal").classList.add("open"); }
+function closeSubmitModal() { document.getElementById("submitModal").classList.remove("open"); }
+
+function doSubmit() {
+  closeSubmitModal();
+  if (!activeCls) return;
+  const ref       = getRef(state.period, activeCls.course);
+  ref.submitted   = true;
+  ref.timestamp   = nowTimestamp();
+  persist();
+  refreshReflectionUI();
+  renderClassList();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────────────────────────
+function confirmReset()   { document.getElementById("resetModal").classList.add("open"); }
+function closeResetModal(){ document.getElementById("resetModal").classList.remove("open"); }
+
+function doReset() {
+  closeResetModal();
+  localStorage.removeItem(STORAGE_KEY);
+  state     = buildDefaultState();
+  activeCls = null;
+  renderPeriodSelect();
+  renderClassList();
+  document.getElementById("emptyState").style.display = "";
+  document.getElementById("editingArea").style.display = "none";
+}
+
+// ─────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────
+renderPeriodSelect();
+renderClassList();
+
+if (state.activeClass && (CLASSES[state.period] || []).some(c => c.course === state.activeClass)) {
+  activate(state.activeClass);
+}
+</script>
+</body>
+</html>
