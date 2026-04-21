@@ -39,7 +39,7 @@ The Report Card System is a school-wide digital platform for creating, reviewing
 - **Local-first design**: All changes feel instantaneous to users; syncing happens in the background
 - **Role-based access control**: Universal roles across the school, but changeable per user
 - **Flexible term structure**: Terms can be named, ordered, and structured as needed (e.g., midterm/final)
-- **Configurable validation**: Minimum/maximum comment requirements, character limits, and required skills are set per term by admin
+- **Configurable validation**: Minimum/maximum comment requirements, character limits, and required skills are defined in global configurations — one for Midterm reporting periods and one for Final reporting periods. These are set once and apply automatically; admin does not need to reconfigure them for each new term.
 - **Conflict prevention**: Finalization workflow prevents simultaneous editing between teachers and advisors
 
 ---
@@ -68,8 +68,8 @@ An advisor is any adult staff member (teacher, counselor, or other staff) assign
 - View all assigned advisees' report cards across all classes in a term
 - Edit comments on any advisee's report card (if teacher has finalized)
 - Mark report card as "reviewed" (after reviewing, only available when teacher's finalize box is checked)
-- If teacher unchecks finalize after advisor has made edits, teacher receives notification
-- Jump between advisees while staying on the same term and class (if available in previous advisee)
+- If teacher unchecks finalize after advisor has made edits, advisor receives notification
+- Navigate between advisees using prev/next arrows; pressing an arrow loads the next or previous advisee's first class (no attempt to match the current class by name)
 - View historical report cards for context across terms
 - Export their advisees' report cards as PDF (local download)
 
@@ -89,7 +89,7 @@ An advisor is any adult staff member (teacher, counselor, or other staff) assign
 - Configure comment banks (by department or course)
 - Import/export rosters (CSV or via Blackbaud/Canvas integration)
 - Set student prompts (with customization by term, course, or department)
-- Configure validation rules per term (min/max comments, character limits, required skills)
+- Configure global validation rules for Midterm and Final reporting periods (min/max comments, character limits, required skills); these apply automatically to all terms of that type
 - View system-wide report card status
 - Export report cards in bulk with options for organization (TBD: specific organization and naming conventions)
 - Customize PDF branding (logo, header, footer, boilerplate text)
@@ -270,12 +270,16 @@ Skills are derived from the comment bank structure. Each skill can have:
 
 ### Validation & Constraints
 
-All validation rules are configurable per term by admin:
-- Minimum number of comments required per report card
-- Maximum number of comments allowed per skill
+Validation rules are configured globally by admin — one configuration for Midterm reporting periods and one for Final reporting periods. These apply automatically to all terms; admin does not need to reconfigure them per term. The two configurations will typically differ (e.g., finals may require more skill areas than midterms).
+
+Each configuration includes:
+- Minimum number of skill areas that must have at least one comment
+- Minimum total comments required per report card
+- Maximum comments allowed per skill
 - Maximum character limit for custom comments
 - Required skills (must have at least one comment)
-- Whether all skills must have comments or some can be blank
+
+Any rule set to zero is not enforced and is not surfaced in the teacher interface.
 
 If a report card doesn't meet validation criteria, the "Mark as finalized" checkbox is disabled with an inline hint listing the specific unmet requirements (e.g., "selections in 2 more skill areas needed; overall comment needs 15 more characters").
 
@@ -399,11 +403,10 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 #### Jumping Between Advisees
 
-1. Advisor is viewing Advisee A's report card in Spanish class in Term S1
-2. Advisor clicks on Advisee B from the advisee list
-3. System loads Advisee B's report cards for Term S1
-4. System attempts to load the same class (Spanish) if available; if not, shows empty state
-5. When switching back to Advisee A, returns to the same class
+1. Advisor presses next/previous arrow or clicks a different advisee in the list
+2. System loads the selected advisee's report cards for the current grading period
+3. Opens the first class in that advisee's list
+4. When switching back to a previously viewed advisee, the system returns to the last class the advisor was viewing for that advisee
 
 #### Historical Context
 
@@ -477,19 +480,22 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Input order in sequence
 - Select reporting periods to include (Midterm and/or Final); both share the same roster
 - Set student reflection freeze dates (if applicable)
-- Configure validation rules (applied per reporting period):
-  - Minimum number of skill areas that must have at least one comment
-  - Minimum total comments required per report card
-  - Maximum comments allowed per skill
-  - Maximum character limit for custom comments
-  - Required skills (list of skill IDs that must have a comment)
-  - Minimum/maximum comment length
-  - Note: any rule set to zero is not enforced and not shown to teachers
+- Validation rules are inherited automatically from the global Midterm or Final configuration; no per-term rule entry needed
 
 **Edit Term**
 - Modify term name, order, dates, structure
-- Update validation rules
 - Cannot edit past terms (if locked for data integrity)
+
+**Validation Configuration**
+
+Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These are set once and inherited by all terms automatically.
+
+- Minimum number of skill areas that must have at least one comment
+- Minimum total comments required per report card
+- Maximum comments allowed per skill
+- Maximum character limit for custom comments
+- Required skills (must have at least one comment)
+- Rules set to zero are not enforced and not shown to teachers
 
 **Lock Term**
 - Makes term read-only for teachers and advisors
@@ -687,14 +693,7 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Locked (boolean)
 - Reporting periods (Array: Midterm, Final — which are enabled for this term)
 - Student reflection freeze date (if applicable)
-- Validation rules (applied per reporting period within this term):
-  - Min skill areas required (must have ≥1 comment each)
-  - Min total comments required per report card
-  - Max comments per skill
-  - Max character limit for custom comments
-  - Required skills (Array of skill IDs)
-  - Min/max comment lengths
-  - Rules set to zero are not enforced or shown to teachers
+- Validation rules: inherited from global Midterm or Final configuration; not stored per term
 
 #### Class
 - ID
