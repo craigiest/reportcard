@@ -619,6 +619,59 @@
     .export-row-label { color: #374151; }
     .export-row-sub   { font-size: 0.74rem; color: #94a3b8; }
 
+    /* ── DATA MANAGEMENT ── */
+    .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+    .data-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .data-card-header {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    .data-card-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+    .archive-preview {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.82rem;
+    }
+    .archive-preview-row { display: flex; justify-content: space-between; color: #374151; }
+    .archive-preview-row span:last-child { font-weight: 600; color: #1e293b; }
+    .integrity-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f8fafc;
+      font-size: 0.82rem;
+    }
+    .integrity-row:last-child { border-bottom: none; }
+    .integrity-icon { font-size: 1rem; flex-shrink: 0; }
+    .integrity-label { flex: 1; color: #374151; }
+    .integrity-detail { font-size: 0.75rem; color: #94a3b8; }
+    .integrity-pass { color: #16a34a; font-weight: 600; font-size: 0.78rem; }
+    .integrity-warn { color: #d97706; font-weight: 600; font-size: 0.78rem; }
+    .integrity-fail { color: #dc2626; font-weight: 600; font-size: 0.78rem; }
+    .danger-zone {
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      background: #fff5f5;
+    }
+    .danger-zone-title { font-weight: 700; font-size: 0.82rem; color: #991b1b; margin-bottom: 0.4rem; }
+    .danger-zone-desc  { font-size: 0.78rem; color: #b91c1c; line-height: 1.45; }
+
     /* ── STUDENT PROMPTS ── */
     .prompt-card {
       background: #fff;
@@ -2155,7 +2208,159 @@
       </div>
 
     </div><!-- /section-analytics -->
-    <div class="section" id="section-data">Data Management (coming soon)</div>
+    <div class="section" id="section-data">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Data Management</div>
+          <div class="section-subtitle">Archive old data and verify system integrity</div>
+        </div>
+      </div>
+
+      <div class="data-grid">
+
+        <!-- Export & Archive -->
+        <div class="data-card">
+          <div class="data-card-header">Export &amp; Archive Old Data</div>
+          <div class="data-card-body">
+            <p style="font-size:0.82rem;color:#64748b;line-height:1.5">
+              Export data from completed school years for records and compliance. A manual confirmation is required before any deletion.
+            </p>
+
+            <div>
+              <label class="form-label">Export data older than</label>
+              <select class="filter-select" style="width:100%" id="archiveCutoff" onchange="updateArchivePreview()">
+                <option value="5">5 years (before 2020–2021)</option>
+                <option value="4">4 years (before 2021–2022)</option>
+                <option value="3">3 years (before 2022–2023)</option>
+                <option value="7">7 years (before 2018–2019)</option>
+              </select>
+            </div>
+
+            <div class="archive-preview" id="archivePreview">
+              <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin-bottom:0.3rem">Records in scope</div>
+              <div class="archive-preview-row"><span>School years</span><span id="ap-years">2</span></div>
+              <div class="archive-preview-row"><span>Terms</span><span id="ap-terms">4</span></div>
+              <div class="archive-preview-row"><span>Report cards</span><span id="ap-cards">312</span></div>
+              <div class="archive-preview-row"><span>Student reflections</span><span id="ap-reflections">289</span></div>
+              <div class="archive-preview-row"><span>Export records</span><span id="ap-exports">18</span></div>
+            </div>
+
+            <div>
+              <label class="form-label">Format</label>
+              <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.85rem">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="archiveFmt" checked> CSV files (one per data type)</label>
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="archiveFmt"> ZIP archive with all files</label>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="openModal('archiveConfirmModal')">⬇ Export Archive</button>
+
+            <div class="danger-zone">
+              <div class="danger-zone-title">⚠ Delete After Export</div>
+              <div class="danger-zone-desc">
+                After exporting, you may permanently delete the archived records from the live system. This cannot be undone. Export must be completed first.
+              </div>
+              <button class="btn btn-danger btn-sm" style="margin-top:0.6rem" onclick="openModal('deleteConfirmModal')">Delete Archived Records…</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Integrity -->
+        <div>
+          <div class="data-card" style="margin-bottom:1rem">
+            <div class="data-card-header" style="display:flex;align-items:center;justify-content:space-between">
+              Data Integrity
+              <button class="btn btn-secondary btn-sm" onclick="runIntegrityCheck()">Run Check</button>
+            </div>
+            <div class="data-card-body" id="integrityResults">
+              <p style="font-size:0.82rem;color:#94a3b8">Click <strong>Run Check</strong> to scan for orphaned records and data inconsistencies.</p>
+            </div>
+          </div>
+
+          <div class="data-card">
+            <div class="data-card-header">Audit Log</div>
+            <div class="data-card-body">
+              <p style="font-size:0.82rem;color:#64748b;line-height:1.5;margin-bottom:0.5rem">
+                A record of admin actions: role changes, spoofs, term locks, bulk exports, and data deletions.
+              </p>
+              <div class="table-wrap" style="max-height:200px;overflow-y:auto">
+                <table>
+                  <thead><tr><th>Date</th><th>Admin</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td class="td-muted">Apr 21 09:14</td><td>Alex Johnson</td><td>Bulk export — 25–26 S1 Final (41 cards)</td></tr>
+                    <tr><td class="td-muted">Apr 20 15:02</td><td>Alex Johnson</td><td>Locked term 25–26 S1</td></tr>
+                    <tr><td class="td-muted">Apr 18 11:30</td><td>Diana Park</td><td>Spoofed user Felix Huang</td></tr>
+                    <tr><td class="td-muted">Apr 15 09:55</td><td>Alex Johnson</td><td>Role change: Robert Stills → archived</td></tr>
+                    <tr><td class="td-muted">Mar 10 14:20</td><td>Diana Park</td><td>Uploaded comment bank: Core Skills Bank (v3)</td></tr>
+                    <tr><td class="td-muted">Jan 27 08:45</td><td>Alex Johnson</td><td>Created term: 25–26 S2</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-top:0.5rem">
+                <button class="btn btn-secondary btn-sm">⬇ Export Full Audit Log</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /section-data -->
+
+    <!-- Archive Export Confirm Modal -->
+    <div class="modal-overlay" id="archiveConfirmModal">
+      <div class="modal" style="width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Confirm Export</div>
+            <div class="modal-subtitle">Data older than 5 years</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('archiveConfirmModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5;margin-bottom:1rem">
+            You are about to export <strong>312 report cards</strong>, <strong>289 reflections</strong>, and related records from <strong>2 school years</strong> (2019–2020, 2020–2021).
+          </p>
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            The export will be downloaded to your computer. No data will be deleted from the system until you explicitly choose to delete it.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('archiveConfirmModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('archiveConfirmModal')">Download Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal-overlay" id="deleteConfirmModal">
+      <div class="modal" style="width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" style="color:#dc2626">Permanently Delete Records</div>
+            <div class="modal-subtitle">This action cannot be undone</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('deleteConfirmModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.85rem">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            This will permanently remove <strong>312 report cards</strong>, <strong>289 reflections</strong>, and related records from the live system.
+          </p>
+          <div class="danger-zone">
+            <div class="danger-zone-desc">Only proceed if you have verified the exported archive is complete and stored securely.</div>
+          </div>
+          <div>
+            <label class="form-label" style="color:#dc2626">Type DELETE to confirm</label>
+            <input class="form-input" id="deleteConfirmInput" type="text" placeholder="DELETE" oninput="toggleDeleteBtn()">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('deleteConfirmModal')">Cancel</button>
+          <button class="btn btn-danger" id="deleteConfirmBtn" disabled style="opacity:0.4">Permanently Delete</button>
+        </div>
+      </div>
+    </div>
   </main>
 
 </div>
@@ -2347,6 +2552,67 @@
   }
 
   renderUsers();
+
+  // ── DATA MANAGEMENT ──
+  const ARCHIVE_DATA = {
+    5: { years:2, terms:4,  cards:312, reflections:289, exports:18 },
+    4: { years:3, terms:6,  cards:487, reflections:451, exports:27 },
+    3: { years:4, terms:8,  cards:641, reflections:589, exports:35 },
+    7: { years:1, terms:2,  cards:158, reflections:140, exports:9  },
+  };
+  function updateArchivePreview() {
+    const cutoff = document.getElementById('archiveCutoff').value;
+    const d = ARCHIVE_DATA[cutoff];
+    document.getElementById('ap-years').textContent       = d.years;
+    document.getElementById('ap-terms').textContent       = d.terms;
+    document.getElementById('ap-cards').textContent       = d.cards;
+    document.getElementById('ap-reflections').textContent = d.reflections;
+    document.getElementById('ap-exports').textContent     = d.exports;
+  }
+
+  const INTEGRITY_CHECKS = [
+    { label:'Report cards without a matching class',         detail:'Classes deleted after cards were created', status:'pass',  count:0   },
+    { label:'Students enrolled in non-existent classes',     detail:'Enrollment records with missing class IDs',status:'pass',  count:0   },
+    { label:'Reflections with no matching prompt',           detail:'Prompts may have been deleted',            status:'warn',  count:3   },
+    { label:'Finalized cards with empty narrative',          detail:'Narrative field bypassed at finalization',  status:'warn',  count:7   },
+    { label:'Export records referencing deleted cards',      detail:'Cards removed after export logged',        status:'pass',  count:0   },
+    { label:'Users with no roles assigned',                  detail:'Accounts with empty roles array',          status:'fail',  count:1   },
+    { label:'Duplicate student enrollments',                 detail:'Same student in same class more than once',status:'pass',  count:0   },
+  ];
+
+  function runIntegrityCheck() {
+    const el = document.getElementById('integrityResults');
+    el.innerHTML = '<p style="font-size:0.82rem;color:#94a3b8">Running…</p>';
+    setTimeout(() => {
+      const rows = INTEGRITY_CHECKS.map(c => {
+        const icon    = c.status==='pass' ? '✓' : c.status==='warn' ? '⚠' : '✕';
+        const cls     = c.status==='pass' ? 'integrity-pass' : c.status==='warn' ? 'integrity-warn' : 'integrity-fail';
+        const countEl = c.count > 0
+          ? `<span class="${cls}">${c.count} issue${c.count>1?'s':''}</span>`
+          : `<span class="integrity-pass">OK</span>`;
+        return `
+          <div class="integrity-row">
+            <span class="integrity-icon ${cls}">${icon}</span>
+            <span class="integrity-label">
+              ${c.label}
+              <div class="integrity-detail">${c.detail}</div>
+            </span>
+            ${countEl}
+          </div>`;
+      }).join('');
+      el.innerHTML = rows +
+        `<div style="display:flex;justify-content:flex-end;margin-top:0.5rem">
+           <button class="btn btn-secondary btn-sm">⬇ Export Report</button>
+         </div>`;
+    }, 600);
+  }
+
+  function toggleDeleteBtn() {
+    const val = document.getElementById('deleteConfirmInput').value;
+    const btn = document.getElementById('deleteConfirmBtn');
+    btn.disabled = val !== 'DELETE';
+    btn.style.opacity = val === 'DELETE' ? '1' : '0.4';
+  }
 
   // ── SUB-TABS ──
   function showSubTab(section, panel) {
