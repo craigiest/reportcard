@@ -71,6 +71,15 @@ All users have universal roles across the school. A person can transition betwee
 - View historical report cards for context across terms
 - Export their advisees' report cards as PDF (local download)
 
+### Student
+
+- Log in with Google account
+- View enrolled classes for current term
+- Draft and submit self-reflection for each class
+- Revise reflection while in draft status
+- View submitted reflection (read-only after submission)
+- Cannot edit reflection after submission (unless admin unsubmits)
+
 ### Admin
 
 - User management (create, assign/change roles, reset passwords)
