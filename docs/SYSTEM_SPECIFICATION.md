@@ -420,19 +420,18 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 ## Admin Interface
 
-### Dashboard & Navigation
+### Navigation
 
 **Top Navigation**
 - School name/logo
 - Admin section title
-- Search bar (for users, classes, students)
 - User menu (profile, logout)
 
 **Left Sidebar (Main Menu)**
-- Dashboard
 - Users
 - Terms & Settings
 - Comment Banks
+- Student Prompts
 - Rosters & Import
 - Report Cards
 - Analytics

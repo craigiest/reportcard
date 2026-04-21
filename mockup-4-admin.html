@@ -1,0 +1,2800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup 4 — Admin Interface</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    /* ── TOP NAV ── */
+    .topnav {
+      height: 48px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      gap: 1rem;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .topnav-school { font-weight: 700; font-size: 0.95rem; color: #1e293b; }
+    .topnav-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #ede9fe;
+      color: #5b21b6;
+      padding: 0.15rem 0.5rem;
+      border-radius: 99px;
+    }
+    .topnav-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+    .topnav-username { font-size: 0.875rem; color: #64748b; }
+    .btn-topnav {
+      font-size: 0.78rem;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: #fff;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-topnav:hover { background: #f8fafc; color: #1e293b; }
+
+    /* ── LAYOUT ── */
+    .app { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: #1e1b4b;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-nav { padding: 0.75rem 0; flex: 1; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 1rem;
+      font-size: 0.875rem;
+      color: #c4b5fd;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.12s;
+      user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: #ede9fe; }
+    .nav-item.active { background: rgba(99,102,241,0.25); color: #fff; border-left-color: #818cf8; }
+    .nav-icon { font-size: 1rem; width: 1.1rem; text-align: center; flex-shrink: 0; }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── SHARED SECTION LAYOUT ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .section-title { font-size: 1.15rem; font-weight: 700; color: #1e293b; }
+    .section-subtitle { font-size: 0.8rem; color: #64748b; margin-top: 0.15rem; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all 0.12s;
+    }
+    .btn-primary { background: #4f46e5; color: #fff; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-secondary { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+    .btn-secondary:hover { background: #f9fafb; }
+    .btn-danger { background: #fff; color: #dc2626; border: 1px solid #fca5a5; }
+    .btn-danger:hover { background: #fef2f2; }
+    .btn-sm { padding: 0.28rem 0.6rem; font-size: 0.76rem; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filter-select {
+      padding: 0.38rem 0.65rem;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      color: #374151;
+      background: #fff;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .filter-select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .filter-sep { width: 1px; height: 24px; background: #e2e8f0; margin: 0 0.1rem; }
+
+    /* ── STATUS PILLS ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      font-size: 0.74rem;
+      font-weight: 600;
+    }
+    .pill-draft    { background: #f1f5f9; color: #64748b; }
+    .pill-final    { background: #fffbeb; color: #92400e; }
+    .pill-reviewed { background: #f0fdf4; color: #166534; }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .dot-draft    { background: #94a3b8; }
+    .dot-final    { background: #f59e0b; }
+    .dot-reviewed { background: #22c55e; }
+
+    /* ── STAT STRIP ── */
+    .stat-strip {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      min-width: 90px;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: #1e293b; line-height: 1; }
+    .stat-label { font-size: 0.72rem; color: #64748b; margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    thead { background: #f8fafc; }
+    th {
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    td {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid #f1f5f9;
+      color: #374151;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafbfd; }
+    .td-name { font-weight: 600; color: #1e293b; }
+    .td-muted { color: #94a3b8; font-size: 0.78rem; }
+    .actions-cell { display: flex; gap: 0.35rem; align-items: center; }
+
+    /* ── CHECKMARK ── */
+    .check-yes { color: #22c55e; font-size: 1rem; }
+    .check-no  { color: #cbd5e1; font-size: 1rem; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 500px;
+      max-width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+    }
+    .modal-lg { width: 660px; }
+    .modal-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+    .modal-title { font-weight: 700; font-size: 1rem; color: #1e293b; }
+    .modal-subtitle { font-size: 0.78rem; color: #64748b; margin-top: 0.15rem; }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: #94a3b8; font-size: 1.25rem; line-height: 1;
+      padding: 0.15rem 0.3rem; border-radius: 5px; flex-shrink: 0;
+    }
+    .modal-close:hover { color: #1e293b; background: #f1f5f9; }
+    .modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 0.9rem 1.25rem;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    /* ── NOTE BOX ── */
+    .note-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      color: #78350f;
+      margin-bottom: 1rem;
+    }
+
+    /* ── ROLE TAGS ── */
+    .role-tag {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-right: 0.2rem;
+    }
+    .role-teacher  { background: #dbeafe; color: #1e40af; }
+    .role-advisor  { background: #ede9fe; color: #5b21b6; }
+    .role-admin    { background: #fee2e2; color: #991b1b; }
+    .role-student  { background: #dcfce7; color: #166534; }
+
+    /* ── FORM ROWS ── */
+    .form-row { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
+    .form-input {
+      width: 100%;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: #1e293b;
+    }
+    .form-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .form-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+
+    /* ── SEARCH INPUT ── */
+    .search-input {
+      padding: 0.38rem 0.7rem;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      width: 220px;
+    }
+    .search-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+    /* ── ROLE CHECKBOXES ── */
+    .role-check-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .role-check-group label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; cursor: pointer; }
+
+    /* ── USER STATUS ── */
+    .status-active   { color: #16a34a; font-size: 0.78rem; font-weight: 600; }
+    .status-archived { color: #94a3b8; font-size: 0.78rem; font-weight: 600; }
+
+    /* ── SUB-TABS ── */
+    .sub-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 1.5rem;
+    }
+    .sub-tab {
+      padding: 0.55rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      user-select: none;
+      transition: all 0.12s;
+    }
+    .sub-tab:hover { color: #4f46e5; }
+    .sub-tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+    .sub-panel { display: none; }
+    .sub-panel.active { display: block; }
+
+    /* ── TERM YEAR GROUP ── */
+    .year-group { margin-bottom: 1.75rem; }
+    .year-heading {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      padding: 0 0 0.5rem 0;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── TERM ROW ── */
+    .term-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .term-name { font-weight: 700; font-size: 0.9rem; color: #1e293b; min-width: 60px; }
+    .term-dates { font-size: 0.78rem; color: #64748b; flex: 1; }
+    .term-periods { display: flex; gap: 0.35rem; }
+    .period-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .term-locked {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+    .term-actions { display: flex; gap: 0.35rem; margin-left: auto; }
+
+    /* ── VALIDATION CARDS ── */
+    .val-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .val-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .val-card-header {
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1e293b;
+    }
+    .val-card-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+    .val-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .val-row-label { font-size: 0.82rem; color: #374151; flex: 1; }
+    .val-input {
+      width: 72px;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      text-align: center;
+      color: #1e293b;
+    }
+    .val-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .val-hint { font-size: 0.72rem; color: #94a3b8; margin-top: 0.75rem; }
+    .val-save-row { display: flex; justify-content: flex-end; margin-top: 0.25rem; }
+
+    /* ── COMMENT BANKS ── */
+    .default-bank-bar {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.85rem;
+    }
+    .default-bank-bar label { font-weight: 600; color: #374151; white-space: nowrap; }
+
+    /* ── DROP ZONE ── */
+    .drop-zone {
+      border: 2px dashed #c7d2fe;
+      border-radius: 8px;
+      background: #f5f3ff;
+      padding: 1.5rem;
+      text-align: center;
+      color: #6366f1;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .drop-zone:hover { background: #ede9fe; }
+
+    /* ── ASSIGN TREE ── */
+    .assign-tree { display: flex; flex-direction: column; gap: 0.5rem; }
+    .assign-dept {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .assign-dept-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .assign-dept-header:hover { background: #f8fafc; }
+    .assign-dept-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; flex: 1; }
+    .assign-toggle { font-size: 0.7rem; color: #94a3b8; transition: transform 0.15s; }
+    .assign-toggle.open { transform: rotate(90deg); }
+    .assign-bank-select { font-size: 0.8rem; padding: 0.25rem 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; color: #374151; background: #fff; }
+    .assign-courses {
+      display: none;
+      border-top: 1px solid #f1f5f9;
+    }
+    .assign-courses.open { display: block; }
+    .assign-course-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem 0.5rem 2.25rem;
+      border-bottom: 1px solid #f8fafc;
+      font-size: 0.82rem;
+      color: #475569;
+    }
+    .assign-course-row:last-child { border-bottom: none; }
+    .assign-course-name { flex: 1; }
+    .assign-inherited { font-size: 0.72rem; color: #94a3b8; font-style: italic; }
+
+    /* ── ROSTERS ── */
+    .import-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+    .import-panel-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.1rem;
+    }
+    .import-panel-title { font-weight: 700; font-size: 0.875rem; color: #1e293b; margin-bottom: 0.85rem; }
+    .preview-table-wrap {
+      margin-top: 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .preview-stats {
+      display: flex;
+      gap: 1.5rem;
+      padding: 0.6rem 1rem;
+      font-size: 0.78rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fff;
+    }
+    .preview-stat { color: #374151; }
+    .preview-stat strong { color: #1e293b; }
+    .import-options { display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem; margin: 0.75rem 0; }
+    .import-options label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+
+    /* ── ANALYTICS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+    .kpi-value { font-size: 2rem; font-weight: 800; color: #1e293b; line-height: 1; }
+    .kpi-label { font-size: 0.75rem; color: #64748b; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-sub   { font-size: 0.78rem; color: #94a3b8; margin-top: 0.25rem; }
+
+    .analytics-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .analytics-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .analytics-card-header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .analytics-card-body { padding: 0.85rem 1rem; }
+
+    /* bar chart */
+    .bar-row { margin-bottom: 0.65rem; }
+    .bar-label { font-size: 0.78rem; color: #374151; margin-bottom: 0.2rem; display: flex; justify-content: space-between; }
+    .bar-track { height: 8px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 99px; background: #6366f1; }
+    .bar-fill-green  { background: #22c55e; }
+    .bar-fill-amber  { background: #f59e0b; }
+
+    /* top comments list */
+    .comment-rank-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #f8fafc;
+      font-size: 0.8rem;
+    }
+    .comment-rank-row:last-child { border-bottom: none; }
+    .rank-num { font-weight: 700; color: #94a3b8; width: 1.2rem; text-align: right; flex-shrink: 0; }
+    .rank-text { flex: 1; color: #374151; line-height: 1.35; }
+    .rank-count { font-weight: 700; color: #4f46e5; flex-shrink: 0; }
+    .rank-bar { width: 60px; height: 5px; background: #f1f5f9; border-radius: 99px; overflow: hidden; flex-shrink: 0; }
+    .rank-bar-fill { height: 100%; background: #c7d2fe; border-radius: 99px; }
+
+    /* turnaround */
+    .turnaround-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f8fafc;
+      font-size: 0.82rem;
+    }
+    .turnaround-row:last-child { border-bottom: none; }
+    .turnaround-name { color: #374151; }
+    .turnaround-days { font-weight: 700; color: #1e293b; }
+    .turnaround-bar  { width: 80px; height: 6px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+    .turnaround-fill { height: 100%; background: #818cf8; border-radius: 99px; }
+
+    /* export row */
+    .export-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid #f8fafc;
+      font-size: 0.83rem;
+    }
+    .export-row:last-child { border-bottom: none; }
+    .export-row-label { color: #374151; }
+    .export-row-sub   { font-size: 0.74rem; color: #94a3b8; }
+
+    /* ── DATA MANAGEMENT ── */
+    .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+    .data-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .data-card-header {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    .data-card-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+    .archive-preview {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.82rem;
+    }
+    .archive-preview-row { display: flex; justify-content: space-between; color: #374151; }
+    .archive-preview-row span:last-child { font-weight: 600; color: #1e293b; }
+    .integrity-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f8fafc;
+      font-size: 0.82rem;
+    }
+    .integrity-row:last-child { border-bottom: none; }
+    .integrity-icon { font-size: 1rem; flex-shrink: 0; }
+    .integrity-label { flex: 1; color: #374151; }
+    .integrity-detail { font-size: 0.75rem; color: #94a3b8; }
+    .integrity-pass { color: #16a34a; font-weight: 600; font-size: 0.78rem; }
+    .integrity-warn { color: #d97706; font-weight: 600; font-size: 0.78rem; }
+    .integrity-fail { color: #dc2626; font-weight: 600; font-size: 0.78rem; }
+    .danger-zone {
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      background: #fff5f5;
+    }
+    .danger-zone-title { font-weight: 700; font-size: 0.82rem; color: #991b1b; margin-bottom: 0.4rem; }
+    .danger-zone-desc  { font-size: 0.78rem; color: #b91c1c; line-height: 1.45; }
+
+    /* ── STUDENT PROMPTS ── */
+    .prompt-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+    }
+    .prompt-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0.8rem 1rem;
+    }
+    .prompt-card-meta { flex: 1; }
+    .prompt-card-title {
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: #1e293b;
+      margin-bottom: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .prompt-card-terms { font-size: 0.75rem; color: #94a3b8; }
+    .prompt-preview {
+      font-size: 0.82rem;
+      color: #475569;
+      line-height: 1.5;
+      padding: 0 1rem 0.8rem 1rem;
+      border-top: 1px solid #f8fafc;
+      padding-top: 0.6rem;
+    }
+    .prompt-chars {
+      display: flex;
+      gap: 1.25rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      padding: 0.5rem 1rem;
+      border-top: 1px solid #f1f5f9;
+      background: #f8fafc;
+    }
+    .prompt-chars strong { color: #64748b; }
+    .level-tag-universal { background: #ede9fe; color: #5b21b6; }
+    .level-tag-dept      { background: #dbeafe; color: #1e40af; }
+    .level-tag-course    { background: #dcfce7; color: #166534; }
+  </style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<div class="topnav">
+  <span class="topnav-school">Riverside Academy</span>
+  <span class="topnav-badge">Admin</span>
+  <div class="topnav-right">
+    <span class="topnav-username">Alex Johnson</span>
+    <button class="btn-topnav">Log out</button>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-nav">
+      <div class="nav-item" data-section="users" onclick="showSection('users')">
+        <span class="nav-icon">👤</span> Users
+      </div>
+      <div class="nav-item" data-section="terms" onclick="showSection('terms')">
+        <span class="nav-icon">📅</span> Terms &amp; Settings
+      </div>
+      <div class="nav-item" data-section="banks" onclick="showSection('banks')">
+        <span class="nav-icon">💬</span> Comment Banks
+      </div>
+      <div class="nav-item" data-section="prompts" onclick="showSection('prompts')">
+        <span class="nav-icon">✏️</span> Student Prompts
+      </div>
+      <div class="nav-item" data-section="rosters" onclick="showSection('rosters')">
+        <span class="nav-icon">📋</span> Rosters &amp; Import
+      </div>
+      <div class="nav-item active" data-section="reportcards" onclick="showSection('reportcards')">
+        <span class="nav-icon">📄</span> Report Cards
+      </div>
+      <div class="nav-item" data-section="analytics" onclick="showSection('analytics')">
+        <span class="nav-icon">📊</span> Analytics
+      </div>
+      <div class="nav-item" data-section="data" onclick="showSection('data')">
+        <span class="nav-icon">🗄️</span> Data Management
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="section" id="section-users">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Users</div>
+          <div class="section-subtitle">Manage accounts, roles, and access</div>
+        </div>
+        <button class="btn btn-primary" onclick="openUserModal()">+ New User</button>
+      </div>
+
+      <!-- Search + filter -->
+      <div class="filter-bar">
+        <input class="search-input" type="text" id="user-search" placeholder="Search name or email…" oninput="renderUsers()">
+        <div class="filter-sep"></div>
+        <select class="filter-select" id="user-role-filter" onchange="renderUsers()">
+          <option value="">All Roles</option>
+          <option>Teacher</option>
+          <option>Advisor</option>
+          <option>Admin</option>
+          <option>Student</option>
+        </select>
+        <select class="filter-select" id="user-status-filter" onchange="renderUsers()">
+          <option value="">Active &amp; Archived</option>
+          <option value="active">Active Only</option>
+          <option value="archived">Archived Only</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th>Status</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+
+    </div><!-- /section-users -->
+
+    <!-- New / Edit User Modal -->
+    <div class="modal-overlay" id="userModal">
+      <div class="modal" style="width:480px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="userModalTitle">New User</div>
+            <div class="modal-subtitle">User will log in via Google OAuth with their school account</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label class="form-label">Full Name</label>
+            <input class="form-input" id="uName" type="text" placeholder="e.g. Jane Smith">
+          </div>
+          <div class="form-row">
+            <label class="form-label">School Email</label>
+            <input class="form-input" id="uEmail" type="email" placeholder="e.g. jsmith@riverside.edu">
+            <div class="form-hint">Must match their school Google account.</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Roles</label>
+            <div class="role-check-group">
+              <label><input type="checkbox" id="uRoleTeacher"> Teacher</label>
+              <label><input type="checkbox" id="uRoleAdvisor"> Advisor</label>
+              <label><input type="checkbox" id="uRoleAdmin"> Admin</label>
+              <label><input type="checkbox" id="uRoleStudent"> Student</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveUser()">Save User</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spoof Confirm Modal -->
+    <div class="modal-overlay" id="spoofModal">
+      <div class="modal" style="width:400px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Spoof User</div>
+            <div class="modal-subtitle" id="spoofSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('spoofModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            You will temporarily assume this user's identity. The interface will switch to their view. A banner will remind you that you are spoofing, and you can exit at any time to return to the admin view.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('spoofModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('spoofModal')">Enter as User</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Archive Confirm Modal -->
+    <div class="modal-overlay" id="archiveModal">
+      <div class="modal" style="width:400px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Archive User</div>
+            <div class="modal-subtitle" id="archiveSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('archiveModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            This user will be deactivated and will no longer be able to log in. Their data and history will be preserved. You can re-activate them at any time.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('archiveModal')">Cancel</button>
+          <button class="btn btn-danger" onclick="confirmArchive()">Archive User</button>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="section-terms">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Terms &amp; Settings</div>
+          <div class="section-subtitle">Configure school terms and global validation rules</div>
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('terms','termsList')">Terms</div>
+        <div class="sub-tab" onclick="showSubTab('terms','validation')">Validation Rules</div>
+      </div>
+
+      <!-- Terms list sub-panel -->
+      <div class="sub-panel active" id="terms-termsList">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+          <button class="btn btn-primary" onclick="openModal('newTermModal')">+ New Term</button>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2025–2026</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 3, 2025 – Jan 16, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 27 – Jun 12, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" onclick="openModal('editTermModal')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="lockTerm(this)">Lock</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2024–2025</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 4, 2024 – Jan 17, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 28 – Jun 6, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation rules sub-panel -->
+      <div class="sub-panel" id="terms-validation">
+        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1.25rem">
+          These two configurations apply automatically to all Midterm and Final reporting periods respectively. Set any value to <strong>0</strong> to disable that rule.
+        </p>
+        <div class="val-grid">
+
+          <!-- Midterm -->
+          <div class="val-card">
+            <div class="val-card-header">Midterm</div>
+            <div class="val-card-body">
+              <div class="val-row">
+                <span class="val-row-label">Min skill areas with at least one comment</span>
+                <input class="val-input" type="number" min="0" value="2">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min total comments per report card</span>
+                <input class="val-input" type="number" min="0" value="3">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max comments per skill</span>
+                <input class="val-input" type="number" min="0" value="3">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max characters per custom comment</span>
+                <input class="val-input" type="number" min="0" value="300">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="100">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="500">
+              </div>
+              <div class="val-hint">0 = rule not enforced</div>
+              <div class="val-save-row">
+                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Final -->
+          <div class="val-card">
+            <div class="val-card-header">Final</div>
+            <div class="val-card-body">
+              <div class="val-row">
+                <span class="val-row-label">Min skill areas with at least one comment</span>
+                <input class="val-input" type="number" min="0" value="3">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min total comments per report card</span>
+                <input class="val-input" type="number" min="0" value="5">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max comments per skill</span>
+                <input class="val-input" type="number" min="0" value="4">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max characters per custom comment</span>
+                <input class="val-input" type="number" min="0" value="300">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Min student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="150">
+              </div>
+              <div class="val-row">
+                <span class="val-row-label">Max student reflection characters</span>
+                <input class="val-input" type="number" min="0" value="700">
+              </div>
+              <div class="val-hint">0 = rule not enforced</div>
+              <div class="val-save-row">
+                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /section-terms -->
+
+    <!-- New Term Modal -->
+    <div class="modal-overlay" id="newTermModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">New Term</div>
+            <div class="modal-subtitle">Add a term to a school year</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('newTermModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div class="form-row" style="margin:0">
+            <label class="form-label">School Year</label>
+            <input class="form-input" type="text" value="2025-2026" placeholder="e.g. 2025-2026">
+          </div>
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Term Name</label>
+            <input class="form-input" type="text" placeholder="e.g. S1, T2, Q3">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div>
+              <label class="form-label">Start Date</label>
+              <input class="form-input" type="date">
+            </div>
+            <div>
+              <label class="form-label">End Date</label>
+              <input class="form-input" type="date">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Reporting Periods</label>
+            <div style="display:flex;gap:1.5rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Midterm</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Final</label>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Student Reflection Freeze Date <span style="font-weight:400;color:#94a3b8">(optional)</span></label>
+            <input class="form-input" type="date">
+            <div class="form-hint">Students cannot edit reflections after this date.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('newTermModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('newTermModal')">Create Term</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Term Modal (reused layout) -->
+    <div class="modal-overlay" id="editTermModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Term — 25–26 S2</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('editTermModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Term Name</label>
+            <input class="form-input" type="text" value="S2">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div>
+              <label class="form-label">Start Date</label>
+              <input class="form-input" type="date" value="2026-01-27">
+            </div>
+            <div>
+              <label class="form-label">End Date</label>
+              <input class="form-input" type="date" value="2026-06-12">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Reporting Periods</label>
+            <div style="display:flex;gap:1.5rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Midterm</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Final</label>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Student Reflection Freeze Date <span style="font-weight:400;color:#94a3b8">(optional)</span></label>
+            <input class="form-input" type="date" value="2026-06-01">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('editTermModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('editTermModal')">Save Changes</button>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="section-banks">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Comment Banks</div>
+          <div class="section-subtitle">Manage standard comment banks and department/course assignments</div>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn btn-secondary" onclick="openModal('uploadBankModal')">⬆ Upload CSV</button>
+          <button class="btn btn-primary" onclick="openModal('newBankModal')">+ New Bank</button>
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('banks','bankList')">Banks</div>
+        <div class="sub-tab" onclick="showSubTab('banks','assignments')">Assignments</div>
+      </div>
+
+      <!-- Banks list -->
+      <div class="sub-panel active" id="banks-bankList">
+        <div class="default-bank-bar">
+          <label>School-wide default:</label>
+          <select class="filter-select" id="defaultBankSelect">
+            <option>Core Skills Bank (v3)</option>
+            <option>Humanities Bank</option>
+            <option>STEM Bank</option>
+            <option>World Languages Bank</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Set Default',1500)">Set Default</button>
+          <span style="font-size:0.78rem;color:#94a3b8;margin-left:auto">All departments and courses use this bank unless overridden in Assignments.</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bank Name</th>
+                <th>Level</th>
+                <th>Subskills</th>
+                <th>Last Modified</th>
+                <th>Applied To</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="banks-tbody">
+              <tr>
+                <td class="td-name">Core Skills Bank (v3)</td>
+                <td><span class="role-tag role-admin">School Default</span></td>
+                <td>24</td>
+                <td class="td-muted">Mar 10, 2026</td>
+                <td class="td-muted">All (default)</td>
+                <td><div class="actions-cell">
+                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="td-name">Humanities Bank</td>
+                <td><span class="role-tag role-teacher">Department</span></td>
+                <td>18</td>
+                <td class="td-muted">Feb 2, 2026</td>
+                <td class="td-muted">English, History, Arts</td>
+                <td><div class="actions-cell">
+                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-danger btn-sm">Delete</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="td-name">STEM Bank</td>
+                <td><span class="role-tag role-teacher">Department</span></td>
+                <td>21</td>
+                <td class="td-muted">Jan 15, 2026</td>
+                <td class="td-muted">Math, Science</td>
+                <td><div class="actions-cell">
+                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-danger btn-sm">Delete</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="td-name">World Languages Bank</td>
+                <td><span class="role-tag role-teacher">Department</span></td>
+                <td>16</td>
+                <td class="td-muted">Dec 4, 2025</td>
+                <td class="td-muted">Spanish, French, Mandarin</td>
+                <td><div class="actions-cell">
+                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-danger btn-sm">Delete</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="td-name">Spanish for Native Speakers</td>
+                <td><span class="role-tag role-student">Course</span></td>
+                <td>14</td>
+                <td class="td-muted">Nov 19, 2025</td>
+                <td class="td-muted">Spanish for Native Speakers</td>
+                <td><div class="actions-cell">
+                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-danger btn-sm">Delete</button>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Assignments tree -->
+      <div class="sub-panel" id="banks-assignments">
+        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">
+          Each course uses exactly one standard bank. More specific assignments override broader ones. Expand a department to set course-level overrides.
+        </p>
+        <div class="assign-tree">
+
+          <div class="assign-dept">
+            <div class="assign-dept-header" onclick="toggleDept(this)">
+              <span class="assign-toggle">▶</span>
+              <span class="assign-dept-name">English</span>
+              <select class="assign-bank-select" onclick="event.stopPropagation()">
+                <option>Humanities Bank</option>
+                <option>Core Skills Bank (v3)</option>
+                <option>STEM Bank</option>
+              </select>
+            </div>
+            <div class="assign-courses">
+              <div class="assign-course-row">
+                <span class="assign-course-name">English 9</span>
+                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option></select>
+                <span class="assign-inherited">Humanities Bank</span>
+              </div>
+              <div class="assign-course-row">
+                <span class="assign-course-name">English 10</span>
+                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option></select>
+                <span class="assign-inherited">Humanities Bank</span>
+              </div>
+              <div class="assign-course-row">
+                <span class="assign-course-name">AP Literature</span>
+                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option selected>Core Skills Bank (v3)</option><option>Humanities Bank</option></select>
+                <span class="assign-inherited" style="color:#4f46e5;font-style:normal;font-weight:600">Core Skills Bank (v3) ↑ override</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="assign-dept">
+            <div class="assign-dept-header" onclick="toggleDept(this)">
+              <span class="assign-toggle">▶</span>
+              <span class="assign-dept-name">Math</span>
+              <select class="assign-bank-select" onclick="event.stopPropagation()">
+                <option>STEM Bank</option>
+                <option>Core Skills Bank (v3)</option>
+              </select>
+            </div>
+            <div class="assign-courses">
+              <div class="assign-course-row">
+                <span class="assign-course-name">Algebra II</span>
+                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option><option>Core Skills Bank (v3)</option></select>
+                <span class="assign-inherited">STEM Bank</span>
+              </div>
+              <div class="assign-course-row">
+                <span class="assign-course-name">AP Calculus</span>
+                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option><option>Core Skills Bank (v3)</option></select>
+                <span class="assign-inherited">STEM Bank</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="assign-dept">
+            <div class="assign-dept-header" onclick="toggleDept(this)">
+              <span class="assign-toggle">▶</span>
+              <span class="assign-dept-name">World Languages</span>
+              <select class="assign-bank-select" onclick="event.stopPropagation()">
+                <option>World Languages Bank</option>
+                <option>Core Skills Bank (v3)</option>
+              </select>
+            </div>
+            <div class="assign-courses">
+              <div class="assign-course-row">
+                <span class="assign-course-name">Spanish I–III</span>
+                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
+                <span class="assign-inherited">World Languages Bank</span>
+              </div>
+              <div class="assign-course-row">
+                <span class="assign-course-name">Spanish for Native Speakers</span>
+                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option selected>Spanish for Native Speakers</option></select>
+                <span class="assign-inherited" style="color:#4f46e5;font-style:normal;font-weight:600">Spanish for Native Speakers ↑ override</span>
+              </div>
+              <div class="assign-course-row">
+                <span class="assign-course-name">French I–III</span>
+                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
+                <span class="assign-inherited">World Languages Bank</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="assign-dept">
+            <div class="assign-dept-header" onclick="toggleDept(this)">
+              <span class="assign-toggle">▶</span>
+              <span class="assign-dept-name">Science</span>
+              <select class="assign-bank-select" onclick="event.stopPropagation()">
+                <option>STEM Bank</option>
+                <option>Core Skills Bank (v3)</option>
+              </select>
+            </div>
+            <div class="assign-courses">
+              <div class="assign-course-row">
+                <span class="assign-course-name">Biology 101</span>
+                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
+                <span class="assign-inherited">STEM Bank</span>
+              </div>
+              <div class="assign-course-row">
+                <span class="assign-course-name">Chemistry</span>
+                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
+                <span class="assign-inherited">STEM Bank</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="assign-dept">
+            <div class="assign-dept-header" onclick="toggleDept(this)">
+              <span class="assign-toggle">▶</span>
+              <span class="assign-dept-name">History &amp; Social Studies</span>
+              <select class="assign-bank-select" onclick="event.stopPropagation()">
+                <option>Humanities Bank</option>
+                <option>Core Skills Bank (v3)</option>
+              </select>
+            </div>
+            <div class="assign-courses">
+              <div class="assign-course-row">
+                <span class="assign-course-name">World History</span>
+                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
+                <span class="assign-inherited">Humanities Bank</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /assign-tree -->
+      </div>
+
+    </div><!-- /section-banks -->
+
+    <!-- Upload CSV Modal -->
+    <div class="modal-overlay" id="uploadBankModal">
+      <div class="modal" style="width:480px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Upload Comment Bank CSV</div>
+            <div class="modal-subtitle">CSV columns: Transferable Skill, Skill Area, Subskill, Strength, Growth</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('uploadBankModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Bank Name</label>
+            <input class="form-input" type="text" placeholder="e.g. STEM Bank v2">
+          </div>
+          <div class="drop-zone" onclick="this.querySelector('input').click()">
+            <div style="font-size:1.5rem;margin-bottom:0.4rem">📂</div>
+            <div>Click to select a CSV file</div>
+            <div style="font-size:0.75rem;color:#818cf8;margin-top:0.25rem">or drag and drop here</div>
+            <input type="file" accept=".csv" style="display:none">
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:0.75rem;font-size:0.78rem;color:#64748b">
+            <strong>Expected format:</strong><br>
+            <code style="font-size:0.76rem">Transferable Skill,Skill Area,Subskill,Strength,Growth</code><br>
+            <code style="font-size:0.76rem">Collaboration,Teamwork,Active Listening,"Consistently listens...","Sometimes struggles..."</code>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('uploadBankModal')">Cancel</button>
+          <button class="btn btn-primary">Upload &amp; Preview</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Bank Modal -->
+    <div class="modal-overlay" id="newBankModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">New Comment Bank</div>
+            <div class="modal-subtitle">Create a bank manually or upload a CSV</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('newBankModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Bank Name</label>
+            <input class="form-input" type="text" placeholder="e.g. Arts &amp; Music Bank">
+          </div>
+          <div>
+            <label class="form-label">Level</label>
+            <div style="display:flex;flex-direction:column;gap:0.45rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="bankLevel" value="school"> School-wide default</label>
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="bankLevel" value="dept" checked> Department override</label>
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="bankLevel" value="course"> Course override</label>
+            </div>
+          </div>
+          <div class="note-box" style="margin:0">
+            After creating, go to <strong>Assignments</strong> to attach this bank to a department or course.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('newBankModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('newBankModal')">Create Bank</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Bank Modal -->
+    <div class="modal-overlay" id="editBankModal">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Bank — Core Skills Bank (v3)</div>
+            <div class="modal-subtitle">24 subskills &nbsp;·&nbsp; School default</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('editBankModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="table-wrap" style="max-height:340px;overflow-y:auto">
+            <table>
+              <thead>
+                <tr><th>Transferable Skill</th><th>Skill Area</th><th>Subskill</th><th>Strength Comment</th><th>Growth Comment</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Collaboration</td><td>Teamwork</td><td>Active Listening</td>
+                  <td><input class="form-input" style="min-width:140px" value="Consistently listens attentively to peers"></td>
+                  <td><input class="form-input" style="min-width:140px" value="Working on listening before responding"></td>
+                  <td><button class="btn btn-danger btn-sm">✕</button></td>
+                </tr>
+                <tr>
+                  <td>Collaboration</td><td>Teamwork</td><td>Contributing Ideas</td>
+                  <td><input class="form-input" style="min-width:140px" value="Reliably brings thoughtful ideas to group work"></td>
+                  <td><input class="form-input" style="min-width:140px" value="Developing confidence to share ideas"></td>
+                  <td><button class="btn btn-danger btn-sm">✕</button></td>
+                </tr>
+                <tr>
+                  <td>Self-Management</td><td>Organization</td><td>Meeting Deadlines</td>
+                  <td><input class="form-input" style="min-width:140px" value="Consistently submits work on time"></td>
+                  <td><input class="form-input" style="min-width:140px" value="Building habits to meet deadlines"></td>
+                  <td><button class="btn btn-danger btn-sm">✕</button></td>
+                </tr>
+                <tr>
+                  <td>Communication</td><td>Written</td><td>Clarity of Expression</td>
+                  <td><input class="form-input" style="min-width:140px" value="Writes with clarity and precision"></td>
+                  <td><input class="form-input" style="min-width:140px" value="Working to express ideas more clearly in writing"></td>
+                  <td><button class="btn btn-danger btn-sm">✕</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:0.75rem">+ Add Subskill</button>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('editBankModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('editBankModal')">Save Changes</button>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="section-prompts">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Student Prompts</div>
+          <div class="section-subtitle">Configure the reflection prompts shown to students by term, department, or course</div>
+        </div>
+        <button class="btn btn-primary" onclick="openPromptModal()">+ New Prompt</button>
+      </div>
+
+      <div class="filter-bar">
+        <select class="filter-select" id="prompt-term-filter" onchange="renderPrompts()">
+          <option value="">All Terms</option>
+          <option>25–26 S2</option>
+          <option>25–26 S1</option>
+        </select>
+        <select class="filter-select" id="prompt-level-filter" onchange="renderPrompts()">
+          <option value="">All Levels</option>
+          <option>Universal</option>
+          <option>Department</option>
+          <option>Course</option>
+        </select>
+      </div>
+
+      <div id="prompts-list"></div>
+
+    </div><!-- /section-prompts -->
+
+    <!-- New / Edit Prompt Modal -->
+    <div class="modal-overlay" id="promptModal">
+      <div class="modal" style="width:540px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="promptModalTitle">New Prompt</div>
+            <div class="modal-subtitle">Students see this prompt when writing their reflection</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('promptModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+
+          <div>
+            <label class="form-label">Level</label>
+            <div style="display:flex;gap:1.5rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+                <input type="radio" name="promptLevel" value="universal" checked onchange="updatePromptFields()"> Universal
+              </label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+                <input type="radio" name="promptLevel" value="dept" onchange="updatePromptFields()"> Department
+              </label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+                <input type="radio" name="promptLevel" value="course" onchange="updatePromptFields()"> Course
+              </label>
+            </div>
+          </div>
+
+          <div id="promptDeptRow" style="display:none">
+            <label class="form-label">Department</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>English</option><option>Math</option><option>Science</option>
+              <option>History &amp; Social Studies</option><option>World Languages</option>
+            </select>
+          </div>
+
+          <div id="promptCourseRow" style="display:none">
+            <label class="form-label">Course</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>Biology 101</option><option>English 10</option><option>Algebra II</option>
+              <option>World History</option><option>Spanish III</option><option>AP Literature</option><option>Chemistry</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label">Terms</label>
+            <div style="display:flex;gap:1.25rem;flex-wrap:wrap;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> 25–26 S2</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> 25–26 S1</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> All future terms</label>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Prompt Text</label>
+            <textarea class="form-input" rows="4" style="resize:vertical" placeholder="e.g. Reflect on your growth in this class. What are you most proud of, and what would you do differently?"></textarea>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div>
+              <label class="form-label">Min Characters</label>
+              <input class="form-input" type="number" min="0" value="150" placeholder="0 = no minimum">
+              <div class="form-hint">0 = no minimum enforced</div>
+            </div>
+            <div>
+              <label class="form-label">Max Characters</label>
+              <input class="form-input" type="number" min="0" value="700" placeholder="0 = no limit">
+              <div class="form-hint">0 = no limit enforced</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('promptModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('promptModal')">Save Prompt</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="section-rosters">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Rosters &amp; Import</div>
+          <div class="section-subtitle">View class rosters, import from CSV, and manage students</div>
+        </div>
+      </div>
+
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('rosters','roster')">Roster</div>
+        <div class="sub-tab" onclick="showSubTab('rosters','import')">Import</div>
+      </div>
+
+      <!-- Roster panel -->
+      <div class="sub-panel active" id="rosters-roster">
+        <div class="filter-bar" style="margin-bottom:1rem">
+          <select class="filter-select" id="roster-term" onchange="renderRoster()">
+            <option>25–26 S2</option>
+            <option>25–26 S1</option>
+            <option>24–25 S2</option>
+          </select>
+          <select class="filter-select" id="roster-dept" onchange="renderRoster()">
+            <option value="">All Departments</option>
+            <option>English</option>
+            <option>Math</option>
+            <option>Science</option>
+            <option>History &amp; Social Studies</option>
+            <option>World Languages</option>
+          </select>
+          <div style="margin-left:auto">
+            <button class="btn btn-primary" onclick="openModal('addClassModal')">+ Add Class</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Teacher</th>
+                <th>Department</th>
+                <th>Students</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="roster-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Import panel -->
+      <div class="sub-panel" id="rosters-import">
+        <div class="import-layout">
+
+          <div class="import-panel-card">
+            <div class="import-panel-title">Import from CSV</div>
+            <div class="drop-zone" id="importDropZone" onclick="showImportPreview()">
+              <div style="font-size:1.5rem;margin-bottom:0.4rem">📂</div>
+              <div>Click to select a CSV file</div>
+              <div style="font-size:0.75rem;color:#818cf8;margin-top:0.25rem">or drag and drop here</div>
+            </div>
+            <div style="font-size:0.75rem;color:#64748b;margin-top:0.75rem">
+              Expected columns: <code>teacher, course, student</code>
+            </div>
+
+            <!-- Preview (hidden until file selected) -->
+            <div id="importPreview" style="display:none">
+              <div class="preview-table-wrap">
+                <div class="preview-stats">
+                  <span class="preview-stat"><strong>3</strong> teachers</span>
+                  <span class="preview-stat"><strong>5</strong> classes</span>
+                  <span class="preview-stat"><strong>47</strong> students</span>
+                  <span class="preview-stat"><strong>89</strong> rows</span>
+                </div>
+                <table style="font-size:0.78rem">
+                  <thead><tr><th>Teacher</th><th>Course</th><th>Student</th></tr></thead>
+                  <tbody>
+                    <tr><td>Sarah Chen</td><td>Biology 101</td><td>Aisha Patel</td></tr>
+                    <tr><td>Sarah Chen</td><td>Biology 101</td><td>Ben Kowalski</td></tr>
+                    <tr><td>Marcus Webb</td><td>English 10</td><td>Clara Russo</td></tr>
+                    <tr><td>Marcus Webb</td><td>English 10</td><td>Dante Osei</td></tr>
+                    <tr><td style="color:#94a3b8" colspan="3">… 85 more rows</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="import-options">
+                <label><input type="radio" name="importMode" value="merge" checked> Merge with existing roster</label>
+                <label><input type="radio" name="importMode" value="replace"> Replace existing roster for this term</label>
+              </div>
+              <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+                <button class="btn btn-secondary" onclick="hideImportPreview()">Cancel</button>
+                <button class="btn btn-primary">Apply Import</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="import-panel-card">
+            <div class="import-panel-title">Export Roster</div>
+            <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">Download the current roster as a CSV file.</p>
+            <div style="display:flex;flex-direction:column;gap:0.6rem">
+              <div>
+                <label class="form-label">Term</label>
+                <select class="filter-select" style="width:100%">
+                  <option>25–26 S2</option>
+                  <option>25–26 S1</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Format</label>
+                <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.85rem">
+                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="exportFmt" checked> Class roster (teacher, course, student)</label>
+                  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="exportFmt"> Student list only</label>
+                </div>
+              </div>
+              <div style="margin-top:0.25rem">
+                <button class="btn btn-secondary">⬇ Download CSV</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /section-rosters -->
+
+    <!-- Add Class Modal -->
+    <div class="modal-overlay" id="addClassModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Add Class</div>
+            <div class="modal-subtitle">Manually add a class to the current term's roster</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('addClassModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div>
+            <label class="form-label">Term</label>
+            <select class="filter-select" style="width:100%">
+              <option>25–26 S2</option><option>25–26 S1</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Course Name</label>
+            <input class="form-input" type="text" placeholder="e.g. AP Chemistry">
+          </div>
+          <div>
+            <label class="form-label">Department</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>English</option><option>Math</option><option>Science</option>
+              <option>History &amp; Social Studies</option><option>World Languages</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Teacher</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">Select…</option>
+              <option>Sarah Chen</option><option>Marcus Webb</option>
+              <option>Priya Nair</option><option>Tom Okafor</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('addClassModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('addClassModal')">Add Class</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Students Modal -->
+    <div class="modal-overlay" id="studentsModal">
+      <div class="modal" style="width:500px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="studentsModalTitle">Students</div>
+            <div class="modal-subtitle" id="studentsModalSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('studentsModal')">✕</button>
+        </div>
+        <div class="modal-body" style="padding:0">
+          <div style="padding:0.75rem 1rem;border-bottom:1px solid #e2e8f0;display:flex;gap:0.5rem">
+            <input class="search-input" style="flex:1" type="text" placeholder="Search students…">
+            <button class="btn btn-primary btn-sm">+ Add Student</button>
+          </div>
+          <div style="max-height:320px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+              <tbody id="studentsModalBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('studentsModal')">Close</button>
+        </div>
+      </div>
+    </div>
+    <div class="section active" id="section-reportcards">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Report Cards</div>
+          <div class="section-subtitle">View status, manage issues, and export report cards</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('exportModal')">⬇ Bulk Export</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <select class="filter-select" id="rc-term">
+          <option>25–26 S1</option>
+          <option>25–26 S2</option>
+          <option>24–25 S2</option>
+        </select>
+        <select class="filter-select" id="rc-period">
+          <option value="">All Periods</option>
+          <option>Midterm</option>
+          <option>Final</option>
+        </select>
+        <select class="filter-select" id="rc-teacher">
+          <option value="">All Teachers</option>
+          <option>Sarah Chen</option>
+          <option>Marcus Webb</option>
+          <option>Priya Nair</option>
+          <option>Tom Okafor</option>
+        </select>
+        <div class="filter-sep"></div>
+        <select class="filter-select" id="rc-status">
+          <option value="">All Statuses</option>
+          <option>Draft</option>
+          <option>Finalized</option>
+          <option>Reviewed</option>
+        </select>
+        <select class="filter-select" id="rc-export">
+          <option value="">Any Export Status</option>
+          <option>Not Exported</option>
+          <option>Exported</option>
+          <option>Newly Reviewed</option>
+        </select>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-strip">
+        <div class="stat-card"><div class="stat-value">84</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#64748b">12</div><div class="stat-label">Draft</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#d97706">31</div><div class="stat-label">Finalized</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#16a34a">41</div><div class="stat-label">Reviewed</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#4f46e5">38</div><div class="stat-label">Exported</div></div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Teacher</th>
+              <th>Period</th>
+              <th>Status</th>
+              <th>Advisor Reviewed</th>
+              <th>Exported</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rc-tbody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /section-reportcards -->
+
+    <!-- Admin Note Modal -->
+    <div class="modal-overlay" id="noteModal">
+      <div class="modal" style="width:420px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Admin Note</div>
+            <div class="modal-subtitle" id="noteModalSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('noteModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <textarea id="noteText" style="width:100%;height:100px;padding:0.6rem;border:1px solid #d1d5db;border-radius:7px;font-family:inherit;font-size:0.85rem;resize:vertical" placeholder="Enter admin note…"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('noteModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Export Modal -->
+    <div class="modal-overlay" id="exportModal">
+      <div class="modal" style="width:460px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Bulk Export</div>
+            <div class="modal-subtitle">Generate PDFs for selected report cards</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('exportModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;color:#374151;display:block;margin-bottom:0.4rem">Term</label>
+            <select class="filter-select" style="width:100%">
+              <option>25–26 S1 — Final</option>
+              <option>25–26 S1 — Midterm</option>
+              <option>25–26 S2 — Final</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;color:#374151;display:block;margin-bottom:0.4rem">Include</label>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.85rem">
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                <input type="radio" name="export-include" value="reviewed" checked> Reviewed cards only
+              </label>
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                <input type="radio" name="export-include" value="new"> Newly reviewed since last export
+              </label>
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                <input type="radio" name="export-include" value="all"> All finalized cards
+              </label>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;color:#374151;display:block;margin-bottom:0.4rem">Filter by Teacher (optional)</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">All Teachers</option>
+              <option>Sarah Chen</option>
+              <option>Marcus Webb</option>
+              <option>Priya Nair</option>
+              <option>Tom Okafor</option>
+            </select>
+          </div>
+          <div class="note-box">
+            41 reviewed cards match current criteria. Export will be tracked.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
+          <button class="btn btn-primary">Export 41 PDFs</button>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="section-analytics">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Analytics</div>
+          <div class="section-subtitle">25–26 S2 · Final</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <select class="filter-select">
+            <option>25–26 S2 — Final</option>
+            <option>25–26 S2 — Midterm</option>
+            <option>25–26 S1 — Final</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-value" style="color:#4f46e5">79%</div>
+          <div class="kpi-label">Report Card Completion</div>
+          <div class="kpi-sub">66 of 84 finalized or reviewed</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="color:#16a34a">49%</div>
+          <div class="kpi-label">Advisor Review Rate</div>
+          <div class="kpi-sub">41 of 84 reviewed</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="color:#d97706">71%</div>
+          <div class="kpi-label">Reflection Submission</div>
+          <div class="kpi-sub">60 of 84 submitted</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">2.4d</div>
+          <div class="kpi-label">Avg. Advisor Turnaround</div>
+          <div class="kpi-sub">From finalize to reviewed</div>
+        </div>
+      </div>
+
+      <!-- Row 1: completion by class + top comments -->
+      <div class="analytics-row">
+
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            Completion by Class
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">% finalized or reviewed</span>
+          </div>
+          <div class="analytics-card-body">
+            <div class="bar-row">
+              <div class="bar-label"><span>Biology 101 · Sarah Chen</span><span>100%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>Spanish III · Priya Nair</span><span>100%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>AP Literature · Marcus Webb</span><span>75%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:75%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>Algebra II · Priya Nair</span><span>67%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:67%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>World History · Tom Okafor</span><span>50%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:50%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>English 10 · Marcus Webb</span><span>33%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:33%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>Chemistry · Sarah Chen</span><span>33%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:33%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            Top Comments Used
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">across all classes</span>
+          </div>
+          <div class="analytics-card-body">
+            <div class="comment-rank-row">
+              <span class="rank-num">1</span>
+              <span class="rank-text">Consistently submits work on time</span>
+              <div class="rank-bar"><div class="rank-bar-fill" style="width:100%"></div></div>
+              <span class="rank-count">38</span>
+            </div>
+            <div class="comment-rank-row">
+              <span class="rank-num">2</span>
+              <span class="rank-text">Reliably brings thoughtful ideas to group work</span>
+              <div class="rank-bar"><div class="rank-bar-fill" style="width:87%"></div></div>
+              <span class="rank-count">33</span>
+            </div>
+            <div class="comment-rank-row">
+              <span class="rank-num">3</span>
+              <span class="rank-text">Writes with clarity and precision</span>
+              <div class="rank-bar"><div class="rank-bar-fill" style="width:76%"></div></div>
+              <span class="rank-count">29</span>
+            </div>
+            <div class="comment-rank-row">
+              <span class="rank-num">4</span>
+              <span class="rank-text">Consistently listens attentively to peers</span>
+              <div class="rank-bar"><div class="rank-bar-fill" style="width:63%"></div></div>
+              <span class="rank-count">24</span>
+            </div>
+            <div class="comment-rank-row">
+              <span class="rank-num">5</span>
+              <span class="rank-text">Building habits to meet deadlines</span>
+              <div class="rank-bar"><div class="rank-bar-fill" style="width:55%"></div></div>
+              <span class="rank-count">21</span>
+            </div>
+            <div class="comment-rank-row">
+              <span class="rank-num">6</span>
+              <span class="rank-text">Working on listening before responding</span>
+              <div class="rank-bar"><div class="rank-bar-fill" style="width:47%"></div></div>
+              <span class="rank-count">18</span>
+            </div>
+            <div class="comment-rank-row">
+              <span class="rank-num">7</span>
+              <span class="rank-text">Developing confidence to share ideas</span>
+              <div class="rank-bar"><div class="rank-bar-fill" style="width:39%"></div></div>
+              <span class="rank-count">15</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Row 2: reflection rates + advisor turnaround -->
+      <div class="analytics-row">
+
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            Student Reflection Submission
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">by class</span>
+          </div>
+          <div class="analytics-card-body">
+            <div class="bar-row">
+              <div class="bar-label"><span>Biology 101</span><span>100%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>AP Literature</span><span>100%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>Spanish III</span><span>67%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:67%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>Algebra II</span><span>67%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:67%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>English 10</span><span>50%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:50%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>World History</span><span>50%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:50%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label"><span>Chemistry</span><span>33%</span></div>
+              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:33%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            Advisor Turnaround
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">days from finalize → reviewed</span>
+          </div>
+          <div class="analytics-card-body">
+            <div class="turnaround-row">
+              <span class="turnaround-name">Marcus Webb</span>
+              <div class="turnaround-bar"><div class="turnaround-fill" style="width:25%"></div></div>
+              <span class="turnaround-days">1.0d avg</span>
+            </div>
+            <div class="turnaround-row">
+              <span class="turnaround-name">Tom Okafor</span>
+              <div class="turnaround-bar"><div class="turnaround-fill" style="width:50%"></div></div>
+              <span class="turnaround-days">2.1d avg</span>
+            </div>
+            <div class="turnaround-row">
+              <span class="turnaround-name">Priya Nair</span>
+              <div class="turnaround-bar"><div class="turnaround-fill" style="width:75%"></div></div>
+              <span class="turnaround-days">3.2d avg</span>
+            </div>
+            <div class="turnaround-row" style="border-bottom:1px solid #f1f5f9">
+              <span class="turnaround-name">Sarah Chen</span>
+              <div class="turnaround-bar"><div class="turnaround-fill" style="width:100%"></div></div>
+              <span class="turnaround-days">4.1d avg</span>
+            </div>
+            <div style="margin-top:1.1rem">
+              <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin-bottom:0.5rem">Pending Review</div>
+              <div class="turnaround-row">
+                <span class="turnaround-name">Clara Russo</span>
+                <span class="td-muted" style="font-size:0.78rem">Biology 101 · finalized 3d ago</span>
+                <span style="color:#dc2626;font-weight:600;font-size:0.78rem">3d waiting</span>
+              </div>
+              <div class="turnaround-row">
+                <span class="turnaround-name">Hassan Ali</span>
+                <span class="td-muted" style="font-size:0.78rem">Algebra II · finalized 2d ago</span>
+                <span style="color:#d97706;font-weight:600;font-size:0.78rem">2d waiting</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Export reports -->
+      <div class="analytics-card">
+        <div class="analytics-card-header">Export Reports</div>
+        <div class="analytics-card-body">
+          <div class="export-row">
+            <div>
+              <div class="export-row-label">Comment usage report</div>
+              <div class="export-row-sub">Which standard comments were used, by how many teachers and classes</div>
+            </div>
+            <button class="btn btn-secondary btn-sm">⬇ CSV</button>
+          </div>
+          <div class="export-row">
+            <div>
+              <div class="export-row-label">Completion status report</div>
+              <div class="export-row-sub">Report card and reflection status for all students in the term</div>
+            </div>
+            <button class="btn btn-secondary btn-sm">⬇ CSV</button>
+          </div>
+          <div class="export-row">
+            <div>
+              <div class="export-row-label">Teacher custom comment banks</div>
+              <div class="export-row-sub">Export a specific teacher's personal comment bank for sharing</div>
+            </div>
+            <div style="display:flex;gap:0.5rem;align-items:center">
+              <select class="filter-select">
+                <option>Sarah Chen</option><option>Marcus Webb</option><option>Priya Nair</option><option>Tom Okafor</option>
+              </select>
+              <button class="btn btn-secondary btn-sm">⬇ CSV</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /section-analytics -->
+    <div class="section" id="section-data">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Data Management</div>
+          <div class="section-subtitle">Archive old data and verify system integrity</div>
+        </div>
+      </div>
+
+      <div class="data-grid">
+
+        <!-- Export & Archive -->
+        <div class="data-card">
+          <div class="data-card-header">Export &amp; Archive Old Data</div>
+          <div class="data-card-body">
+            <p style="font-size:0.82rem;color:#64748b;line-height:1.5">
+              Export data from completed school years for records and compliance. A manual confirmation is required before any deletion.
+            </p>
+
+            <div>
+              <label class="form-label">Export data older than</label>
+              <select class="filter-select" style="width:100%" id="archiveCutoff" onchange="updateArchivePreview()">
+                <option value="5">5 years (before 2020–2021)</option>
+                <option value="4">4 years (before 2021–2022)</option>
+                <option value="3">3 years (before 2022–2023)</option>
+                <option value="7">7 years (before 2018–2019)</option>
+              </select>
+            </div>
+
+            <div class="archive-preview" id="archivePreview">
+              <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin-bottom:0.3rem">Records in scope</div>
+              <div class="archive-preview-row"><span>School years</span><span id="ap-years">2</span></div>
+              <div class="archive-preview-row"><span>Terms</span><span id="ap-terms">4</span></div>
+              <div class="archive-preview-row"><span>Report cards</span><span id="ap-cards">312</span></div>
+              <div class="archive-preview-row"><span>Student reflections</span><span id="ap-reflections">289</span></div>
+              <div class="archive-preview-row"><span>Export records</span><span id="ap-exports">18</span></div>
+            </div>
+
+            <div>
+              <label class="form-label">Format</label>
+              <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.85rem">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="archiveFmt" checked> CSV files (one per data type)</label>
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="archiveFmt"> ZIP archive with all files</label>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="openModal('archiveConfirmModal')">⬇ Export Archive</button>
+
+            <div class="danger-zone">
+              <div class="danger-zone-title">⚠ Delete After Export</div>
+              <div class="danger-zone-desc">
+                After exporting, you may permanently delete the archived records from the live system. This cannot be undone. Export must be completed first.
+              </div>
+              <button class="btn btn-danger btn-sm" style="margin-top:0.6rem" onclick="openModal('deleteConfirmModal')">Delete Archived Records…</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Integrity -->
+        <div>
+          <div class="data-card" style="margin-bottom:1rem">
+            <div class="data-card-header" style="display:flex;align-items:center;justify-content:space-between">
+              Data Integrity
+              <button class="btn btn-secondary btn-sm" onclick="runIntegrityCheck()">Run Check</button>
+            </div>
+            <div class="data-card-body" id="integrityResults">
+              <p style="font-size:0.82rem;color:#94a3b8">Click <strong>Run Check</strong> to scan for orphaned records and data inconsistencies.</p>
+            </div>
+          </div>
+
+          <div class="data-card">
+            <div class="data-card-header">Audit Log</div>
+            <div class="data-card-body">
+              <p style="font-size:0.82rem;color:#64748b;line-height:1.5;margin-bottom:0.5rem">
+                A record of admin actions: role changes, spoofs, term locks, bulk exports, and data deletions.
+              </p>
+              <div class="table-wrap" style="max-height:200px;overflow-y:auto">
+                <table>
+                  <thead><tr><th>Date</th><th>Admin</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td class="td-muted">Apr 21 09:14</td><td>Alex Johnson</td><td>Bulk export — 25–26 S1 Final (41 cards)</td></tr>
+                    <tr><td class="td-muted">Apr 20 15:02</td><td>Alex Johnson</td><td>Locked term 25–26 S1</td></tr>
+                    <tr><td class="td-muted">Apr 18 11:30</td><td>Diana Park</td><td>Spoofed user Felix Huang</td></tr>
+                    <tr><td class="td-muted">Apr 15 09:55</td><td>Alex Johnson</td><td>Role change: Robert Stills → archived</td></tr>
+                    <tr><td class="td-muted">Mar 10 14:20</td><td>Diana Park</td><td>Uploaded comment bank: Core Skills Bank (v3)</td></tr>
+                    <tr><td class="td-muted">Jan 27 08:45</td><td>Alex Johnson</td><td>Created term: 25–26 S2</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-top:0.5rem">
+                <button class="btn btn-secondary btn-sm">⬇ Export Full Audit Log</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /section-data -->
+
+    <!-- Archive Export Confirm Modal -->
+    <div class="modal-overlay" id="archiveConfirmModal">
+      <div class="modal" style="width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Confirm Export</div>
+            <div class="modal-subtitle">Data older than 5 years</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('archiveConfirmModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5;margin-bottom:1rem">
+            You are about to export <strong>312 report cards</strong>, <strong>289 reflections</strong>, and related records from <strong>2 school years</strong> (2019–2020, 2020–2021).
+          </p>
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            The export will be downloaded to your computer. No data will be deleted from the system until you explicitly choose to delete it.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('archiveConfirmModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('archiveConfirmModal')">Download Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal-overlay" id="deleteConfirmModal">
+      <div class="modal" style="width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" style="color:#dc2626">Permanently Delete Records</div>
+            <div class="modal-subtitle">This action cannot be undone</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('deleteConfirmModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.85rem">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
+            This will permanently remove <strong>312 report cards</strong>, <strong>289 reflections</strong>, and related records from the live system.
+          </p>
+          <div class="danger-zone">
+            <div class="danger-zone-desc">Only proceed if you have verified the exported archive is complete and stored securely.</div>
+          </div>
+          <div>
+            <label class="form-label" style="color:#dc2626">Type DELETE to confirm</label>
+            <input class="form-input" id="deleteConfirmInput" type="text" placeholder="DELETE" oninput="toggleDeleteBtn()">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('deleteConfirmModal')">Cancel</button>
+          <button class="btn btn-danger" id="deleteConfirmBtn" disabled style="opacity:0.4">Permanently Delete</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    document.querySelector('[data-section="' + name + '"]').classList.add('active');
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  });
+
+  // ── REPORT CARDS DATA ──
+  const RC_DATA = [
+    { student: 'Aisha Patel',     cls: 'Biology 101',   teacher: 'Sarah Chen',  period: 'Final',   status: 'reviewed', reviewed: true,  exported: true  },
+    { student: 'Ben Kowalski',    cls: 'Biology 101',   teacher: 'Sarah Chen',  period: 'Final',   status: 'reviewed', reviewed: true,  exported: true  },
+    { student: 'Clara Russo',     cls: 'Biology 101',   teacher: 'Sarah Chen',  period: 'Final',   status: 'finalized',reviewed: false, exported: false },
+    { student: 'Dante Osei',      cls: 'English 10',    teacher: 'Marcus Webb', period: 'Final',   status: 'reviewed', reviewed: true,  exported: false },
+    { student: 'Elena Marsh',     cls: 'English 10',    teacher: 'Marcus Webb', period: 'Final',   status: 'reviewed', reviewed: true,  exported: false },
+    { student: 'Felix Huang',     cls: 'English 10',    teacher: 'Marcus Webb', period: 'Final',   status: 'draft',    reviewed: false, exported: false },
+    { student: 'Grace Kim',       cls: 'Algebra II',    teacher: 'Priya Nair',  period: 'Midterm', status: 'reviewed', reviewed: true,  exported: true  },
+    { student: 'Hassan Ali',      cls: 'Algebra II',    teacher: 'Priya Nair',  period: 'Midterm', status: 'finalized',reviewed: false, exported: false },
+    { student: 'Ingrid Svensson', cls: 'World History', teacher: 'Tom Okafor', period: 'Final',   status: 'reviewed', reviewed: true,  exported: true  },
+    { student: 'James Carter',    cls: 'World History', teacher: 'Tom Okafor', period: 'Final',   status: 'draft',    reviewed: false, exported: false },
+    { student: 'Keiko Tanaka',    cls: 'Spanish III',   teacher: 'Priya Nair',  period: 'Final',   status: 'reviewed', reviewed: true,  exported: true  },
+    { student: 'Leo Fernandez',   cls: 'Biology 101',   teacher: 'Sarah Chen',  period: 'Final',   status: 'finalized',reviewed: false, exported: false },
+  ];
+
+  const STATUS_PILL = {
+    draft:     '<span class="pill pill-draft"><span class="pill-dot dot-draft"></span>Draft</span>',
+    finalized: '<span class="pill pill-final"><span class="pill-dot dot-final"></span>Finalized</span>',
+    reviewed:  '<span class="pill pill-reviewed"><span class="pill-dot dot-reviewed"></span>Reviewed</span>',
+  };
+
+  function renderRCTable() {
+    const term    = document.getElementById('rc-term').value;
+    const period  = document.getElementById('rc-period').value;
+    const teacher = document.getElementById('rc-teacher').value;
+    const status  = document.getElementById('rc-status').value;
+    const expStat = document.getElementById('rc-export').value;
+
+    let rows = RC_DATA.filter(r => {
+      if (period  && r.period  !== period)  return false;
+      if (teacher && r.teacher !== teacher) return false;
+      if (status  && r.status  !== status)  return false;
+      if (expStat === 'Exported'      && !r.exported)  return false;
+      if (expStat === 'Not Exported'  && r.exported)   return false;
+      if (expStat === 'Newly Reviewed'&& !(r.status==='reviewed'&&!r.exported)) return false;
+      return true;
+    });
+
+    const tbody = document.getElementById('rc-tbody');
+    tbody.innerHTML = rows.map((r, i) => `
+      <tr>
+        <td class="td-name">${r.student}</td>
+        <td>${r.cls}</td>
+        <td>${r.teacher}</td>
+        <td>${r.period}</td>
+        <td>${STATUS_PILL[r.status]}</td>
+        <td style="text-align:center">${r.reviewed ? '<span class="check-yes">✓</span>' : '<span class="check-no">—</span>'}</td>
+        <td style="text-align:center">${r.exported ? '<span class="check-yes">✓</span>' : '<span class="check-no">—</span>'}</td>
+        <td>
+          <div class="actions-cell">
+            ${r.status === 'finalized' ? `<button class="btn btn-secondary btn-sm" onclick="unfinalize(${i})">Unfinalize</button>` : ''}
+            <button class="btn btn-secondary btn-sm" onclick="openNoteModal('${r.student}')">Note</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function unfinalize(i) {
+    RC_DATA[i].status = 'draft';
+    renderRCTable();
+  }
+
+  let noteTarget = '';
+  function openNoteModal(name) {
+    noteTarget = name;
+    document.getElementById('noteModalSubtitle').textContent = name;
+    document.getElementById('noteText').value = '';
+    openModal('noteModal');
+  }
+  function saveNote() {
+    closeModal('noteModal');
+  }
+
+  document.querySelectorAll('#rc-term, #rc-period, #rc-teacher, #rc-status, #rc-export')
+    .forEach(el => el.addEventListener('change', renderRCTable));
+
+  renderRCTable();
+
+  // ── USERS DATA ──
+  const USERS = [
+    { name: 'Sarah Chen',      email: 'schen@riverside.edu',     roles: ['Teacher'],           status: 'active',   lastLogin: 'Apr 20, 2026' },
+    { name: 'Marcus Webb',     email: 'mwebb@riverside.edu',     roles: ['Teacher','Advisor'],  status: 'active',   lastLogin: 'Apr 21, 2026' },
+    { name: 'Priya Nair',      email: 'pnair@riverside.edu',     roles: ['Teacher'],           status: 'active',   lastLogin: 'Apr 19, 2026' },
+    { name: 'Tom Okafor',      email: 'tokafor@riverside.edu',   roles: ['Teacher','Advisor'],  status: 'active',   lastLogin: 'Apr 18, 2026' },
+    { name: 'Alex Johnson',    email: 'ajohnson@riverside.edu',  roles: ['Admin'],             status: 'active',   lastLogin: 'Apr 21, 2026' },
+    { name: 'Diana Park',      email: 'dpark@riverside.edu',     roles: ['Admin','Teacher'],   status: 'active',   lastLogin: 'Apr 15, 2026' },
+    { name: 'Aisha Patel',     email: 'aisha.patel@students.riverside.edu', roles: ['Student'], status: 'active',  lastLogin: 'Apr 20, 2026' },
+    { name: 'Ben Kowalski',    email: 'ben.kowalski@students.riverside.edu', roles: ['Student'], status: 'active', lastLogin: 'Apr 17, 2026' },
+    { name: 'Robert Stills',   email: 'rstills@riverside.edu',   roles: ['Teacher'],           status: 'archived', lastLogin: 'Jan 10, 2026' },
+  ];
+
+  const ROLE_CLASS = { Teacher:'role-teacher', Advisor:'role-advisor', Admin:'role-admin', Student:'role-student' };
+
+  function renderUsers() {
+    const q      = document.getElementById('user-search').value.toLowerCase();
+    const role   = document.getElementById('user-role-filter').value;
+    const status = document.getElementById('user-status-filter').value;
+
+    const rows = USERS.filter((u, idx) => {
+      u._idx = idx;
+      if (q && !u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q)) return false;
+      if (role && !u.roles.includes(role)) return false;
+      if (status === 'active'   && u.status !== 'active')   return false;
+      if (status === 'archived' && u.status !== 'archived') return false;
+      return true;
+    });
+
+    document.getElementById('users-tbody').innerHTML = rows.map((u, i) => `
+      <tr>
+        <td class="td-name">${u.name}</td>
+        <td class="td-muted">${u.email}</td>
+        <td>${u.roles.map(r => `<span class="role-tag ${ROLE_CLASS[r]}">${r}</span>`).join('')}</td>
+        <td>${u.status === 'active'
+          ? '<span class="status-active">● Active</span>'
+          : '<span class="status-archived">● Archived</span>'}</td>
+        <td class="td-muted">${u.lastLogin}</td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn btn-secondary btn-sm" onclick="openEditUser(${USERS.indexOf(u)})">Edit</button>
+            ${u.status === 'active' ? `<button class="btn btn-secondary btn-sm" onclick="openSpoof('${u.name}')">Spoof</button>` : ''}
+            ${u.status === 'active' ? `<button class="btn btn-danger btn-sm" onclick="openArchive(${USERS.indexOf(u)}, '${u.name}')">Archive</button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openUserModal() {
+    document.getElementById('userModalTitle').textContent = 'New User';
+    document.getElementById('uName').value = '';
+    document.getElementById('uEmail').value = '';
+    ['Teacher','Advisor','Admin','Student'].forEach(r => {
+      document.getElementById('uRole' + r).checked = false;
+    });
+    openModal('userModal');
+  }
+
+  function openEditUser(idx) {
+    const u = USERS[idx];
+    document.getElementById('userModalTitle').textContent = 'Edit User';
+    document.getElementById('uName').value  = u.name;
+    document.getElementById('uEmail').value = u.email;
+    ['Teacher','Advisor','Admin','Student'].forEach(r => {
+      document.getElementById('uRole' + r).checked = u.roles.includes(r);
+    });
+    openModal('userModal');
+  }
+
+  function saveUser() {
+    closeModal('userModal');
+    renderUsers();
+  }
+
+  function openSpoof(name) {
+    document.getElementById('spoofSubtitle').textContent = name;
+    openModal('spoofModal');
+  }
+
+  let archiveIdx = -1;
+  function openArchive(idx, name) {
+    archiveIdx = idx;
+    document.getElementById('archiveSubtitle').textContent = name;
+    openModal('archiveModal');
+  }
+  function confirmArchive() {
+    if (archiveIdx >= 0) USERS[archiveIdx].status = 'archived';
+    closeModal('archiveModal');
+    renderUsers();
+  }
+
+  renderUsers();
+
+  // ── DATA MANAGEMENT ──
+  const ARCHIVE_DATA = {
+    5: { years:2, terms:4,  cards:312, reflections:289, exports:18 },
+    4: { years:3, terms:6,  cards:487, reflections:451, exports:27 },
+    3: { years:4, terms:8,  cards:641, reflections:589, exports:35 },
+    7: { years:1, terms:2,  cards:158, reflections:140, exports:9  },
+  };
+  function updateArchivePreview() {
+    const cutoff = document.getElementById('archiveCutoff').value;
+    const d = ARCHIVE_DATA[cutoff];
+    document.getElementById('ap-years').textContent       = d.years;
+    document.getElementById('ap-terms').textContent       = d.terms;
+    document.getElementById('ap-cards').textContent       = d.cards;
+    document.getElementById('ap-reflections').textContent = d.reflections;
+    document.getElementById('ap-exports').textContent     = d.exports;
+  }
+
+  const INTEGRITY_CHECKS = [
+    { label:'Report cards without a matching class',         detail:'Classes deleted after cards were created', status:'pass',  count:0   },
+    { label:'Students enrolled in non-existent classes',     detail:'Enrollment records with missing class IDs',status:'pass',  count:0   },
+    { label:'Reflections with no matching prompt',           detail:'Prompts may have been deleted',            status:'warn',  count:3   },
+    { label:'Finalized cards with empty narrative',          detail:'Narrative field bypassed at finalization',  status:'warn',  count:7   },
+    { label:'Export records referencing deleted cards',      detail:'Cards removed after export logged',        status:'pass',  count:0   },
+    { label:'Users with no roles assigned',                  detail:'Accounts with empty roles array',          status:'fail',  count:1   },
+    { label:'Duplicate student enrollments',                 detail:'Same student in same class more than once',status:'pass',  count:0   },
+  ];
+
+  function runIntegrityCheck() {
+    const el = document.getElementById('integrityResults');
+    el.innerHTML = '<p style="font-size:0.82rem;color:#94a3b8">Running…</p>';
+    setTimeout(() => {
+      const rows = INTEGRITY_CHECKS.map(c => {
+        const icon    = c.status==='pass' ? '✓' : c.status==='warn' ? '⚠' : '✕';
+        const cls     = c.status==='pass' ? 'integrity-pass' : c.status==='warn' ? 'integrity-warn' : 'integrity-fail';
+        const countEl = c.count > 0
+          ? `<span class="${cls}">${c.count} issue${c.count>1?'s':''}</span>`
+          : `<span class="integrity-pass">OK</span>`;
+        return `
+          <div class="integrity-row">
+            <span class="integrity-icon ${cls}">${icon}</span>
+            <span class="integrity-label">
+              ${c.label}
+              <div class="integrity-detail">${c.detail}</div>
+            </span>
+            ${countEl}
+          </div>`;
+      }).join('');
+      el.innerHTML = rows +
+        `<div style="display:flex;justify-content:flex-end;margin-top:0.5rem">
+           <button class="btn btn-secondary btn-sm">⬇ Export Report</button>
+         </div>`;
+    }, 600);
+  }
+
+  function toggleDeleteBtn() {
+    const val = document.getElementById('deleteConfirmInput').value;
+    const btn = document.getElementById('deleteConfirmBtn');
+    btn.disabled = val !== 'DELETE';
+    btn.style.opacity = val === 'DELETE' ? '1' : '0.4';
+  }
+
+  // ── SUB-TABS ──
+  function showSubTab(section, panel) {
+    const prefix = section + '-';
+    document.querySelectorAll('#section-' + section + ' .sub-panel')
+      .forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#section-' + section + ' .sub-tab')
+      .forEach(t => t.classList.remove('active'));
+    document.getElementById(prefix + panel).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ── STUDENT PROMPTS ──
+  const PROMPTS = [
+    {
+      level: 'Universal', appliedTo: 'All classes', terms: ['25–26 S2','25–26 S1'],
+      text: 'Reflect on your learning in this class over the term. What are you most proud of, and what is one thing you would approach differently?',
+      minChars: 150, maxChars: 700,
+    },
+    {
+      level: 'Department', appliedTo: 'World Languages', terms: ['25–26 S2'],
+      text: 'Reflect on your growth as a language learner this term. In what moments did you feel most confident using the language, and where do you still feel challenged?',
+      minChars: 150, maxChars: 600,
+    },
+    {
+      level: 'Course', appliedTo: 'AP Literature', terms: ['25–26 S2'],
+      text: 'Choose one text we studied this term and reflect on how it changed or challenged your thinking. What ideas from it are you still sitting with?',
+      minChars: 200, maxChars: 800,
+    },
+    {
+      level: 'Course', appliedTo: 'Spanish for Native Speakers', terms: ['25–26 S1','25–26 S2'],
+      text: 'Reflexiona sobre tu identidad como hablante de herencia este trimestre. ¿Qué has aprendido sobre tu propia lengua y cultura?',
+      minChars: 100, maxChars: 500,
+    },
+  ];
+
+  const LEVEL_TAG = {
+    Universal: 'level-tag-universal',
+    Department: 'level-tag-dept',
+    Course:     'level-tag-course',
+  };
+
+  function renderPrompts() {
+    const termF  = document.getElementById('prompt-term-filter').value;
+    const levelF = document.getElementById('prompt-level-filter').value;
+
+    const filtered = PROMPTS.filter(p => {
+      if (levelF && p.level !== levelF) return false;
+      if (termF  && !p.terms.includes(termF)) return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      document.getElementById('prompts-list').innerHTML =
+        '<p style="color:#94a3b8;font-size:0.85rem;padding:1rem 0">No prompts match the current filters.</p>';
+      return;
+    }
+
+    document.getElementById('prompts-list').innerHTML = filtered.map((p, i) => `
+      <div class="prompt-card">
+        <div class="prompt-card-header">
+          <div class="prompt-card-meta">
+            <div class="prompt-card-title">
+              <span class="role-tag ${LEVEL_TAG[p.level]}">${p.level}</span>
+              ${p.appliedTo}
+            </div>
+            <div class="prompt-card-terms">Terms: ${p.terms.join(', ')}</div>
+          </div>
+          <div class="actions-cell">
+            <button class="btn btn-secondary btn-sm" onclick="openEditPrompt(${PROMPTS.indexOf(p)})">Edit</button>
+            <button class="btn btn-danger btn-sm">Delete</button>
+          </div>
+        </div>
+        <div class="prompt-preview">${p.text}</div>
+        <div class="prompt-chars">
+          <span><strong>Min:</strong> ${p.minChars ? p.minChars + ' chars' : 'none'}</span>
+          <span><strong>Max:</strong> ${p.maxChars ? p.maxChars + ' chars' : 'none'}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openPromptModal() {
+    document.getElementById('promptModalTitle').textContent = 'New Prompt';
+    document.querySelector('[name="promptLevel"][value="universal"]').checked = true;
+    updatePromptFields();
+    openModal('promptModal');
+  }
+
+  function openEditPrompt(idx) {
+    const p = PROMPTS[idx];
+    document.getElementById('promptModalTitle').textContent = 'Edit Prompt';
+    const levelVal = p.level === 'Universal' ? 'universal' : p.level === 'Department' ? 'dept' : 'course';
+    document.querySelector(`[name="promptLevel"][value="${levelVal}"]`).checked = true;
+    updatePromptFields();
+    openModal('promptModal');
+  }
+
+  function updatePromptFields() {
+    const val = document.querySelector('[name="promptLevel"]:checked')?.value;
+    document.getElementById('promptDeptRow').style.display   = (val === 'dept' || val === 'course') ? '' : 'none';
+    document.getElementById('promptCourseRow').style.display = (val === 'course') ? '' : 'none';
+  }
+
+  renderPrompts();
+
+  // ── ROSTERS ──
+  const CLASSES = [
+    { course:'Biology 101',       teacher:'Sarah Chen',  dept:'Science',                   students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
+    { course:'English 10',        teacher:'Marcus Webb', dept:'English',                   students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
+    { course:'Algebra II',        teacher:'Priya Nair',  dept:'Math',                      students:['Hassan Ali','Ingrid Svensson','James Carter'] },
+    { course:'World History',     teacher:'Tom Okafor',  dept:'History & Social Studies',  students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
+    { course:'Spanish III',       teacher:'Priya Nair',  dept:'World Languages',           students:['Ben Kowalski','Clara Russo','Dante Osei'] },
+    { course:'AP Literature',     teacher:'Marcus Webb', dept:'English',                   students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
+    { course:'Chemistry',         teacher:'Sarah Chen',  dept:'Science',                   students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
+  ];
+
+  function renderRoster() {
+    const dept = document.getElementById('roster-dept').value;
+    const rows = CLASSES.filter(c => !dept || c.dept === dept);
+    document.getElementById('roster-tbody').innerHTML = rows.map((c, i) => `
+      <tr>
+        <td class="td-name">${c.course}</td>
+        <td>${c.teacher}</td>
+        <td class="td-muted">${c.dept}</td>
+        <td>${c.students.length}</td>
+        <td><div class="actions-cell">
+          <button class="btn btn-secondary btn-sm" onclick="openStudents(${CLASSES.indexOf(c)})">Students</button>
+          <button class="btn btn-secondary btn-sm">Edit</button>
+          <button class="btn btn-danger btn-sm">Remove</button>
+        </div></td>
+      </tr>
+    `).join('');
+  }
+
+  function openStudents(idx) {
+    const cls = CLASSES[idx];
+    document.getElementById('studentsModalTitle').textContent = cls.course;
+    document.getElementById('studentsModalSubtitle').textContent = cls.teacher + ' · ' + cls.students.length + ' students';
+    document.getElementById('studentsModalBody').innerHTML = cls.students.map(s => `
+      <tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:0.55rem 1rem;font-weight:600;color:#1e293b">${s}</td>
+        <td style="padding:0.55rem 1rem;text-align:right">
+          <button class="btn btn-danger btn-sm">Remove</button>
+        </td>
+      </tr>
+    `).join('');
+    openModal('studentsModal');
+  }
+
+  function showImportPreview() {
+    document.getElementById('importDropZone').style.display = 'none';
+    document.getElementById('importPreview').style.display = 'block';
+  }
+  function hideImportPreview() {
+    document.getElementById('importDropZone').style.display = '';
+    document.getElementById('importPreview').style.display = 'none';
+  }
+
+  renderRoster();
+
+  // ── COMMENT BANKS ──
+  function toggleDept(header) {
+    const toggle  = header.querySelector('.assign-toggle');
+    const courses = header.nextElementSibling;
+    const open    = courses.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+  }
+
+  // ── LOCK TERM ──
+  function lockTerm(btn) {
+    const row = btn.closest('.term-row');
+    btn.remove();
+    const editBtn = row.querySelector('.btn-secondary');
+    editBtn.disabled = true;
+    editBtn.style.opacity = '0.4';
+    editBtn.style.cursor = 'not-allowed';
+    const locked = document.createElement('span');
+    locked.className = 'term-locked';
+    locked.textContent = 'Locked';
+    row.querySelector('.term-actions').before(locked);
+  }
+</script>
+</body>
+</html>
