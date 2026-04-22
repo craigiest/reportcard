@@ -771,7 +771,7 @@ The school-wide default comment bank is loaded from a separate default file. Add
 - Report card data:
   - Skills:
     - Skill name (stored as text snapshot, not a foreign key, so bank edits don't alter existing cards)
-    - Selected standard comments (Array of comment references — subskill name + strength/growth type — resolved to text at display time from the bank, or snapshotted at finalization)
+    - Selected standard comments (Array of text snapshots — comment text is copied from the bank at finalization; report cards are fully self-contained after finalization and do not depend on the comment bank)
     - One-time custom comments (Array of text strings added for this student only; stored directly as text in the database)
     - Saved custom comments applied (Array of text strings from the teacher's reusable bank, also stored as text snapshots)
   - Narrative field (text)
