@@ -206,6 +206,7 @@
     }
     .rc-dot.complete { background: #22c55e; border-color: #22c55e; }
     .rc-dot.finalized { background: #1d4ed8; border-color: #1d4ed8; }
+    .rc-dot.reviewed { background: #7c3aed; border-color: #7c3aed; }
 
     /* Square dot = reflection status */
     .ref-dot {
@@ -809,6 +810,7 @@
       <div class="legend-item"><span class="rc-dot in-progress"></span> In progress</div>
       <div class="legend-item"><span class="rc-dot complete"></span> Complete</div>
       <div class="legend-item"><span class="rc-dot finalized"></span> Finalized</div>
+      <div class="legend-item"><span class="rc-dot reviewed"></span> Advisor reviewed</div>
       <div class="legend-item"><span class="ref-dot submitted"></span> Reflection</div>
     </div>
   </div>
@@ -851,6 +853,9 @@
               Mark as finalized
             </label>
             <span class="finalize-hint" id="finalizeHint"></span>
+          </div>
+          <div id="advisorReviewRow" style="display:none;margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid #f1f5f9;font-size:0.82rem;color:#94a3b8">
+            <span id="advisorReviewStatus"></span>
           </div>
         </div>
       </div>
@@ -1506,6 +1511,7 @@ function studentStatus(ci, si) {
   }).length;
   const narrativeLen = (d.narrative || '').trim().length;
   const meetsComplete = skillsDone >= 3 && narrativeLen >= 20;
+  if (meetsComplete && d.finalized && d.advisorReviewed) return 'reviewed';
   if (meetsComplete && d.finalized) return 'finalized';
   if (meetsComplete) return 'complete';
   if (skillsDone === 0 && narrativeLen === 0) return 'none';
@@ -2124,10 +2130,10 @@ function updateFinalizeUI() {
   if (activeCI === null) return;
   const d = studentData(activeCI, activeSI);
   const st = studentStatus(activeCI, activeSI);
-  const canFinalize = st === 'complete' || st === 'finalized';
+  const canFinalize = st === 'complete' || st === 'finalized' || st === 'reviewed';
   const check = document.getElementById('finalizeCheck');
   check.checked = !!d.finalized;
-  check.disabled = !canFinalize;
+  check.disabled = !canFinalize || !!d.advisorReviewed;
   const hint = document.getElementById('finalizeHint');
   if (!canFinalize) {
     const skillsDone = SKILLS.filter(s => {
@@ -2141,12 +2147,25 @@ function updateFinalizeUI() {
   } else {
     hint.textContent = '';
   }
+
+  const reviewRow = document.getElementById('advisorReviewRow');
+  const reviewStatus = document.getElementById('advisorReviewStatus');
+  if (d.finalized) {
+    reviewRow.style.display = '';
+    if (d.advisorReviewed) {
+      reviewStatus.innerHTML = '<span style="color:#7c3aed;font-weight:600">✓ Reviewed by Advisor</span>';
+    } else {
+      reviewStatus.innerHTML = '<span style="color:#94a3b8">Pending advisor review</span>';
+    }
+  } else {
+    reviewRow.style.display = 'none';
+  }
 }
 
 function updateEditableState() {
   if (activeCI === null) return;
   const d = studentData(activeCI, activeSI);
-  const locked = !!d.finalized;
+  const locked = !!d.finalized || !!d.advisorReviewed;
   document.getElementById('narrativeInput').disabled = locked;
   document.querySelectorAll('.skill-btn').forEach(btn => { btn.disabled = locked; });
 }
