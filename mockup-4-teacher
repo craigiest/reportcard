@@ -761,6 +761,30 @@
     .finalize-label input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.45; }
     .finalize-label:has(input:disabled) { color: #94a3b8; cursor: default; }
     .finalize-hint { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
+
+    /* ── MODE TABS ── */
+    .mode-tabs { display: flex; border-bottom: 1px solid #334155; flex-shrink: 0; }
+    .mode-tab {
+      flex: 1; padding: 0.55rem; font-size: 0.78rem; font-weight: 600;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: #64748b; cursor: pointer; font-family: inherit; transition: all 0.12s;
+    }
+    .mode-tab.active { color: #93c5fd; border-bottom-color: #3b82f6; }
+    .mode-tab:hover:not(.active) { background: rgba(255,255,255,0.04); color: #94a3b8; }
+
+    /* ── ADVISORY ROSTER ── */
+    .advisory-course-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0.85rem 0.35rem 1.6rem;
+      cursor: pointer; font-size: 0.78rem; color: #94a3b8;
+      border-left: 3px solid transparent; transition: background 0.1s;
+      line-height: 1.3;
+    }
+    .advisory-course-row:hover { background: #293548; color: #cbd5e1; }
+    .advisory-course-row.active {
+      background: #1d4ed8; border-left-color: #60a5fa;
+      font-weight: 600; color: #fff;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -801,6 +825,11 @@
         <span class="nav-student-label" id="navLabel">No student selected</span>
         <button class="arrow-btn" onclick="navigate(1)" title="Next student">▼</button>
       </div>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tabClasses" onclick="switchMode('classes')">My Classes</button>
+      <button class="mode-tab" id="tabAdvisory" onclick="switchMode('advisory')">My Advisory</button>
     </div>
 
     <div class="roster-area" id="rosterArea"></div>
@@ -866,6 +895,10 @@
       </div>
 
     </div>
+
+    <!-- Advisory right panel (replaces editingArea in advisory mode) -->
+    <div id="advisoryArea" class="editing-area" style="display:none"></div>
+
   </div>
 </div>
 
@@ -990,6 +1023,67 @@ const DEFAULT_CLASSES = [
       "Nour Khalil","Arjun Mehta","Adaeze Nnaji","Elijah Oduya",
       "Beatriz Oliveira","Henrik Olsen"]
   }
+];
+
+// Advisory group — Sarah Chen's 8 advisees, each with 5 courses
+// teachingRef: "ci_si" links to Sarah's teaching class data
+const ADVISORY_ADVISEES = [
+  { name: "Fatima Al-Rashid", courses: [
+    { course: "Conspiracy Theories: A Critical Examination", teacher: "Sarah Chen", teachingRef: "0_0" },
+    { course: "AP Chemistry",         teacher: "Dr. Ananya Patel" },
+    { course: "World Literature",     teacher: "Marcus Webb" },
+    { course: "Studio Art",           teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]},
+  { name: "Leila Ahmadi", courses: [
+    { course: "The Science of Naps and Other Human Behaviors", teacher: "Sarah Chen", teachingRef: "1_0" },
+    { course: "AP Physics",           teacher: "Dr. Ananya Patel" },
+    { course: "American Literature",  teacher: "Diana Park" },
+    { course: "Photography",          teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]},
+  { name: "Kwame Asante", courses: [
+    { course: "AP Chemistry",         teacher: "Dr. Ananya Patel" },
+    { course: "History of Bad Ideas", teacher: "Marcus Webb" },
+    { course: "Pre-Calculus",         teacher: "Robert Stills" },
+    { course: "Photography",          teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]},
+  { name: "Valentina Cruz", courses: [
+    { course: "AP Biology",           teacher: "Dr. Ananya Patel" },
+    { course: "World History",        teacher: "Marcus Webb" },
+    { course: "Advanced Algebra",     teacher: "Robert Stills" },
+    { course: "Ceramics",             teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]},
+  { name: "Patrick Doyle", courses: [
+    { course: "AP Chemistry",         teacher: "Dr. Ananya Patel" },
+    { course: "American Literature",  teacher: "Diana Park" },
+    { course: "Geometry",             teacher: "Robert Stills" },
+    { course: "Studio Art",           teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]},
+  { name: "Tobias Hartmann", courses: [
+    { course: "AP Biology",           teacher: "Dr. Ananya Patel" },
+    { course: "World Literature",     teacher: "Marcus Webb" },
+    { course: "Algebra II",           teacher: "Robert Stills" },
+    { course: "Photography",          teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]},
+  { name: "Soren Lindqvist", courses: [
+    { course: "AP Physics",           teacher: "Dr. Ananya Patel" },
+    { course: "History of Bad Ideas", teacher: "Marcus Webb" },
+    { course: "Pre-Calculus",         teacher: "Robert Stills" },
+    { course: "Ceramics",             teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]},
+  { name: "Rashid Mbeki", courses: [
+    { course: "AP Chemistry",         teacher: "Dr. Ananya Patel" },
+    { course: "World History",        teacher: "Marcus Webb" },
+    { course: "Statistics",           teacher: "Robert Stills" },
+    { course: "Studio Art",           teacher: "Priya Nair" },
+    { course: "Physical Education",   teacher: "Tom Okafor" }
+  ]}
 ];
 
 // Mutable roster — overridden from state.rosters[term] on load, or reset to defaults
@@ -1588,7 +1682,106 @@ function loadState() {
           "Academic Skills and Responsibility": { selections: [sel("Meeting assignment deadlines","Time Management","strength")], custom: [] }
         }
       }
-    }
+    },
+    // ── Advisory report cards (state.advisory key: "term|adv_ai_ci") ──
+    // teachingRef courses link directly to state.students; only non-linked courses go here.
+    advisory: (() => {
+      // skill shorthand: arc(narrative, finalized, reviewed, ...skillRows)
+      // skillRow: [skillName, label, subcat, type='strength']
+      const OOL = 'Ownership of Learning', ASR = 'Academic Skills and Responsibility';
+      const COL = 'Collaboration', COI = 'Communication of Ideas';
+      const CTR = 'Creative Thinking and Risk Taking', CRI = 'Critical Thinking';
+      const sp = (skill, label, subcat, type='strength') => ({skill, label, subcat, type});
+      function arc(narrative, fin, rev, ...rows) {
+        const skills = {};
+        rows.forEach(({skill, label, subcat, type}) => {
+          if (!skills[skill]) skills[skill] = { selections: [], custom: [] };
+          skills[skill].selections.push({ label, subcat, type });
+        });
+        const r = { narrative, skills };
+        if (fin) r.finalized = true;
+        if (rev) r.advisorReviewed = true;
+        return r;
+      }
+      const A = { // "academic" 3-skill template
+        s: (narrative, fin, rev) => arc(narrative, fin, rev,
+          sp(OOL, 'Curiosity-fueled motivation', 'Motivation'),
+          sp(ASR, 'Meeting assignment deadlines', 'Time Management'),
+          sp(CRI, 'Analysis from multiple perspectives', 'Analysis'))
+      };
+      const B = { // "collaborative" template
+        s: (narrative, fin, rev) => arc(narrative, fin, rev,
+          sp(COL, "Supporting peers' understanding", 'Community Building and Collaborative Discussion'),
+          sp(COI, 'Clear & accurate verbal communication', 'Verbal Communication'),
+          sp(OOL, 'Engagement during class', 'Social Engagement'))
+      };
+      const C = { // "communicator" template
+        s: (narrative, fin, rev) => arc(narrative, fin, rev,
+          sp(COI, 'Clarity & thoroughness in written work', 'Written Communication'),
+          sp(CRI, 'Gathering information from diverse sources', 'Research and Sources'),
+          sp(CTR, 'Openness to brainstorming and iteration', 'Experimentation'))
+      };
+      const D = { // "growing" template
+        s: (narrative, fin, rev) => arc(narrative, fin, rev,
+          sp(OOL, 'Incorporation of feedback', 'Personal Reflection'),
+          sp(ASR, 'Effective time management and self-care', 'Time Management', 'growth'),
+          sp(COL, 'Thoughtful critique of ideas & solutions', 'Community Building and Collaborative Discussion'))
+      };
+      const E = { // "thinker" template
+        s: (narrative, fin, rev) => arc(narrative, fin, rev,
+          sp(CRI, 'Interpretation and evaluation of information', 'Analysis'),
+          sp(CRI, 'Drawing and justifying logical conclusions', 'Synthesis and Application (Meaning Making)'),
+          sp(COI, 'Use of new vocabulary & academic language', 'Rhetorical Situation'))
+      };
+      const adv = {};
+      // Fatima Al-Rashid (ai=0): course 0 is teachingRef, courses 1-4 seeded here
+      adv[`${T}|adv_0_1`] = A.s("Fatima approaches chemistry with the same critical rigor she brings to all her work. Her lab reports are meticulous and she consistently connects theoretical concepts to experimental observations.", true, false);
+      adv[`${T}|adv_0_2`] = E.s("Fatima is an insightful reader who draws compelling connections between texts from different cultures. Her analytical essays show sophisticated thinking and careful use of textual evidence.", true, false);
+      adv[`${T}|adv_0_3`] = C.s("Fatima has been developing her visual voice in Studio Art with real intentionality. She takes creative risks and reflects thoughtfully on her process.", false, false);
+      adv[`${T}|adv_0_4`] = B.s("Fatima is a consistent and enthusiastic participant in Physical Education. She brings strong collaborative energy to team activities and demonstrates excellent sportsmanship.", true, false);
+      // Leila Ahmadi (ai=1): course 0 is teachingRef, courses 1-4 seeded here
+      adv[`${T}|adv_1_1`] = A.s("Leila's analytical approach to physics is outstanding. Her problem-solving reflects deep conceptual understanding and her work is consistently well-prepared.", true, false);
+      adv[`${T}|adv_1_2`] = E.s("Leila reads carefully and writes with genuine clarity. Her engagement with texts goes beyond summary to real analysis of theme and craft.", true, true);
+      adv[`${T}|adv_1_3`] = C.s("Leila has developed a distinctive visual sensibility this term. She approaches each assignment with genuine curiosity and her images reflect thoughtful composition.", true, false);
+      adv[`${T}|adv_1_4`] = B.s("Leila is a model participant in PE. She brings focus and positive energy to all activities and is a natural leader in team settings.", true, false);
+      // Kwame Asante (ai=2): all 5 courses seeded (none are teachingRef)
+      adv[`${T}|adv_2_0`] = A.s("Kwame is one of the most methodical problem-solvers I have taught. His lab work is precise and his written explanations of chemical phenomena are clear and accurate.", true, true);
+      adv[`${T}|adv_2_1`] = E.s("Kwame brings a sharp analytical perspective to historical material. He asks probing questions and his essays demonstrate nuanced understanding of causation and consequence.", true, false);
+      adv[`${T}|adv_2_2`] = D.s("Kwame is a reliable and mathematically confident student. He works through problems systematically and would benefit from showing more of his work process.", true, false);
+      adv[`${T}|adv_2_3`] = C.s("Kwame has a strong compositional eye and a willingness to experiment. His artist statements reflect genuine critical thinking about his own creative choices.", true, true);
+      adv[`${T}|adv_2_4`] = B.s("Kwame is a high-energy, collaborative participant who brings real enthusiasm to team activities and helps maintain a positive environment.", true, false);
+      // Valentina Cruz (ai=3)
+      adv[`${T}|adv_3_0`] = A.s("Valentina is an enthusiastic and thorough biology student. Her laboratory technique is careful and she participates actively with good questions.", true, false);
+      adv[`${T}|adv_3_1`] = E.s("Valentina's engagement with historical material is thoughtful. She makes strong connections across time periods and her research reflects genuine curiosity.", true, true);
+      adv[`${T}|adv_3_2`] = D.s("Valentina demonstrates a solid mathematical foundation and approaches challenging problems with persistence. She checks her work carefully and is reliably prepared.", true, false);
+      adv[`${T}|adv_3_3`] = C.s("Valentina has grown considerably as a ceramic artist this term. She takes creative risks and engages seriously with feedback from instructor and peers.", true, false);
+      adv[`${T}|adv_3_4`] = B.s("Valentina is a consistent and cooperative participant in PE who engages fully with all activities.", false, false);
+      // Patrick Doyle (ai=4)
+      adv[`${T}|adv_4_0`] = A.s("Patrick approaches chemistry with genuine curiosity and shows strong facility with quantitative reasoning. His written analyses are well-structured and clearly argued.", true, false);
+      adv[`${T}|adv_4_1`] = E.s("Patrick is a perceptive reader and a clear writer. He engages with texts at a meaningful level and his written work demonstrates careful analysis.", true, true);
+      adv[`${T}|adv_4_2`] = D.s("Patrick demonstrates solid mathematical reasoning and consistent effort. His geometric arguments are clear and he approaches proofs methodically.", true, false);
+      adv[`${T}|adv_4_3`] = C.s("Patrick has taken real creative ownership in Studio Art. His mixed media work shows originality and he engages thoughtfully with critique sessions.", true, false);
+      adv[`${T}|adv_4_4`] = B.s("Patrick is an active and cooperative member of the PE community. He brings energy to competitive activities and handles both winning and losing with genuine sportsmanship.", true, false);
+      // Tobias Hartmann (ai=5)
+      adv[`${T}|adv_5_0`] = A.s("Tobias is a careful and rigorous biology student. His lab work is meticulous and his written explanations demonstrate strong conceptual understanding.", true, true);
+      adv[`${T}|adv_5_1`] = E.s("Tobias brings a cross-cultural perspective to our reading of global texts that enriches class discussion. His essays are analytically strong and his writing continues to develop.", true, false);
+      adv[`${T}|adv_5_2`] = D.s("Tobias demonstrates consistent mathematical competence and works carefully through complex problem sets. He shows real intellectual persistence when he encounters difficulty.", true, false);
+      adv[`${T}|adv_5_3`] = C.s("Tobias has shown real promise in Photography. His compositions demonstrate a developing visual sensibility and he engages with feedback constructively.", false, false);
+      adv[`${T}|adv_5_4`] = B.s("Tobias is a diligent and good-natured participant in Physical Education who engages fully with all activities and demonstrates consistent effort.", true, false);
+      // Soren Lindqvist (ai=6)
+      adv[`${T}|adv_6_0`] = A.s("Soren is an analytically strong physics student who engages with theoretical concepts with genuine enthusiasm. His problem-solving is methodical and well-reasoned.", true, false);
+      adv[`${T}|adv_6_1`] = E.s("Soren brings a thoughtful, questioning disposition to historical material. His contributions to discussion are substantive and his written work shows strong argumentation.", true, false);
+      adv[`${T}|adv_6_2`] = D.s("Soren is a diligent and mathematically capable student who has shown steady improvement. He approaches problem-solving with patience and thoroughness.", true, true);
+      adv[`${T}|adv_6_3`] = C.s("Soren approaches Ceramics with patience and genuine creative engagement. His hand-building work has developed significantly in craft and intentionality.", true, false);
+      adv[`${T}|adv_6_4`] = B.s("Soren participates fully and positively in all PE activities. He brings good energy to team sports and demonstrates excellent sportsmanship.", true, false);
+      // Rashid Mbeki (ai=7)
+      adv[`${T}|adv_7_0`] = A.s("Rashid shows real promise in chemistry. His conceptual understanding is developing well and he participates actively. Some inconsistency in documentation has held back his overall progress.", false, false);
+      adv[`${T}|adv_7_1`] = E.s("Rashid is an engaged and perceptive history student. He draws thoughtful connections between historical events and contemporary issues and his work demonstrates careful research.", true, false);
+      adv[`${T}|adv_7_2`] = D.s("Rashid demonstrates a solid grasp of statistical concepts and applies them confidently. His data analysis work is particularly strong and well-documented.", true, false);
+      adv[`${T}|adv_7_3`] = C.s("Rashid has developed a distinctive artistic voice in Studio Art. His work combines technical skill with genuine creative ambition.", true, true);
+      adv[`${T}|adv_7_4`] = B.s("Rashid is a highly engaged participant in Physical Education. He demonstrates athletic ability across disciplines and brings positive leadership energy to team activities.", true, false);
+      return adv;
+    })()
   };
 }
 
@@ -2737,10 +2930,194 @@ document.addEventListener('click', function(e) {
 });
 
 // ─────────────────────────────────────────────────────────────────
+// ADVISORY
+// ─────────────────────────────────────────────────────────────────
+let viewMode = 'classes';
+let activeAdviseeIdx = null;
+let activeAdvisoryCourseIdx = null;
+let openAdviseeIdx = 0;
+
+function advisoryData(ai, ci) {
+  const course = ADVISORY_ADVISEES[ai].courses[ci];
+  if (course.teachingRef) {
+    const [tci, tsi] = course.teachingRef.split('_').map(Number);
+    return studentData(tci, tsi);
+  }
+  if (!state.advisory) state.advisory = {};
+  const k = `${state.term}|adv_${ai}_${ci}`;
+  if (!state.advisory[k]) state.advisory[k] = { skills: {}, narrative: '' };
+  return state.advisory[k];
+}
+
+function advisoryStatus(ai, ci) {
+  const d = advisoryData(ai, ci);
+  const skillsDone = SKILLS.filter(s =>
+    (d.skills?.[s]?.selections?.length > 0) || (d.skills?.[s]?.custom?.length > 0)
+  ).length;
+  const narrativeLen = (d.narrative || '').trim().length;
+  const meetsComplete = skillsDone >= 3 && narrativeLen >= 20;
+  if (meetsComplete && d.finalized && d.advisorReviewed) return 'reviewed';
+  if (meetsComplete && d.finalized) return 'finalized';
+  if (meetsComplete) return 'complete';
+  if (skillsDone === 0 && narrativeLen === 0) return 'none';
+  return 'in-progress';
+}
+
+function switchMode(mode) {
+  viewMode = mode;
+  document.getElementById('tabClasses').classList.toggle('active', mode === 'classes');
+  document.getElementById('tabAdvisory').classList.toggle('active', mode === 'advisory');
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('editingArea').style.display = 'none';
+  document.getElementById('advisoryArea').style.display = 'none';
+  document.getElementById('navLabel').textContent = 'No student selected';
+  if (mode === 'classes') {
+    activeAdviseeIdx = null;
+    activeAdvisoryCourseIdx = null;
+    renderRoster();
+  } else {
+    activeCI = null;
+    activeSI = null;
+    renderAdvisoryRoster();
+  }
+}
+
+function toggleAdvisee(ai) {
+  openAdviseeIdx = (openAdviseeIdx === ai) ? -1 : ai;
+  renderAdvisoryRoster();
+}
+
+function renderAdvisoryRoster() {
+  const area = document.getElementById('rosterArea');
+  area.innerHTML = '';
+  ADVISORY_ADVISEES.forEach((advisee, ai) => {
+    const isOpen = ai === openAdviseeIdx;
+    const isActiveAdvisee = ai === activeAdviseeIdx;
+
+    const header = document.createElement('div');
+    header.className = 'class-header' + (isOpen ? ' open' : '') + (isActiveAdvisee && !isOpen ? ' has-active' : '');
+    header.innerHTML = `<span class="class-chevron">▶</span><span style="flex:1;line-height:1.35">${esc(advisee.name)}</span>`;
+    header.onclick = () => toggleAdvisee(ai);
+    area.appendChild(header);
+
+    const courseList = document.createElement('div');
+    courseList.className = 'class-roster' + (isOpen ? ' open' : '');
+
+    advisee.courses.forEach((courseEntry, ci) => {
+      const st = advisoryStatus(ai, ci);
+      const isActive = ai === activeAdviseeIdx && ci === activeAdvisoryCourseIdx;
+      const row = document.createElement('div');
+      row.className = 'advisory-course-row' + (isActive ? ' active' : '');
+      row.onclick = () => activateAdvisory(ai, ci);
+      row.innerHTML = `
+        <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(courseEntry.course)}</span>
+        <span class="status-icons"><span class="rc-dot ${st !== 'none' ? st : ''}" title="${st}"></span></span>`;
+      courseList.appendChild(row);
+    });
+
+    area.appendChild(courseList);
+  });
+}
+
+function activateAdvisory(ai, ci) {
+  activeAdviseeIdx = ai;
+  activeAdvisoryCourseIdx = ci;
+  openAdviseeIdx = ai;
+  renderAdvisoryRoster();
+
+  const advisee = ADVISORY_ADVISEES[ai];
+  const courseEntry = advisee.courses[ci];
+  const d = advisoryData(ai, ci);
+  const st = advisoryStatus(ai, ci);
+  const badge = STATUS_BADGE[st] || STATUS_BADGE.none;
+
+  document.getElementById('navLabel').textContent = advisee.name;
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('editingArea').style.display = 'none';
+
+  // Build read-only skills list
+  let skillsHtml = '';
+  SKILLS.forEach(skill => {
+    const sel = d.skills?.[skill]?.selections || [];
+    const custom = d.skills?.[skill]?.custom || [];
+    if (!sel.length && !custom.length) return;
+    const comments = [
+      ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+      ...custom
+    ];
+    skillsHtml += `<div class="skill-item">
+      <div class="skill-row"><span class="skill-name">${esc(skill)}</span></div>
+      <div class="skill-comments">${comments.map(c => `<div class="skill-comment">${esc(c)}</div>`).join('')}</div>
+    </div>`;
+  });
+  if (!skillsHtml) skillsHtml = '<div style="padding:1rem 1.2rem;color:#94a3b8;font-size:0.875rem">No skills selected.</div>';
+
+  // Build advisor review control
+  const canReview = !!d.finalized;
+  const isReviewed = !!d.advisorReviewed;
+  const reviewHtml = canReview
+    ? `<div class="finalize-row">
+        <label class="finalize-label" style="color:${isReviewed ? '#6d28d9' : '#475569'}">
+          <input type="checkbox" id="advisoryReviewCheck" ${isReviewed ? 'checked' : ''}
+            onchange="onAdvisoryReviewChange()"
+            style="width:15px;height:15px;cursor:pointer;accent-color:#7c3aed">
+          Reviewed by Advisor
+        </label>
+       </div>`
+    : `<div style="margin-top:0.5rem;font-size:0.82rem;color:#94a3b8">Not yet finalized by teacher — cannot mark as reviewed.</div>`;
+
+  const area = document.getElementById('advisoryArea');
+  area.innerHTML = `
+    <div class="card">
+      <div class="card-header">Student</div>
+      <div class="card-body">
+        <div class="student-meta">
+          <div class="meta-row"><span class="meta-label">Advisee</span>${esc(advisee.name)}</div>
+          <div class="meta-row"><span class="meta-label">Course</span>${esc(courseEntry.course)}</div>
+          <div class="meta-row"><span class="meta-label">Teacher</span>${esc(courseEntry.teacher)}</div>
+          <div class="meta-row"><span class="meta-label">Period</span>${esc(state.term)}</div>
+        </div>
+        <div style="margin-top:0.75rem">
+          <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border-radius:99px;font-size:0.78rem;font-weight:600;background:${badge.bg};color:${badge.color};border:1px solid ${badge.border}">
+            <span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:0.8"></span>
+            ${badge.label}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Transferable Skills</div>
+      ${skillsHtml}
+    </div>
+    <div class="card">
+      <div class="card-header">Narrative Comment</div>
+      <div class="card-body">
+        <div style="font-size:0.875rem;color:${d.narrative ? '#1e293b' : '#94a3b8'};line-height:1.65;white-space:pre-wrap;min-height:3rem">${d.narrative ? esc(d.narrative) : 'No narrative comment yet.'}</div>
+        ${reviewHtml}
+      </div>
+    </div>`;
+  area.style.display = 'flex';
+  area.style.flexDirection = 'column';
+  area.style.gap = '1.25rem';
+}
+
+function onAdvisoryReviewChange() {
+  const d = advisoryData(activeAdviseeIdx, activeAdvisoryCourseIdx);
+  d.advisorReviewed = document.getElementById('advisoryReviewCheck').checked;
+  persist();
+  // Refresh class roster too (may have changed dot color for a teaching-ref course)
+  renderRoster();
+  // Re-render advisory panel to update badge color
+  activateAdvisory(activeAdviseeIdx, activeAdvisoryCourseIdx);
+}
+
+// ─────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────
 // Ensure reflections object exists (for states loaded from older storage)
 if (!state.reflections) state.reflections = {};
+// Ensure advisory object exists (for states loaded from older storage)
+if (!state.advisory) state.advisory = {};
 // Seed pre-filled reflections for 25-26 S2 Final (never overwrite existing entries)
 Object.entries(REFLECTIONS).forEach(([name, text]) => {
   const k = `25-26 S2 Final|${name}`;
