@@ -1007,7 +1007,11 @@
                 <span class="val-row-label">Max student reflection characters</span>
                 <input class="val-input" type="number" min="0" value="500">
               </div>
-              <div class="val-hint">0 = rule not enforced</div>
+              <div style="margin-top:0.25rem">
+                <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
+                <input class="form-input" type="text" placeholder="e.g. Collaboration, Self-Management" style="font-size:0.8rem">
+              </div>
+              <div class="val-hint">0 = rule not enforced · leave required skills blank to skip</div>
               <div class="val-save-row">
                 <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
               </div>
@@ -1042,7 +1046,11 @@
                 <span class="val-row-label">Max student reflection characters</span>
                 <input class="val-input" type="number" min="0" value="700">
               </div>
-              <div class="val-hint">0 = rule not enforced</div>
+              <div style="margin-top:0.25rem">
+                <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
+                <input class="form-input" type="text" value="Collaboration, Self-Management" style="font-size:0.8rem">
+              </div>
+              <div class="val-hint">0 = rule not enforced · leave required skills blank to skip</div>
               <div class="val-save-row">
                 <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
               </div>
@@ -1069,9 +1077,15 @@
             <label class="form-label">School Year</label>
             <input class="form-input" type="text" value="2025-2026" placeholder="e.g. 2025-2026">
           </div>
-          <div class="form-row" style="margin:0">
-            <label class="form-label">Term Name</label>
-            <input class="form-input" type="text" placeholder="e.g. S1, T2, Q3">
+          <div style="display:grid;grid-template-columns:1fr auto;gap:0.75rem;align-items:end">
+            <div>
+              <label class="form-label">Term Name</label>
+              <input class="form-input" type="text" placeholder="e.g. S1, T2, Q3">
+            </div>
+            <div>
+              <label class="form-label">Order</label>
+              <input class="form-input" type="number" min="1" value="1" style="width:72px;text-align:center" title="Position within the school year">
+            </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
             <div>
@@ -1815,6 +1829,17 @@
           <div class="section-title">Report Cards</div>
           <div class="section-subtitle">View status, manage issues, and export report cards</div>
         </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('reportcards','status')">Status &amp; Export</div>
+        <div class="sub-tab" onclick="showSubTab('reportcards','pdfSettings')">PDF Settings</div>
+      </div>
+
+      <div class="sub-panel active" id="reportcards-status">
+
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
         <button class="btn btn-primary" onclick="openModal('exportModal')">⬇ Bulk Export</button>
       </div>
 
@@ -1882,6 +1907,95 @@
         </table>
       </div>
 
+      </div><!-- /sub-panel status -->
+
+      <!-- PDF Settings sub-panel -->
+      <div class="sub-panel" id="reportcards-pdfSettings">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start">
+
+          <!-- Branding inputs -->
+          <div style="display:flex;flex-direction:column;gap:1rem">
+
+            <div class="data-card">
+              <div class="data-card-header">Branding &amp; Logo</div>
+              <div class="data-card-body">
+                <div>
+                  <label class="form-label">School Logo</label>
+                  <div class="drop-zone" style="padding:1rem;font-size:0.82rem">
+                    <div style="font-size:1.5rem;margin-bottom:0.3rem">🖼</div>
+                    <div>Click to upload logo (PNG or SVG)</div>
+                    <div style="font-size:0.74rem;color:#94a3b8;margin-top:0.2rem">Recommended: 200×60 px · max 1 MB</div>
+                  </div>
+                </div>
+                <div class="form-row" style="margin:0">
+                  <label class="form-label">School Name (header)</label>
+                  <input class="form-input" type="text" value="Riverside Academy">
+                </div>
+                <div class="form-row" style="margin:0">
+                  <label class="form-label">District / Subtitle (header)</label>
+                  <input class="form-input" type="text" value="Riverside Unified School District">
+                </div>
+              </div>
+            </div>
+
+            <div class="data-card">
+              <div class="data-card-header">Footer</div>
+              <div class="data-card-body">
+                <div class="form-row" style="margin:0">
+                  <label class="form-label">Footer Text</label>
+                  <textarea class="form-input" rows="3" style="resize:vertical">123 Main Street, Riverside, CA 92501 · (951) 555-0100 · www.riverside.edu</textarea>
+                  <div class="form-hint">Appears at the bottom of every page.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Boilerplate + preview -->
+          <div style="display:flex;flex-direction:column;gap:1rem">
+
+            <div class="data-card">
+              <div class="data-card-header">Boilerplate Text</div>
+              <div class="data-card-body">
+                <div class="form-row" style="margin:0">
+                  <label class="form-label">Introductory paragraph</label>
+                  <textarea class="form-input" rows="4" style="resize:vertical">This report card reflects each student's growth across Riverside Academy's transferable skills framework. Comments are written by teachers and reviewed by advisors to offer a holistic view of student development.</textarea>
+                </div>
+                <div class="form-row" style="margin:0.75rem 0 0">
+                  <label class="form-label">Competency / grading scale note</label>
+                  <textarea class="form-input" rows="3" style="resize:vertical">Skills are assessed as Strength (S) or Growth Area (G). These designations reflect observed patterns rather than a single event.</textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="data-card">
+              <div class="data-card-header" style="display:flex;align-items:center;justify-content:space-between">
+                Preview
+                <button class="btn btn-secondary btn-sm">Open Preview</button>
+              </div>
+              <div class="data-card-body">
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.85rem;font-size:0.78rem;color:#475569;line-height:1.5">
+                  <div style="display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.6rem;margin-bottom:0.6rem">
+                    <div style="width:32px;height:20px;background:#ddd;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#94a3b8">logo</div>
+                    <div>
+                      <div style="font-weight:700;color:#1e293b;font-size:0.85rem">Riverside Academy</div>
+                      <div style="color:#64748b;font-size:0.72rem">Riverside Unified School District</div>
+                    </div>
+                  </div>
+                  <p style="margin-bottom:0.4rem;color:#374151">This report card reflects each student's growth across Riverside Academy's transferable skills framework…</p>
+                  <p style="color:#94a3b8;font-size:0.72rem;border-top:1px solid #e2e8f0;margin-top:0.5rem;padding-top:0.4rem">123 Main Street, Riverside, CA 92501 · (951) 555-0100 · www.riverside.edu</p>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn btn-primary" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save PDF Settings',1500)">Save PDF Settings</button>
+            </div>
+
+          </div>
+        </div>
+      </div><!-- /sub-panel pdfSettings -->
+
     </div><!-- /section-reportcards -->
 
     <!-- Admin Note Modal -->
@@ -1945,6 +2059,19 @@
               <option>Marcus Webb</option>
               <option>Priya Nair</option>
               <option>Tom Okafor</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;color:#374151;display:block;margin-bottom:0.4rem">Filter by Class (optional)</label>
+            <select class="filter-select" style="width:100%">
+              <option value="">All Classes</option>
+              <option>Biology 101</option>
+              <option>English 10</option>
+              <option>Algebra II</option>
+              <option>World History</option>
+              <option>Spanish III</option>
+              <option>AP Literature</option>
+              <option>Chemistry</option>
             </select>
           </div>
           <div class="note-box">
