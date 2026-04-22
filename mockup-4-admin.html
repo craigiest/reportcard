@@ -672,6 +672,19 @@
     .danger-zone-title { font-weight: 700; font-size: 0.82rem; color: #991b1b; margin-bottom: 0.4rem; }
     .danger-zone-desc  { font-size: 0.78rem; color: #b91c1c; line-height: 1.45; }
 
+    /* ── VAL SECTION LABELS ── */
+    .val-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #94a3b8;
+      padding-top: 0.4rem;
+      border-top: 1px solid #f1f5f9;
+      margin-top: 0.1rem;
+    }
+    .val-section-label:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+
     /* ── STUDENT PROMPTS ── */
     .prompt-card {
       background: #fff;
@@ -717,7 +730,19 @@
     .prompt-chars strong { color: #64748b; }
     .level-tag-universal { background: #ede9fe; color: #5b21b6; }
     .level-tag-dept      { background: #dbeafe; color: #1e40af; }
-    .level-tag-course    { background: #dcfce7; color: #166534; }
+    .prompt-assign-link  { font-size:0.78rem; color:#6366f1; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+    .prompt-inherit-label { font-size:0.82rem; color:#64748b; }
+
+    /* ── BREAKDOWN TABLES ── */
+    .student-expand-row { display: none; }
+    .student-expand-row td { background: #f8fafc; font-size: 0.8rem; }
+    .spoof-link {
+      color: #4f46e5; cursor: pointer; font-weight: 600; font-size: 0.82rem;
+      background: none; border: none; padding: 0; font-family: inherit; text-decoration: underline;
+    }
+    .spoof-link:hover { color: #4338ca; }
+    .sort-th { cursor: pointer; user-select: none; }
+    .sort-th:hover { color: #4f46e5; }
   </style>
 </head>
 <body>
@@ -742,21 +767,21 @@
         <span class="nav-icon">👤</span> Users
       </div>
       <div class="nav-item" data-section="terms" onclick="showSection('terms')">
-        <span class="nav-icon">📅</span> Terms &amp; Settings
+        <span class="nav-icon">⚙️</span> Settings
       </div>
       <div class="nav-item" data-section="banks" onclick="showSection('banks')">
         <span class="nav-icon">💬</span> Comment Banks
       </div>
       <div class="nav-item" data-section="prompts" onclick="showSection('prompts')">
-        <span class="nav-icon">✏️</span> Student Prompts
+        <span class="nav-icon">✏️</span> Student Reflection Prompts
       </div>
       <div class="nav-item" data-section="rosters" onclick="showSection('rosters')">
-        <span class="nav-icon">📋</span> Rosters &amp; Import
+        <span class="nav-icon">📋</span> Terms &amp; Rosters
       </div>
-      <div class="nav-item active" data-section="reportcards" onclick="showSection('reportcards')">
+      <div class="nav-item" data-section="reportcards" onclick="showSection('reportcards')">
         <span class="nav-icon">📄</span> Report Cards
       </div>
-      <div class="nav-item" data-section="analytics" onclick="showSection('analytics')">
+      <div class="nav-item active" data-section="analytics" onclick="showSection('analytics')">
         <span class="nav-icon">📊</span> Analytics
       </div>
       <div class="nav-item" data-section="data" onclick="showSection('data')">
@@ -898,166 +923,131 @@
 
       <div class="section-header">
         <div>
-          <div class="section-title">Terms &amp; Settings</div>
-          <div class="section-subtitle">Configure school terms and global validation rules</div>
+          <div class="section-title">Settings</div>
+          <div class="section-subtitle">Global validation rules — apply automatically to all Midterm and Final reporting periods</div>
         </div>
       </div>
 
-      <!-- Sub-tabs -->
-      <div class="sub-tabs">
-        <div class="sub-tab active" onclick="showSubTab('terms','termsList')">Terms</div>
-        <div class="sub-tab" onclick="showSubTab('terms','validation')">Validation Rules</div>
-      </div>
+      <p style="font-size:0.82rem;color:#64748b;margin-bottom:1.25rem">
+        Set any numeric value to <strong>0</strong> to disable that rule. Rules are grouped to match the order of the report card.
+      </p>
 
-      <!-- Terms list sub-panel -->
-      <div class="sub-panel active" id="terms-termsList">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-          <button class="btn btn-primary" onclick="openModal('newTermModal')">+ New Term</button>
-        </div>
+      <div class="val-grid">
 
-        <div class="year-group">
-          <div class="year-heading">2025–2026</div>
-          <div class="term-row">
-            <div class="term-name">S1</div>
-            <div class="term-dates">Sep 3, 2025 – Jan 16, 2026</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
-            </div>
-            <span class="term-locked">Locked</span>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
-            </div>
-          </div>
-          <div class="term-row">
-            <div class="term-name">S2</div>
-            <div class="term-dates">Jan 27 – Jun 12, 2026</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
-            </div>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" onclick="openModal('editTermModal')">Edit</button>
-              <button class="btn btn-danger btn-sm" onclick="lockTerm(this)">Lock</button>
-            </div>
-          </div>
-        </div>
+        <!-- Midterm -->
+        <div class="val-card">
+          <div class="val-card-header">Midterm</div>
+          <div class="val-card-body">
 
-        <div class="year-group">
-          <div class="year-heading">2024–2025</div>
-          <div class="term-row">
-            <div class="term-name">S1</div>
-            <div class="term-dates">Sep 4, 2024 – Jan 17, 2025</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
+            <div class="val-section-label">Student Reflection</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="100">
             </div>
-            <span class="term-locked">Locked</span>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="500">
             </div>
-          </div>
-          <div class="term-row">
-            <div class="term-name">S2</div>
-            <div class="term-dates">Jan 28 – Jun 6, 2025</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
+
+            <div class="val-section-label">Skill Comments</div>
+            <div class="val-row">
+              <span class="val-row-label">Min skill areas with ≥ 1 comment</span>
+              <input class="val-input" type="number" min="0" value="2">
             </div>
-            <span class="term-locked">Locked</span>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            <div style="margin-bottom:0.1rem">
+              <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
+              <input class="form-input" type="text" placeholder="e.g. Collaboration, Self-Management" style="font-size:0.8rem">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Min total skill comments</span>
+              <input class="val-input" type="number" min="0" value="3">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max comments per skill</span>
+              <input class="val-input" type="number" min="0" value="3">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max chars, custom skill comment <span style="font-weight:400;color:#94a3b8;font-size:0.74rem">①</span></span>
+              <input class="val-input" type="number" min="0" value="300">
+            </div>
+
+            <div class="val-section-label">Narrative</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="15">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="0">
+            </div>
+
+            <div class="val-hint">
+              0 = rule not enforced · leave required skills blank to skip<br>
+              <span style="color:#64748b">① A custom skill comment is free text a teacher writes directly in the skill panel — either as a one-time note for that student, or saved to their personal comment bank — as opposed to a selection from the standard bank.</span>
+            </div>
+            <div class="val-save-row">
+              <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Validation rules sub-panel -->
-      <div class="sub-panel" id="terms-validation">
-        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1.25rem">
-          These two configurations apply automatically to all Midterm and Final reporting periods respectively. Set any value to <strong>0</strong> to disable that rule.
-        </p>
-        <div class="val-grid">
+        <!-- Final -->
+        <div class="val-card">
+          <div class="val-card-header">Final</div>
+          <div class="val-card-body">
 
-          <!-- Midterm -->
-          <div class="val-card">
-            <div class="val-card-header">Midterm</div>
-            <div class="val-card-body">
-              <div class="val-row">
-                <span class="val-row-label">Min skill areas with at least one comment</span>
-                <input class="val-input" type="number" min="0" value="2">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min total comments per report card</span>
-                <input class="val-input" type="number" min="0" value="3">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max comments per skill</span>
-                <input class="val-input" type="number" min="0" value="3">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max characters per custom comment</span>
-                <input class="val-input" type="number" min="0" value="300">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="100">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="500">
-              </div>
-              <div style="margin-top:0.25rem">
-                <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
-                <input class="form-input" type="text" placeholder="e.g. Collaboration, Self-Management" style="font-size:0.8rem">
-              </div>
-              <div class="val-hint">0 = rule not enforced · leave required skills blank to skip</div>
-              <div class="val-save-row">
-                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
-              </div>
+            <div class="val-section-label">Student Reflection</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="150">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="700">
+            </div>
+
+            <div class="val-section-label">Skill Comments</div>
+            <div class="val-row">
+              <span class="val-row-label">Min skill areas with ≥ 1 comment</span>
+              <input class="val-input" type="number" min="0" value="3">
+            </div>
+            <div style="margin-bottom:0.1rem">
+              <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
+              <input class="form-input" type="text" value="Collaboration, Self-Management" style="font-size:0.8rem">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Min total skill comments</span>
+              <input class="val-input" type="number" min="0" value="5">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max comments per skill</span>
+              <input class="val-input" type="number" min="0" value="4">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max chars, custom skill comment <span style="font-weight:400;color:#94a3b8;font-size:0.74rem">①</span></span>
+              <input class="val-input" type="number" min="0" value="300">
+            </div>
+
+            <div class="val-section-label">Narrative</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="15">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="0">
+            </div>
+
+            <div class="val-hint">
+              0 = rule not enforced · leave required skills blank to skip<br>
+              <span style="color:#64748b">① A custom skill comment is free text a teacher writes directly in the skill panel — either as a one-time note for that student, or saved to their personal comment bank — as opposed to a selection from the standard bank.</span>
+            </div>
+            <div class="val-save-row">
+              <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
             </div>
           </div>
-
-          <!-- Final -->
-          <div class="val-card">
-            <div class="val-card-header">Final</div>
-            <div class="val-card-body">
-              <div class="val-row">
-                <span class="val-row-label">Min skill areas with at least one comment</span>
-                <input class="val-input" type="number" min="0" value="3">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min total comments per report card</span>
-                <input class="val-input" type="number" min="0" value="5">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max comments per skill</span>
-                <input class="val-input" type="number" min="0" value="4">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max characters per custom comment</span>
-                <input class="val-input" type="number" min="0" value="300">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="150">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="700">
-              </div>
-              <div style="margin-top:0.25rem">
-                <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
-                <input class="form-input" type="text" value="Collaboration, Self-Management" style="font-size:0.8rem">
-              </div>
-              <div class="val-hint">0 = rule not enforced · leave required skills blank to skip</div>
-              <div class="val-save-row">
-                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
-              </div>
-            </div>
-          </div>
-
         </div>
+
       </div>
 
     </div><!-- /section-terms -->
@@ -1242,7 +1232,7 @@
                 <td><span class="role-tag role-teacher">Department</span></td>
                 <td>16</td>
                 <td class="td-muted">Dec 4, 2025</td>
-                <td class="td-muted">Spanish, French, Mandarin</td>
+                <td class="td-muted">Spanish, Arabic, Mandarin</td>
                 <td><div class="actions-cell">
                   <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
                   <button class="btn btn-danger btn-sm">Delete</button>
@@ -1266,6 +1256,15 @@
 
       <!-- Assignments tree -->
       <div class="sub-panel" id="banks-assignments">
+        <div class="filter-bar" style="margin-bottom:1rem">
+          <label style="font-size:0.8rem;font-weight:600;color:#374151;white-space:nowrap">Term:</label>
+          <select class="filter-select">
+            <option>25–26 S2 (current)</option>
+            <option>25–26 S1</option>
+            <option>24–25 S2</option>
+          </select>
+          <span style="font-size:0.78rem;color:#94a3b8">Edits apply only to the selected term. New terms inherit the previous term's assignments.</span>
+        </div>
         <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">
           Each course uses exactly one standard bank. More specific assignments override broader ones. Expand a department to set course-level overrides.
         </p>
@@ -1344,7 +1343,7 @@
                 <span class="assign-inherited" style="color:#4f46e5;font-style:normal;font-weight:600">Spanish for Native Speakers ↑ override</span>
               </div>
               <div class="assign-course-row">
-                <span class="assign-course-name">French I–III</span>
+                <span class="assign-course-name">Arabic I–III</span>
                 <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
                 <span class="assign-inherited">World Languages Bank</span>
               </div>
@@ -1521,7 +1520,7 @@
 
       <div class="section-header">
         <div>
-          <div class="section-title">Student Prompts</div>
+          <div class="section-title">Student Reflection Prompts</div>
           <div class="section-subtitle">Configure the reflection prompts shown to students by term, department, or course</div>
         </div>
         <button class="btn btn-primary" onclick="openPromptModal()">+ New Prompt</button>
@@ -1537,7 +1536,6 @@
           <option value="">All Levels</option>
           <option>Universal</option>
           <option>Department</option>
-          <option>Course</option>
         </select>
       </div>
 
@@ -1558,18 +1556,16 @@
         <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
 
           <div>
-            <label class="form-label">Level</label>
+            <label class="form-label">Default For</label>
             <div style="display:flex;gap:1.5rem;font-size:0.85rem">
               <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
-                <input type="radio" name="promptLevel" value="universal" checked onchange="updatePromptFields()"> Universal
+                <input type="radio" name="promptLevel" value="universal" checked onchange="updatePromptFields()"> All classes (Universal)
               </label>
               <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
-                <input type="radio" name="promptLevel" value="dept" onchange="updatePromptFields()"> Department
-              </label>
-              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
-                <input type="radio" name="promptLevel" value="course" onchange="updatePromptFields()"> Course
+                <input type="radio" name="promptLevel" value="dept" onchange="updatePromptFields()"> A specific department
               </label>
             </div>
+            <div class="form-hint" style="margin-top:0.4rem">To assign a prompt to individual courses, use the Roster tab.</div>
           </div>
 
           <div id="promptDeptRow" style="display:none">
@@ -1578,15 +1574,6 @@
               <option value="">Select…</option>
               <option>English</option><option>Math</option><option>Science</option>
               <option>History &amp; Social Studies</option><option>World Languages</option>
-            </select>
-          </div>
-
-          <div id="promptCourseRow" style="display:none">
-            <label class="form-label">Course</label>
-            <select class="filter-select" style="width:100%">
-              <option value="">Select…</option>
-              <option>Biology 101</option><option>English 10</option><option>Algebra II</option>
-              <option>World History</option><option>Spanish III</option><option>AP Literature</option><option>Chemistry</option>
             </select>
           </div>
 
@@ -1629,18 +1616,82 @@
 
       <div class="section-header">
         <div>
-          <div class="section-title">Rosters &amp; Import</div>
-          <div class="section-subtitle">View class rosters, import from CSV, and manage students</div>
+          <div class="section-title">Terms &amp; Rosters</div>
+          <div class="section-subtitle">Manage school terms, class rosters, and CSV imports</div>
         </div>
       </div>
 
       <div class="sub-tabs">
-        <div class="sub-tab active" onclick="showSubTab('rosters','roster')">Roster</div>
+        <div class="sub-tab active" onclick="showSubTab('rosters','terms')">Terms</div>
+        <div class="sub-tab" onclick="showSubTab('rosters','roster')">Roster</div>
         <div class="sub-tab" onclick="showSubTab('rosters','import')">Import</div>
       </div>
 
+      <!-- Terms panel -->
+      <div class="sub-panel active" id="rosters-terms">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+          <button class="btn btn-primary" onclick="openModal('newTermModal')">+ New Term</button>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2025–2026</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 3, 2025 – Jan 16, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 27 – Jun 12, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" onclick="openModal('editTermModal')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="lockTerm(this)">Lock</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2024–2025</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 4, 2024 – Jan 17, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 28 – Jun 6, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Roster panel -->
-      <div class="sub-panel active" id="rosters-roster">
+      <div class="sub-panel" id="rosters-roster">
         <div class="filter-bar" style="margin-bottom:1rem">
           <select class="filter-select" id="roster-term" onchange="renderRoster()">
             <option>25–26 S2</option>
@@ -1668,6 +1719,7 @@
                 <th>Teacher</th>
                 <th>Department</th>
                 <th>Students</th>
+                <th>Reflection Prompt</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -1822,7 +1874,33 @@
         </div>
       </div>
     </div>
-    <div class="section active" id="section-reportcards">
+    <!-- Assign Prompt Modal -->
+    <div class="modal-overlay" id="assignPromptModal">
+      <div class="modal" style="width:420px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Reflection Prompt</div>
+            <div class="modal-subtitle" id="assignPromptSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('assignPromptModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div>
+            <label class="form-label">Prompt</label>
+            <select class="filter-select" style="width:100%" id="assignPromptSelect">
+              <option value="">(Use default)</option>
+            </select>
+            <div class="form-hint" id="assignPromptHint"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('assignPromptModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('assignPromptModal')">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="section-reportcards">
 
       <div class="section-header">
         <div>
@@ -1891,13 +1969,13 @@
         <table>
           <thead>
             <tr>
-              <th>Student</th>
-              <th>Class</th>
-              <th>Teacher</th>
-              <th>Period</th>
-              <th>Status</th>
-              <th>Advisor Reviewed</th>
-              <th>Exported</th>
+              <th class="sort-th" onclick="sortRC(0)">Student <span id="rc-sort-0"></span></th>
+              <th class="sort-th" onclick="sortRC(1)">Class <span id="rc-sort-1"></span></th>
+              <th class="sort-th" onclick="sortRC(2)">Teacher <span id="rc-sort-2"></span></th>
+              <th class="sort-th" onclick="sortRC(3)">Period <span id="rc-sort-3"></span></th>
+              <th class="sort-th" onclick="sortRC(4)">Status <span id="rc-sort-4"></span></th>
+              <th class="sort-th" onclick="sortRC(5)">Advisor Reviewed <span id="rc-sort-5"></span></th>
+              <th class="sort-th" onclick="sortRC(6)">Exported <span id="rc-sort-6"></span></th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -1929,11 +2007,11 @@
                 </div>
                 <div class="form-row" style="margin:0">
                   <label class="form-label">School Name (header)</label>
-                  <input class="form-input" type="text" value="Riverside Academy">
+                  <input class="form-input" type="text" value="The Bay School of San Francisco">
                 </div>
                 <div class="form-row" style="margin:0">
                   <label class="form-label">District / Subtitle (header)</label>
-                  <input class="form-input" type="text" value="Riverside Unified School District">
+                  <input class="form-input" type="text" value="">
                 </div>
               </div>
             </div>
@@ -1943,7 +2021,7 @@
               <div class="data-card-body">
                 <div class="form-row" style="margin:0">
                   <label class="form-label">Footer Text</label>
-                  <textarea class="form-input" rows="3" style="resize:vertical">123 Main Street, Riverside, CA 92501 · (951) 555-0100 · www.riverside.edu</textarea>
+                  <textarea class="form-input" rows="3" style="resize:vertical">35 Keyes Ave, San Francisco, CA 94110 · 415-561-5800</textarea>
                   <div class="form-hint">Appears at the bottom of every page.</div>
                 </div>
               </div>
@@ -1959,7 +2037,7 @@
               <div class="data-card-body">
                 <div class="form-row" style="margin:0">
                   <label class="form-label">Introductory paragraph</label>
-                  <textarea class="form-input" rows="4" style="resize:vertical">This report card reflects each student's growth across Riverside Academy's transferable skills framework. Comments are written by teachers and reviewed by advisors to offer a holistic view of student development.</textarea>
+                  <textarea class="form-input" rows="4" style="resize:vertical">This report card reflects each student's growth across The Bay School of San Francisco's transferable skills framework. Comments are written by teachers and reviewed by advisors to offer a holistic view of student development.</textarea>
                 </div>
                 <div class="form-row" style="margin:0.75rem 0 0">
                   <label class="form-label">Competency / grading scale note</label>
@@ -1978,12 +2056,11 @@
                   <div style="display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.6rem;margin-bottom:0.6rem">
                     <div style="width:32px;height:20px;background:#ddd;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#94a3b8">logo</div>
                     <div>
-                      <div style="font-weight:700;color:#1e293b;font-size:0.85rem">Riverside Academy</div>
-                      <div style="color:#64748b;font-size:0.72rem">Riverside Unified School District</div>
+                      <div style="font-weight:700;color:#1e293b;font-size:0.85rem">The Bay School of San Francisco</div>
                     </div>
                   </div>
-                  <p style="margin-bottom:0.4rem;color:#374151">This report card reflects each student's growth across Riverside Academy's transferable skills framework…</p>
-                  <p style="color:#94a3b8;font-size:0.72rem;border-top:1px solid #e2e8f0;margin-top:0.5rem;padding-top:0.4rem">123 Main Street, Riverside, CA 92501 · (951) 555-0100 · www.riverside.edu</p>
+                  <p style="margin-bottom:0.4rem;color:#374151">This report card reflects each student's growth across The Bay School of San Francisco's transferable skills framework…</p>
+                  <p style="color:#94a3b8;font-size:0.72rem;border-top:1px solid #e2e8f0;margin-top:0.5rem;padding-top:0.4rem">35 Keyes Ave, San Francisco, CA 94110 · 415-561-5800</p>
                 </div>
               </div>
             </div>
@@ -2084,7 +2161,7 @@
         </div>
       </div>
     </div>
-    <div class="section" id="section-analytics">
+    <div class="section active" id="section-analytics">
 
       <div class="section-header">
         <div>
@@ -2100,210 +2177,68 @@
         </div>
       </div>
 
-      <!-- KPI cards -->
-      <div class="kpi-grid">
+      <!-- KPI cards (3) -->
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
         <div class="kpi-card">
-          <div class="kpi-value" style="color:#4f46e5">79%</div>
-          <div class="kpi-label">Report Card Completion</div>
-          <div class="kpi-sub">66 of 84 finalized or reviewed</div>
+          <div class="kpi-value" style="color:#4f46e5">66</div>
+          <div class="kpi-label">Report Cards Completed</div>
+          <div class="kpi-sub">of 84 · 79% finalized or reviewed</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-value" style="color:#16a34a">49%</div>
-          <div class="kpi-label">Advisor Review Rate</div>
-          <div class="kpi-sub">41 of 84 reviewed</div>
+          <div class="kpi-value" style="color:#16a34a">41</div>
+          <div class="kpi-label">Report Cards Reviewed</div>
+          <div class="kpi-sub">of 84 · 49%</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-value" style="color:#d97706">71%</div>
-          <div class="kpi-label">Reflection Submission</div>
-          <div class="kpi-sub">60 of 84 submitted</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-value">2.4d</div>
-          <div class="kpi-label">Avg. Advisor Turnaround</div>
-          <div class="kpi-sub">From finalize to reviewed</div>
+          <div class="kpi-value" style="color:#d97706">60</div>
+          <div class="kpi-label">Student Reflections Submitted</div>
+          <div class="kpi-sub">of 84 · 71%</div>
         </div>
       </div>
 
-      <!-- Row 1: completion by class + top comments -->
-      <div class="analytics-row">
+      <!-- Breakdown summary cards -->
+      <div class="analytics-row" style="margin-bottom:1.25rem">
 
         <div class="analytics-card">
-          <div class="analytics-card-header">
-            Completion by Class
-            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">% finalized or reviewed</span>
-          </div>
+          <div class="analytics-card-header">Report Card Completion by Class</div>
           <div class="analytics-card-body">
-            <div class="bar-row">
-              <div class="bar-label"><span>Biology 101 · Sarah Chen</span><span>100%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
+            <p style="font-size:0.82rem;color:#64748b;line-height:1.45;margin-bottom:0.75rem">
+              5 of 7 classes are ≥ 75% completed.
+              <span style="color:#dc2626;font-weight:600">English 10 (36%) and Chemistry (38%) are below 40%.</span>
+            </p>
+            <div style="height:8px;border-radius:99px;background:#e2e8f0;overflow:hidden;margin-bottom:0.85rem">
+              <div style="width:79%;height:100%;background:#6366f1;border-radius:99px"></div>
             </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>Spanish III · Priya Nair</span><span>100%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>AP Literature · Marcus Webb</span><span>75%</span></div>
-              <div class="bar-track"><div class="bar-fill" style="width:75%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>Algebra II · Priya Nair</span><span>67%</span></div>
-              <div class="bar-track"><div class="bar-fill" style="width:67%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>World History · Tom Okafor</span><span>50%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:50%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>English 10 · Marcus Webb</span><span>33%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:33%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>Chemistry · Sarah Chen</span><span>33%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:33%"></div></div>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn btn-secondary btn-sm" onclick="openCompletionModal()">View Breakdown →</button>
             </div>
           </div>
         </div>
 
         <div class="analytics-card">
-          <div class="analytics-card-header">
-            Top Comments Used
-            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">across all classes</span>
-          </div>
+          <div class="analytics-card-header">Student Reflection Submission by Class</div>
           <div class="analytics-card-body">
-            <div class="comment-rank-row">
-              <span class="rank-num">1</span>
-              <span class="rank-text">Consistently submits work on time</span>
-              <div class="rank-bar"><div class="rank-bar-fill" style="width:100%"></div></div>
-              <span class="rank-count">38</span>
+            <p style="font-size:0.82rem;color:#64748b;line-height:1.45;margin-bottom:0.75rem">
+              2 of 7 classes at 100% submitted.
+              <span style="color:#dc2626;font-weight:600">Chemistry (38%) has 5 students without a reflection.</span>
+            </p>
+            <div style="height:8px;border-radius:99px;background:#e2e8f0;overflow:hidden;margin-bottom:0.85rem">
+              <div style="width:71%;height:100%;background:#f59e0b;border-radius:99px"></div>
             </div>
-            <div class="comment-rank-row">
-              <span class="rank-num">2</span>
-              <span class="rank-text">Reliably brings thoughtful ideas to group work</span>
-              <div class="rank-bar"><div class="rank-bar-fill" style="width:87%"></div></div>
-              <span class="rank-count">33</span>
-            </div>
-            <div class="comment-rank-row">
-              <span class="rank-num">3</span>
-              <span class="rank-text">Writes with clarity and precision</span>
-              <div class="rank-bar"><div class="rank-bar-fill" style="width:76%"></div></div>
-              <span class="rank-count">29</span>
-            </div>
-            <div class="comment-rank-row">
-              <span class="rank-num">4</span>
-              <span class="rank-text">Consistently listens attentively to peers</span>
-              <div class="rank-bar"><div class="rank-bar-fill" style="width:63%"></div></div>
-              <span class="rank-count">24</span>
-            </div>
-            <div class="comment-rank-row">
-              <span class="rank-num">5</span>
-              <span class="rank-text">Building habits to meet deadlines</span>
-              <div class="rank-bar"><div class="rank-bar-fill" style="width:55%"></div></div>
-              <span class="rank-count">21</span>
-            </div>
-            <div class="comment-rank-row">
-              <span class="rank-num">6</span>
-              <span class="rank-text">Working on listening before responding</span>
-              <div class="rank-bar"><div class="rank-bar-fill" style="width:47%"></div></div>
-              <span class="rank-count">18</span>
-            </div>
-            <div class="comment-rank-row">
-              <span class="rank-num">7</span>
-              <span class="rank-text">Developing confidence to share ideas</span>
-              <div class="rank-bar"><div class="rank-bar-fill" style="width:39%"></div></div>
-              <span class="rank-count">15</span>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn btn-secondary btn-sm" onclick="openReflectionModal()">View Breakdown →</button>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- Row 2: reflection rates + advisor turnaround -->
-      <div class="analytics-row">
-
-        <div class="analytics-card">
-          <div class="analytics-card-header">
-            Student Reflection Submission
-            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">by class</span>
-          </div>
-          <div class="analytics-card-body">
-            <div class="bar-row">
-              <div class="bar-label"><span>Biology 101</span><span>100%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>AP Literature</span><span>100%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-green" style="width:100%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>Spanish III</span><span>67%</span></div>
-              <div class="bar-track"><div class="bar-fill" style="width:67%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>Algebra II</span><span>67%</span></div>
-              <div class="bar-track"><div class="bar-fill" style="width:67%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>English 10</span><span>50%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:50%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>World History</span><span>50%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:50%"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-label"><span>Chemistry</span><span>33%</span></div>
-              <div class="bar-track"><div class="bar-fill bar-fill-amber" style="width:33%"></div></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="analytics-card">
-          <div class="analytics-card-header">
-            Advisor Turnaround
-            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400">days from finalize → reviewed</span>
-          </div>
-          <div class="analytics-card-body">
-            <div class="turnaround-row">
-              <span class="turnaround-name">Marcus Webb</span>
-              <div class="turnaround-bar"><div class="turnaround-fill" style="width:25%"></div></div>
-              <span class="turnaround-days">1.0d avg</span>
-            </div>
-            <div class="turnaround-row">
-              <span class="turnaround-name">Tom Okafor</span>
-              <div class="turnaround-bar"><div class="turnaround-fill" style="width:50%"></div></div>
-              <span class="turnaround-days">2.1d avg</span>
-            </div>
-            <div class="turnaround-row">
-              <span class="turnaround-name">Priya Nair</span>
-              <div class="turnaround-bar"><div class="turnaround-fill" style="width:75%"></div></div>
-              <span class="turnaround-days">3.2d avg</span>
-            </div>
-            <div class="turnaround-row" style="border-bottom:1px solid #f1f5f9">
-              <span class="turnaround-name">Sarah Chen</span>
-              <div class="turnaround-bar"><div class="turnaround-fill" style="width:100%"></div></div>
-              <span class="turnaround-days">4.1d avg</span>
-            </div>
-            <div style="margin-top:1.1rem">
-              <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin-bottom:0.5rem">Pending Review</div>
-              <div class="turnaround-row">
-                <span class="turnaround-name">Clara Russo</span>
-                <span class="td-muted" style="font-size:0.78rem">Biology 101 · finalized 3d ago</span>
-                <span style="color:#dc2626;font-weight:600;font-size:0.78rem">3d waiting</span>
-              </div>
-              <div class="turnaround-row">
-                <span class="turnaround-name">Hassan Ali</span>
-                <span class="td-muted" style="font-size:0.78rem">Algebra II · finalized 2d ago</span>
-                <span style="color:#d97706;font-weight:600;font-size:0.78rem">2d waiting</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Export reports -->
+      <!-- Reports -->
       <div class="analytics-card">
-        <div class="analytics-card-header">Export Reports</div>
+        <div class="analytics-card-header">
+          Reports
+          <button class="btn btn-secondary btn-sm" onclick="openModal('customReportModal')">+ Custom Report…</button>
+        </div>
         <div class="analytics-card-body">
           <div class="export-row">
             <div>
@@ -2335,6 +2270,121 @@
       </div>
 
     </div><!-- /section-analytics -->
+
+    <!-- Completion Breakdown Modal -->
+    <div class="modal-overlay" id="completionModal">
+      <div class="modal" style="width:740px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Report Card Completion by Class</div>
+            <div class="modal-subtitle">25–26 S2 · Final — click a row to expand individual students · click a name to impersonate</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('completionModal')">✕</button>
+        </div>
+        <div class="modal-body" style="padding:0">
+          <div style="max-height:62vh;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+              <thead style="background:#f8fafc;position:sticky;top:0">
+                <tr>
+                  <th class="sort-th" onclick="sortCompletion(0)" style="padding:0.6rem 0.85rem;text-align:left;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Class <span id="comp-sort-0"></span></th>
+                  <th class="sort-th" onclick="sortCompletion(1)" style="padding:0.6rem 0.85rem;text-align:left;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Teacher <span id="comp-sort-1"></span></th>
+                  <th class="sort-th" onclick="sortCompletion(2)" style="padding:0.6rem 0.85rem;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Students <span id="comp-sort-2"></span></th>
+                  <th class="sort-th" onclick="sortCompletion(3)" style="padding:0.6rem 0.85rem;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Completed <span id="comp-sort-3"></span></th>
+                  <th class="sort-th" onclick="sortCompletion(4)" style="padding:0.6rem 0.85rem;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Reviewed <span id="comp-sort-4"></span></th>
+                  <th class="sort-th" onclick="sortCompletion(5)" style="padding:0.6rem 0.85rem;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">% Done <span id="comp-sort-5"></span></th>
+                  <th style="padding:0.6rem 0.5rem;border-bottom:1px solid #e2e8f0;width:20px"></th>
+                </tr>
+              </thead>
+              <tbody id="completion-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-sm">⬇ Export Table</button>
+          <button class="btn btn-secondary" onclick="closeModal('completionModal')">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reflection Breakdown Modal -->
+    <div class="modal-overlay" id="reflectionModal">
+      <div class="modal" style="width:640px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Student Reflection Submission by Class</div>
+            <div class="modal-subtitle">25–26 S2 · Final — click a row to expand individual students · click a name to impersonate</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('reflectionModal')">✕</button>
+        </div>
+        <div class="modal-body" style="padding:0">
+          <div style="max-height:62vh;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+              <thead style="background:#f8fafc;position:sticky;top:0">
+                <tr>
+                  <th class="sort-th" onclick="sortReflection(0)" style="padding:0.6rem 0.85rem;text-align:left;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Class <span id="refl-sort-0"></span></th>
+                  <th class="sort-th" onclick="sortReflection(1)" style="padding:0.6rem 0.85rem;text-align:left;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Teacher <span id="refl-sort-1"></span></th>
+                  <th class="sort-th" onclick="sortReflection(2)" style="padding:0.6rem 0.85rem;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Students <span id="refl-sort-2"></span></th>
+                  <th class="sort-th" onclick="sortReflection(3)" style="padding:0.6rem 0.85rem;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">Submitted <span id="refl-sort-3"></span></th>
+                  <th class="sort-th" onclick="sortReflection(4)" style="padding:0.6rem 0.85rem;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap">% <span id="refl-sort-4"></span></th>
+                  <th style="padding:0.6rem 0.5rem;border-bottom:1px solid #e2e8f0;width:20px"></th>
+                </tr>
+              </thead>
+              <tbody id="reflection-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-sm">⬇ Export Table</button>
+          <button class="btn btn-secondary" onclick="closeModal('reflectionModal')">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Report Modal -->
+    <div class="modal-overlay" id="customReportModal">
+      <div class="modal" style="width:520px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Custom Report</div>
+            <div class="modal-subtitle">Choose a term and which columns to include in the CSV export</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('customReportModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div>
+            <label class="form-label">Term</label>
+            <select class="filter-select" style="width:100%">
+              <option>25–26 S2 — Final</option>
+              <option>25–26 S2 — Midterm</option>
+              <option>25–26 S1 — Final</option>
+              <option>All terms</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Include columns</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem 1.5rem;font-size:0.84rem">
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Student name</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Class</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Teacher</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Report card status</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox" checked> Reflection status</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> Advisor reviewed</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> Finalized date</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> Reviewed date</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> Last exported</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> Comment count</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> Narrative character count</label>
+              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer"><input type="checkbox"> Reflection character count</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('customReportModal')">Cancel</button>
+          <button class="btn btn-primary" id="customReportBtn" onclick="generateCustomReport()">Generate CSV</button>
+        </div>
+      </div>
+    </div>
+
     <div class="section" id="section-data">
 
       <div class="section-header">
@@ -2527,6 +2577,27 @@
     finalized: '<span class="pill pill-final"><span class="pill-dot dot-final"></span>Finalized</span>',
     reviewed:  '<span class="pill pill-reviewed"><span class="pill-dot dot-reviewed"></span>Reviewed</span>',
   };
+  const STATUS_ORDER = { draft: 0, finalized: 1, reviewed: 2 };
+
+  let rcSort = { col: -1, asc: true };
+
+  function rcSortKey(r, col) {
+    switch(col) {
+      case 0: return r.student;
+      case 1: return r.cls;
+      case 2: return r.teacher;
+      case 3: return r.period;
+      case 4: return STATUS_ORDER[r.status];
+      case 5: return r.reviewed ? 1 : 0;
+      case 6: return r.exported ? 1 : 0;
+    }
+  }
+
+  function sortRC(col) {
+    if (rcSort.col === col) rcSort.asc = !rcSort.asc;
+    else { rcSort.col = col; rcSort.asc = true; }
+    renderRCTable();
+  }
 
   function renderRCTable() {
     const term    = document.getElementById('rc-term').value;
@@ -2545,8 +2616,22 @@
       return true;
     });
 
+    if (rcSort.col >= 0) {
+      rows = [...rows].sort((a, b) => {
+        const av = rcSortKey(a, rcSort.col), bv = rcSortKey(b, rcSort.col);
+        const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+        return rcSort.asc ? cmp : -cmp;
+      });
+    }
+
+    for (let i = 0; i < 7; i++) {
+      document.getElementById('rc-sort-' + i).textContent = rcSort.col === i ? (rcSort.asc ? ' ▲' : ' ▼') : '';
+    }
+
     const tbody = document.getElementById('rc-tbody');
-    tbody.innerHTML = rows.map((r, i) => `
+    tbody.innerHTML = rows.map((r) => {
+      const dataIdx = RC_DATA.indexOf(r);
+      return `
       <tr>
         <td class="td-name">${r.student}</td>
         <td>${r.cls}</td>
@@ -2557,12 +2642,12 @@
         <td style="text-align:center">${r.exported ? '<span class="check-yes">✓</span>' : '<span class="check-no">—</span>'}</td>
         <td>
           <div class="actions-cell">
-            ${r.status === 'finalized' ? `<button class="btn btn-secondary btn-sm" onclick="unfinalize(${i})">Unfinalize</button>` : ''}
+            ${r.status === 'finalized' ? `<button class="btn btn-secondary btn-sm" onclick="unfinalize(${dataIdx})">Unfinalize</button>` : ''}
             <button class="btn btn-secondary btn-sm" onclick="openNoteModal('${r.student}')">Note</button>
           </div>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   }
 
   function unfinalize(i) {
@@ -2755,32 +2840,32 @@
   // ── STUDENT PROMPTS ──
   const PROMPTS = [
     {
-      level: 'Universal', appliedTo: 'All classes', terms: ['25–26 S2','25–26 S1'],
+      name: 'General Reflection', level: 'Universal', dept: null, terms: ['25–26 S2','25–26 S1'],
       text: 'Reflect on your learning in this class over the term. What are you most proud of, and what is one thing you would approach differently?',
       minChars: 150, maxChars: 700,
     },
     {
-      level: 'Department', appliedTo: 'World Languages', terms: ['25–26 S2'],
+      name: 'Language Growth', level: 'Department', dept: 'World Languages', terms: ['25–26 S2'],
       text: 'Reflect on your growth as a language learner this term. In what moments did you feel most confident using the language, and where do you still feel challenged?',
       minChars: 150, maxChars: 600,
     },
     {
-      level: 'Course', appliedTo: 'AP Literature', terms: ['25–26 S2'],
+      name: 'AP Lit Deep Dive', level: null, dept: null, terms: ['25–26 S2'],
       text: 'Choose one text we studied this term and reflect on how it changed or challenged your thinking. What ideas from it are you still sitting with?',
       minChars: 200, maxChars: 800,
     },
     {
-      level: 'Course', appliedTo: 'Spanish for Native Speakers', terms: ['25–26 S1','25–26 S2'],
+      name: 'Heritage Speaker Reflection', level: null, dept: null, terms: ['25–26 S1','25–26 S2'],
       text: 'Reflexiona sobre tu identidad como hablante de herencia este trimestre. ¿Qué has aprendido sobre tu propia lengua y cultura?',
       minChars: 100, maxChars: 500,
     },
   ];
 
-  const LEVEL_TAG = {
-    Universal: 'level-tag-universal',
-    Department: 'level-tag-dept',
-    Course:     'level-tag-course',
-  };
+  function promptLevelTag(p) {
+    if (p.level === 'Universal')  return { cls: 'level-tag-universal', label: 'Universal default' };
+    if (p.level === 'Department') return { cls: 'level-tag-dept',      label: p.dept + ' default' };
+    return { cls: '', label: '' };
+  }
 
   function renderPrompts() {
     const termF  = document.getElementById('prompt-term-filter').value;
@@ -2798,15 +2883,23 @@
       return;
     }
 
-    document.getElementById('prompts-list').innerHTML = filtered.map((p, i) => `
+    document.getElementById('prompts-list').innerHTML = filtered.map((p) => {
+      const tag = promptLevelTag(p);
+      const coursesUsing = CLASSES.filter(c => c.prompt === p.name);
+      const usageNote = p.level ? '' :
+        (coursesUsing.length
+          ? `<div class="prompt-card-terms">Assigned to: ${coursesUsing.map(c => c.course).join(', ')}</div>`
+          : `<div class="prompt-card-terms" style="color:#f59e0b">Not assigned to any course</div>`);
+      return `
       <div class="prompt-card">
         <div class="prompt-card-header">
           <div class="prompt-card-meta">
             <div class="prompt-card-title">
-              <span class="role-tag ${LEVEL_TAG[p.level]}">${p.level}</span>
-              ${p.appliedTo}
+              ${tag.cls ? `<span class="role-tag ${tag.cls}">${tag.label}</span>` : ''}
+              ${p.name}
             </div>
             <div class="prompt-card-terms">Terms: ${p.terms.join(', ')}</div>
+            ${usageNote}
           </div>
           <div class="actions-cell">
             <button class="btn btn-secondary btn-sm" onclick="openEditPrompt(${PROMPTS.indexOf(p)})">Edit</button>
@@ -2818,8 +2911,8 @@
           <span><strong>Min:</strong> ${p.minChars ? p.minChars + ' chars' : 'none'}</span>
           <span><strong>Max:</strong> ${p.maxChars ? p.maxChars + ' chars' : 'none'}</span>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 
   function openPromptModal() {
@@ -2832,7 +2925,7 @@
   function openEditPrompt(idx) {
     const p = PROMPTS[idx];
     document.getElementById('promptModalTitle').textContent = 'Edit Prompt';
-    const levelVal = p.level === 'Universal' ? 'universal' : p.level === 'Department' ? 'dept' : 'course';
+    const levelVal = p.level === 'Department' ? 'dept' : 'universal';
     document.querySelector(`[name="promptLevel"][value="${levelVal}"]`).checked = true;
     updatePromptFields();
     openModal('promptModal');
@@ -2840,39 +2933,64 @@
 
   function updatePromptFields() {
     const val = document.querySelector('[name="promptLevel"]:checked')?.value;
-    document.getElementById('promptDeptRow').style.display   = (val === 'dept' || val === 'course') ? '' : 'none';
-    document.getElementById('promptCourseRow').style.display = (val === 'course') ? '' : 'none';
+    document.getElementById('promptDeptRow').style.display = (val === 'dept') ? '' : 'none';
   }
 
   renderPrompts();
 
   // ── ROSTERS ──
   const CLASSES = [
-    { course:'Biology 101',       teacher:'Sarah Chen',  dept:'Science',                   students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
-    { course:'English 10',        teacher:'Marcus Webb', dept:'English',                   students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
-    { course:'Algebra II',        teacher:'Priya Nair',  dept:'Math',                      students:['Hassan Ali','Ingrid Svensson','James Carter'] },
-    { course:'World History',     teacher:'Tom Okafor',  dept:'History & Social Studies',  students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
-    { course:'Spanish III',       teacher:'Priya Nair',  dept:'World Languages',           students:['Ben Kowalski','Clara Russo','Dante Osei'] },
-    { course:'AP Literature',     teacher:'Marcus Webb', dept:'English',                   students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
-    { course:'Chemistry',         teacher:'Sarah Chen',  dept:'Science',                   students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
+    { course:'Biology 101',       teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                       students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
+    { course:'English 10',        teacher:'Marcus Webb', dept:'English',                   prompt: null,                       students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
+    { course:'Algebra II',        teacher:'Priya Nair',  dept:'Math',                      prompt: null,                       students:['Hassan Ali','Ingrid Svensson','James Carter'] },
+    { course:'World History',     teacher:'Tom Okafor',  dept:'History & Social Studies',  prompt: null,                       students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
+    { course:'Spanish III',       teacher:'Priya Nair',  dept:'World Languages',           prompt: null,                       students:['Ben Kowalski','Clara Russo','Dante Osei'] },
+    { course:'AP Literature',     teacher:'Marcus Webb', dept:'English',                   prompt: 'AP Lit Deep Dive',         students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
+    { course:'Chemistry',         teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                       students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
   ];
+
+  function effectivePrompt(c) {
+    if (c.prompt) return { label: c.prompt, note: 'custom', cls: 'level-tag-universal' };
+    const deptP = PROMPTS.find(p => p.level === 'Department' && p.dept === c.dept);
+    if (deptP) return { label: deptP.name, note: 'dept default', cls: 'level-tag-dept' };
+    const uniP  = PROMPTS.find(p => p.level === 'Universal');
+    return { label: uniP ? uniP.name : '—', note: 'universal default', cls: '' };
+  }
 
   function renderRoster() {
     const dept = document.getElementById('roster-dept').value;
     const rows = CLASSES.filter(c => !dept || c.dept === dept);
-    document.getElementById('roster-tbody').innerHTML = rows.map((c, i) => `
+    document.getElementById('roster-tbody').innerHTML = rows.map((c) => {
+      const idx = CLASSES.indexOf(c);
+      const ep  = effectivePrompt(c);
+      const promptCell = `<span class="prompt-inherit-label">${ep.label}</span>
+        <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.3rem">(${ep.note})</span>
+        <br><span class="prompt-assign-link" onclick="openAssignPrompt(${idx})">Change</span>`;
+      return `
       <tr>
         <td class="td-name">${c.course}</td>
         <td>${c.teacher}</td>
         <td class="td-muted">${c.dept}</td>
         <td>${c.students.length}</td>
+        <td style="min-width:180px">${promptCell}</td>
         <td><div class="actions-cell">
-          <button class="btn btn-secondary btn-sm" onclick="openStudents(${CLASSES.indexOf(c)})">Students</button>
+          <button class="btn btn-secondary btn-sm" onclick="openStudents(${idx})">Students</button>
           <button class="btn btn-secondary btn-sm">Edit</button>
           <button class="btn btn-danger btn-sm">Remove</button>
         </div></td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
+  }
+
+  function openAssignPrompt(idx) {
+    const c  = CLASSES[idx];
+    const ep = effectivePrompt(c);
+    document.getElementById('assignPromptSubtitle').textContent = c.course + ' · ' + c.teacher;
+    document.getElementById('assignPromptHint').textContent = 'Current default: ' + ep.label + ' (' + ep.note + ')';
+    const sel = document.getElementById('assignPromptSelect');
+    sel.innerHTML = '<option value="">(Use default — ' + ep.label + ')</option>' +
+      PROMPTS.map(p => `<option value="${p.name}" ${c.prompt === p.name ? 'selected' : ''}>${p.name}</option>`).join('');
+    openModal('assignPromptModal');
   }
 
   function openStudents(idx) {
@@ -2907,6 +3025,209 @@
     const courses = header.nextElementSibling;
     const open    = courses.classList.toggle('open');
     toggle.classList.toggle('open', open);
+  }
+
+  // ── ANALYTICS ──
+  const COMPLETION_DATA = [
+    { cls:'Biology 101',   teacher:'Sarah Chen',  total:14, completed:14, reviewed:11,
+      students:[
+        {name:'Aisha Patel',   status:'reviewed',  reflection:true},
+        {name:'Ben Kowalski',  status:'reviewed',  reflection:true},
+        {name:'Clara Russo',   status:'finalized', reflection:true},
+        {name:'Maya Singh',    status:'finalized', reflection:true},
+        {name:'Leo Fernandez', status:'finalized', reflection:false},
+      ]},
+    { cls:'Spanish III',   teacher:'Priya Nair',  total:12, completed:12, reviewed:10,
+      students:[
+        {name:'Keiko Tanaka', status:'reviewed',  reflection:true},
+        {name:'Dante Osei',   status:'reviewed',  reflection:true},
+        {name:'Ben Kowalski', status:'finalized', reflection:true},
+      ]},
+    { cls:'AP Literature', teacher:'Marcus Webb', total:16, completed:12, reviewed:8,
+      students:[
+        {name:'Elena Marsh', status:'reviewed',  reflection:true},
+        {name:'Felix Huang', status:'draft',     reflection:false},
+        {name:'Grace Kim',   status:'reviewed',  reflection:true},
+        {name:'Hassan Ali',  status:'finalized', reflection:true},
+      ]},
+    { cls:'Algebra II',    teacher:'Priya Nair',  total:9,  completed:6,  reviewed:4,
+      students:[
+        {name:'Grace Kim',        status:'reviewed',  reflection:true},
+        {name:'Hassan Ali',       status:'finalized', reflection:true},
+        {name:'Ingrid Svensson',  status:'reviewed',  reflection:true},
+      ]},
+    { cls:'World History', teacher:'Tom Okafor',  total:14, completed:7,  reviewed:4,
+      students:[
+        {name:'Ingrid Svensson', status:'reviewed', reflection:true},
+        {name:'James Carter',    status:'draft',    reflection:false},
+        {name:'Keiko Tanaka',    status:'reviewed', reflection:true},
+      ]},
+    { cls:'English 10',    teacher:'Marcus Webb', total:11, completed:4,  reviewed:4,
+      students:[
+        {name:'Dante Osei',  status:'reviewed', reflection:true},
+        {name:'Elena Marsh', status:'reviewed', reflection:true},
+        {name:'Felix Huang', status:'draft',    reflection:false},
+      ]},
+    { cls:'Chemistry',     teacher:'Sarah Chen',  total:8,  completed:3,  reviewed:0,
+      students:[
+        {name:'Ingrid Svensson', status:'finalized', reflection:true},
+        {name:'James Carter',    status:'draft',     reflection:false},
+        {name:'Keiko Tanaka',    status:'finalized', reflection:true},
+      ]},
+  ];
+
+  const REFL_DATA = [
+    { cls:'Biology 101',   teacher:'Sarah Chen',  total:14, submitted:14,
+      students:[{name:'Aisha Patel',submitted:true},{name:'Ben Kowalski',submitted:true},{name:'Clara Russo',submitted:true},{name:'Maya Singh',submitted:true},{name:'Leo Fernandez',submitted:false}]},
+    { cls:'AP Literature', teacher:'Marcus Webb', total:16, submitted:16,
+      students:[{name:'Elena Marsh',submitted:true},{name:'Felix Huang',submitted:true},{name:'Grace Kim',submitted:true},{name:'Hassan Ali',submitted:true}]},
+    { cls:'Spanish III',   teacher:'Priya Nair',  total:12, submitted:8,
+      students:[{name:'Keiko Tanaka',submitted:true},{name:'Dante Osei',submitted:true},{name:'Ben Kowalski',submitted:false}]},
+    { cls:'Algebra II',    teacher:'Priya Nair',  total:9,  submitted:6,
+      students:[{name:'Grace Kim',submitted:true},{name:'Hassan Ali',submitted:true},{name:'Ingrid Svensson',submitted:false}]},
+    { cls:'English 10',    teacher:'Marcus Webb', total:11, submitted:6,
+      students:[{name:'Dante Osei',submitted:true},{name:'Elena Marsh',submitted:true},{name:'Felix Huang',submitted:false}]},
+    { cls:'World History', teacher:'Tom Okafor',  total:14, submitted:7,
+      students:[{name:'Ingrid Svensson',submitted:true},{name:'James Carter',submitted:false},{name:'Keiko Tanaka',submitted:true}]},
+    { cls:'Chemistry',     teacher:'Sarah Chen',  total:8,  submitted:3,
+      students:[{name:'Ingrid Svensson',submitted:true},{name:'James Carter',submitted:false},{name:'Keiko Tanaka',submitted:true}]},
+  ];
+
+  let compSort = { col:5, asc:false };
+  let reflSort  = { col:4, asc:false };
+
+  function sortInd(state, col) {
+    if (state.col !== col) return '<span style="color:#d1d5db;font-weight:400">↕</span>';
+    return state.asc ? '↑' : '↓';
+  }
+
+  const COMP_PILL = {
+    reviewed:  '<span class="pill pill-reviewed" style="font-size:0.72rem"><span class="pill-dot dot-reviewed"></span>Reviewed</span>',
+    finalized: '<span class="pill pill-final"    style="font-size:0.72rem"><span class="pill-dot dot-final"></span>Finalized</span>',
+    draft:     '<span class="pill pill-draft"    style="font-size:0.72rem"><span class="pill-dot dot-draft"></span>Draft</span>',
+  };
+
+  function pctColor(p) {
+    return p===100?'#16a34a':p>=75?'#4f46e5':p>=50?'#d97706':'#dc2626';
+  }
+
+  function renderCompletionTable() {
+    [0,1,2,3,4,5].forEach(i => {
+      const el = document.getElementById('comp-sort-'+i);
+      if (el) el.innerHTML = sortInd(compSort, i);
+    });
+    const sorted = [...COMPLETION_DATA].sort((a,b) => {
+      const asc = compSort.asc;
+      if (compSort.col===0) return asc?a.cls.localeCompare(b.cls):b.cls.localeCompare(a.cls);
+      if (compSort.col===1) return asc?a.teacher.localeCompare(b.teacher):b.teacher.localeCompare(a.teacher);
+      if (compSort.col===2) return asc?a.total-b.total:b.total-a.total;
+      if (compSort.col===3) return asc?a.completed-b.completed:b.completed-a.completed;
+      if (compSort.col===4) return asc?a.reviewed-b.reviewed:b.reviewed-a.reviewed;
+      const pa=a.total?a.completed/a.total:0, pb=b.total?b.completed/b.total:0;
+      return asc?pa-pb:pb-pa;
+    });
+    document.getElementById('completion-tbody').innerHTML = sorted.map((d,i) => {
+      const pct = Math.round(d.completed/d.total*100);
+      const studentRows = d.students.map(s => `
+        <tr class="student-expand-row" data-comp="${i}" style="display:none">
+          <td style="padding:0.45rem 0.85rem 0.45rem 2rem">
+            <button class="spoof-link" onclick="openSpoof('${s.name}')">${s.name}</button>
+          </td>
+          <td style="padding:0.45rem 0.85rem" colspan="3">${COMP_PILL[s.status]}</td>
+          <td style="padding:0.45rem 0.85rem;text-align:center">${s.reflection?'<span class="check-yes">✓</span>':'<span class="check-no">—</span>'}</td>
+          <td style="padding:0.45rem 0.85rem;text-align:center;color:#94a3b8;font-size:0.72rem">Reflection</td>
+          <td></td>
+        </tr>`).join('');
+      return `
+        <tr style="cursor:pointer" onclick="toggleCompRow(this,${i})">
+          <td class="td-name" style="padding:0.65rem 0.85rem">${d.cls}</td>
+          <td style="padding:0.65rem 0.85rem;color:#374151">${d.teacher}</td>
+          <td style="padding:0.65rem 0.85rem;text-align:center">${d.total}</td>
+          <td style="padding:0.65rem 0.85rem;text-align:center">${d.completed}</td>
+          <td style="padding:0.65rem 0.85rem;text-align:center">${d.reviewed}</td>
+          <td style="padding:0.65rem 0.85rem;text-align:center;font-weight:700;color:${pctColor(pct)}">${pct}%</td>
+          <td style="padding:0.65rem 0.5rem;color:#94a3b8;font-size:0.72rem" id="comp-arrow-${i}">▶</td>
+        </tr>${studentRows}`;
+    }).join('');
+  }
+
+  function renderReflectionTable() {
+    [0,1,2,3,4].forEach(i => {
+      const el = document.getElementById('refl-sort-'+i);
+      if (el) el.innerHTML = sortInd(reflSort, i);
+    });
+    const sorted = [...REFL_DATA].sort((a,b) => {
+      const asc = reflSort.asc;
+      if (reflSort.col===0) return asc?a.cls.localeCompare(b.cls):b.cls.localeCompare(a.cls);
+      if (reflSort.col===1) return asc?a.teacher.localeCompare(b.teacher):b.teacher.localeCompare(a.teacher);
+      if (reflSort.col===2) return asc?a.total-b.total:b.total-a.total;
+      if (reflSort.col===3) return asc?a.submitted-b.submitted:b.submitted-a.submitted;
+      const pa=a.total?a.submitted/a.total:0, pb=b.total?b.submitted/b.total:0;
+      return asc?pa-pb:pb-pa;
+    });
+    document.getElementById('reflection-tbody').innerHTML = sorted.map((d,i) => {
+      const pct = Math.round(d.submitted/d.total*100);
+      const studentRows = d.students.map(s => `
+        <tr class="student-expand-row" data-refl="${i}" style="display:none">
+          <td style="padding:0.45rem 0.85rem 0.45rem 2rem">
+            <button class="spoof-link" onclick="openSpoof('${s.name}')">${s.name}</button>
+          </td>
+          <td style="padding:0.45rem 0.85rem" colspan="2"></td>
+          <td style="padding:0.45rem 0.85rem;text-align:center">${s.submitted?'<span class="check-yes">✓</span>':'<span class="check-no">—</span>'}</td>
+          <td style="padding:0.45rem 0.85rem"></td>
+          <td></td>
+        </tr>`).join('');
+      return `
+        <tr style="cursor:pointer" onclick="toggleReflRow(this,${i})">
+          <td class="td-name" style="padding:0.65rem 0.85rem">${d.cls}</td>
+          <td style="padding:0.65rem 0.85rem;color:#374151">${d.teacher}</td>
+          <td style="padding:0.65rem 0.85rem;text-align:center">${d.total}</td>
+          <td style="padding:0.65rem 0.85rem;text-align:center">${d.submitted}</td>
+          <td style="padding:0.65rem 0.85rem;text-align:center;font-weight:700;color:${pctColor(pct)}">${pct}%</td>
+          <td style="padding:0.65rem 0.5rem;color:#94a3b8;font-size:0.72rem" id="refl-arrow-${i}">▶</td>
+        </tr>${studentRows}`;
+    }).join('');
+  }
+
+  function sortCompletion(col) {
+    compSort.asc = compSort.col===col ? !compSort.asc : col<2;
+    compSort.col = col;
+    renderCompletionTable();
+  }
+
+  function sortReflection(col) {
+    reflSort.asc = reflSort.col===col ? !reflSort.asc : col<2;
+    reflSort.col = col;
+    renderReflectionTable();
+  }
+
+  function toggleCompRow(row, idx) {
+    const rows = document.querySelectorAll(`[data-comp="${idx}"]`);
+    const arrow = document.getElementById('comp-arrow-'+idx);
+    const open = rows[0]?.style.display==='table-row';
+    rows.forEach(r => r.style.display = open?'none':'table-row');
+    if (arrow) arrow.textContent = open?'▶':'▼';
+  }
+
+  function toggleReflRow(row, idx) {
+    const rows = document.querySelectorAll(`[data-refl="${idx}"]`);
+    const arrow = document.getElementById('refl-arrow-'+idx);
+    const open = rows[0]?.style.display==='table-row';
+    rows.forEach(r => r.style.display = open?'none':'table-row');
+    if (arrow) arrow.textContent = open?'▶':'▼';
+  }
+
+  function openCompletionModal() { renderCompletionTable(); openModal('completionModal'); }
+  function openReflectionModal()  { renderReflectionTable(); openModal('reflectionModal'); }
+
+  function generateCustomReport() {
+    const btn = document.getElementById('customReportBtn');
+    btn.textContent = 'Generating…';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Downloaded ✓';
+      setTimeout(() => { btn.textContent = 'Generate CSV'; btn.disabled = false; }, 2000);
+    }, 800);
   }
 
   // ── LOCK TERM ──
