@@ -428,13 +428,13 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - User menu (profile, logout)
 
 **Left Sidebar (Main Menu)**
-- Users
-- Settings
-- Comment Banks
-- Student Reflection Prompts
 - Terms & Rosters
 - Report Cards
-- Analytics
+- Analytics (default view)
+- Users
+- Comment Banks
+- Student Reflection Prompts
+- Settings
 - Data Management
 
 ### Core Admin Functions
