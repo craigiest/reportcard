@@ -1969,13 +1969,13 @@
         <table>
           <thead>
             <tr>
-              <th>Student</th>
-              <th>Class</th>
-              <th>Teacher</th>
-              <th>Period</th>
-              <th>Status</th>
-              <th>Advisor Reviewed</th>
-              <th>Exported</th>
+              <th class="sort-th" onclick="sortRC(0)">Student <span id="rc-sort-0"></span></th>
+              <th class="sort-th" onclick="sortRC(1)">Class <span id="rc-sort-1"></span></th>
+              <th class="sort-th" onclick="sortRC(2)">Teacher <span id="rc-sort-2"></span></th>
+              <th class="sort-th" onclick="sortRC(3)">Period <span id="rc-sort-3"></span></th>
+              <th class="sort-th" onclick="sortRC(4)">Status <span id="rc-sort-4"></span></th>
+              <th class="sort-th" onclick="sortRC(5)">Advisor Reviewed <span id="rc-sort-5"></span></th>
+              <th class="sort-th" onclick="sortRC(6)">Exported <span id="rc-sort-6"></span></th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -2007,11 +2007,11 @@
                 </div>
                 <div class="form-row" style="margin:0">
                   <label class="form-label">School Name (header)</label>
-                  <input class="form-input" type="text" value="Riverside Academy">
+                  <input class="form-input" type="text" value="The Bay School of San Francisco">
                 </div>
                 <div class="form-row" style="margin:0">
                   <label class="form-label">District / Subtitle (header)</label>
-                  <input class="form-input" type="text" value="Riverside Unified School District">
+                  <input class="form-input" type="text" value="">
                 </div>
               </div>
             </div>
@@ -2021,7 +2021,7 @@
               <div class="data-card-body">
                 <div class="form-row" style="margin:0">
                   <label class="form-label">Footer Text</label>
-                  <textarea class="form-input" rows="3" style="resize:vertical">123 Main Street, Riverside, CA 92501 · (951) 555-0100 · www.riverside.edu</textarea>
+                  <textarea class="form-input" rows="3" style="resize:vertical">35 Keyes Ave, San Francisco, CA 94110 · 415-561-5800</textarea>
                   <div class="form-hint">Appears at the bottom of every page.</div>
                 </div>
               </div>
@@ -2037,7 +2037,7 @@
               <div class="data-card-body">
                 <div class="form-row" style="margin:0">
                   <label class="form-label">Introductory paragraph</label>
-                  <textarea class="form-input" rows="4" style="resize:vertical">This report card reflects each student's growth across Riverside Academy's transferable skills framework. Comments are written by teachers and reviewed by advisors to offer a holistic view of student development.</textarea>
+                  <textarea class="form-input" rows="4" style="resize:vertical">This report card reflects each student's growth across The Bay School of San Francisco's transferable skills framework. Comments are written by teachers and reviewed by advisors to offer a holistic view of student development.</textarea>
                 </div>
                 <div class="form-row" style="margin:0.75rem 0 0">
                   <label class="form-label">Competency / grading scale note</label>
@@ -2056,12 +2056,11 @@
                   <div style="display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.6rem;margin-bottom:0.6rem">
                     <div style="width:32px;height:20px;background:#ddd;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#94a3b8">logo</div>
                     <div>
-                      <div style="font-weight:700;color:#1e293b;font-size:0.85rem">Riverside Academy</div>
-                      <div style="color:#64748b;font-size:0.72rem">Riverside Unified School District</div>
+                      <div style="font-weight:700;color:#1e293b;font-size:0.85rem">The Bay School of San Francisco</div>
                     </div>
                   </div>
-                  <p style="margin-bottom:0.4rem;color:#374151">This report card reflects each student's growth across Riverside Academy's transferable skills framework…</p>
-                  <p style="color:#94a3b8;font-size:0.72rem;border-top:1px solid #e2e8f0;margin-top:0.5rem;padding-top:0.4rem">123 Main Street, Riverside, CA 92501 · (951) 555-0100 · www.riverside.edu</p>
+                  <p style="margin-bottom:0.4rem;color:#374151">This report card reflects each student's growth across The Bay School of San Francisco's transferable skills framework…</p>
+                  <p style="color:#94a3b8;font-size:0.72rem;border-top:1px solid #e2e8f0;margin-top:0.5rem;padding-top:0.4rem">35 Keyes Ave, San Francisco, CA 94110 · 415-561-5800</p>
                 </div>
               </div>
             </div>
@@ -2578,6 +2577,27 @@
     finalized: '<span class="pill pill-final"><span class="pill-dot dot-final"></span>Finalized</span>',
     reviewed:  '<span class="pill pill-reviewed"><span class="pill-dot dot-reviewed"></span>Reviewed</span>',
   };
+  const STATUS_ORDER = { draft: 0, finalized: 1, reviewed: 2 };
+
+  let rcSort = { col: -1, asc: true };
+
+  function rcSortKey(r, col) {
+    switch(col) {
+      case 0: return r.student;
+      case 1: return r.cls;
+      case 2: return r.teacher;
+      case 3: return r.period;
+      case 4: return STATUS_ORDER[r.status];
+      case 5: return r.reviewed ? 1 : 0;
+      case 6: return r.exported ? 1 : 0;
+    }
+  }
+
+  function sortRC(col) {
+    if (rcSort.col === col) rcSort.asc = !rcSort.asc;
+    else { rcSort.col = col; rcSort.asc = true; }
+    renderRCTable();
+  }
 
   function renderRCTable() {
     const term    = document.getElementById('rc-term').value;
@@ -2596,8 +2616,22 @@
       return true;
     });
 
+    if (rcSort.col >= 0) {
+      rows = [...rows].sort((a, b) => {
+        const av = rcSortKey(a, rcSort.col), bv = rcSortKey(b, rcSort.col);
+        const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+        return rcSort.asc ? cmp : -cmp;
+      });
+    }
+
+    for (let i = 0; i < 7; i++) {
+      document.getElementById('rc-sort-' + i).textContent = rcSort.col === i ? (rcSort.asc ? ' ▲' : ' ▼') : '';
+    }
+
     const tbody = document.getElementById('rc-tbody');
-    tbody.innerHTML = rows.map((r, i) => `
+    tbody.innerHTML = rows.map((r) => {
+      const dataIdx = RC_DATA.indexOf(r);
+      return `
       <tr>
         <td class="td-name">${r.student}</td>
         <td>${r.cls}</td>
@@ -2608,12 +2642,12 @@
         <td style="text-align:center">${r.exported ? '<span class="check-yes">✓</span>' : '<span class="check-no">—</span>'}</td>
         <td>
           <div class="actions-cell">
-            ${r.status === 'finalized' ? `<button class="btn btn-secondary btn-sm" onclick="unfinalize(${i})">Unfinalize</button>` : ''}
+            ${r.status === 'finalized' ? `<button class="btn btn-secondary btn-sm" onclick="unfinalize(${dataIdx})">Unfinalize</button>` : ''}
             <button class="btn btn-secondary btn-sm" onclick="openNoteModal('${r.student}')">Note</button>
           </div>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   }
 
   function unfinalize(i) {
