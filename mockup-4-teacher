@@ -826,6 +826,7 @@
         <div class="card-header">Student</div>
         <div class="card-body">
           <div class="student-meta" id="studentMeta"></div>
+          <div id="rcStatusBadge" style="display:none;margin-bottom:0.85rem"></div>
           <div class="reflection-box">
             <div class="reflection-label">Student Reflection</div>
             <div class="reflection-text" id="reflectionText">Not submitted</div>
@@ -1714,6 +1715,7 @@ function activate(ci, si) {
   document.getElementById('narrativeInput').value = d.narrative || '';
   updateFinalizeUI();
   updateEditableState();
+  updateRcStatusBadge();
 
   const refEl = document.getElementById('reflectionText');
   const reflection = state.reflections[`${state.term}|${name}`] || null;
@@ -2239,6 +2241,25 @@ function cancelImport() {
 // ─────────────────────────────────────────────────────────────────
 // FINALIZE
 // ─────────────────────────────────────────────────────────────────
+const STATUS_BADGE = {
+  none:       { label: 'Not Started',          bg: '#f1f5f9', color: '#64748b', border: '#e2e8f0' },
+  'in-progress': { label: 'In Progress',       bg: '#fffbeb', color: '#b45309', border: '#fde68a' },
+  complete:   { label: 'Complete',             bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
+  finalized:  { label: 'Finalized',            bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
+  reviewed:   { label: 'Reviewed by Advisor',  bg: '#f5f3ff', color: '#6d28d9', border: '#ddd6fe' }
+};
+function updateRcStatusBadge() {
+  if (activeCI === null) return;
+  const st = studentStatus(activeCI, activeSI);
+  const badge = STATUS_BADGE[st] || STATUS_BADGE.none;
+  const el = document.getElementById('rcStatusBadge');
+  el.style.display = '';
+  el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border-radius:99px;font-size:0.78rem;font-weight:600;background:${badge.bg};color:${badge.color};border:1px solid ${badge.border}">
+    <span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:0.8"></span>
+    ${badge.label}
+  </span>`;
+}
+
 function updateFinalizeUI() {
   if (activeCI === null) return;
   const d = studentData(activeCI, activeSI);
@@ -2273,6 +2294,7 @@ function updateFinalizeUI() {
   } else {
     reviewRow.style.display = 'none';
   }
+  updateRcStatusBadge();
 }
 
 function updateEditableState() {
