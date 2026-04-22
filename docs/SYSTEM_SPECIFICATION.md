@@ -536,6 +536,7 @@ Term management lives alongside roster management since terms define the periods
 - Add/edit/delete classes
 - Reassign students to classes
 - Reassign teachers to classes
+- Assign or override the reflection prompt for a course (overrides the Universal or Department default for that course only; revert to "(Use default)" to remove the override)
 
 **Export Rosters**
 - Export class roster as CSV
@@ -586,23 +587,31 @@ Term management lives alongside roster management since terms define the periods
 
 #### 5. Student Reflection Prompts Configuration
 
+Prompts are authored here and set as defaults at the Universal or Department level. Course-level assignment is managed from the Roster (see section 3).
+
 **View Prompts**
-- List all configured prompts by term/course/department
-- Show prompt text and customization level
+- List all configured prompts filtered by term and level
+- Show prompt name, text, character limits, and terms active in
+- For prompts not set as a default (no Universal or Department scope), show which courses are currently assigned to them
 
 **Create Prompt**
-- Select customization level: Universal, Department, or Course
-- Input prompt text
+- Name the prompt
+- Set default scope: Universal (applies to all classes) or Department (applies to all classes in a department)
+- Prompts with no default scope are available for manual assignment to individual courses from the Roster
 - Assign to term(s)
 - Set minimum and maximum character requirements for student submission
 
 **Edit Prompt**
-- Update prompt text
-- Change customization level
+- Update prompt name and text
+- Change default scope
 - Update term assignment
 
 **Delete Prompt**
 - Remove prompt (affects future submissions only)
+
+**Course-level Assignment**
+- Individual courses can override the default prompt from the Roster tab
+- See section 3 (Terms & Rosters → Roster) for assignment UI
 
 #### 6. Report Card Status & Management
 

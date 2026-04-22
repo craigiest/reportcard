@@ -730,7 +730,8 @@
     .prompt-chars strong { color: #64748b; }
     .level-tag-universal { background: #ede9fe; color: #5b21b6; }
     .level-tag-dept      { background: #dbeafe; color: #1e40af; }
-    .level-tag-course    { background: #dcfce7; color: #166534; }
+    .prompt-assign-link  { font-size:0.78rem; color:#6366f1; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+    .prompt-inherit-label { font-size:0.82rem; color:#64748b; }
 
     /* ── BREAKDOWN TABLES ── */
     .student-expand-row { display: none; }
@@ -1535,7 +1536,6 @@
           <option value="">All Levels</option>
           <option>Universal</option>
           <option>Department</option>
-          <option>Course</option>
         </select>
       </div>
 
@@ -1556,18 +1556,16 @@
         <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
 
           <div>
-            <label class="form-label">Level</label>
+            <label class="form-label">Default For</label>
             <div style="display:flex;gap:1.5rem;font-size:0.85rem">
               <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
-                <input type="radio" name="promptLevel" value="universal" checked onchange="updatePromptFields()"> Universal
+                <input type="radio" name="promptLevel" value="universal" checked onchange="updatePromptFields()"> All classes (Universal)
               </label>
               <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
-                <input type="radio" name="promptLevel" value="dept" onchange="updatePromptFields()"> Department
-              </label>
-              <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
-                <input type="radio" name="promptLevel" value="course" onchange="updatePromptFields()"> Course
+                <input type="radio" name="promptLevel" value="dept" onchange="updatePromptFields()"> A specific department
               </label>
             </div>
+            <div class="form-hint" style="margin-top:0.4rem">To assign a prompt to individual courses, use the Roster tab.</div>
           </div>
 
           <div id="promptDeptRow" style="display:none">
@@ -1576,15 +1574,6 @@
               <option value="">Select…</option>
               <option>English</option><option>Math</option><option>Science</option>
               <option>History &amp; Social Studies</option><option>World Languages</option>
-            </select>
-          </div>
-
-          <div id="promptCourseRow" style="display:none">
-            <label class="form-label">Course</label>
-            <select class="filter-select" style="width:100%">
-              <option value="">Select…</option>
-              <option>Biology 101</option><option>English 10</option><option>Algebra II</option>
-              <option>World History</option><option>Spanish III</option><option>AP Literature</option><option>Chemistry</option>
             </select>
           </div>
 
@@ -1730,6 +1719,7 @@
                 <th>Teacher</th>
                 <th>Department</th>
                 <th>Students</th>
+                <th>Reflection Prompt</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -1884,6 +1874,32 @@
         </div>
       </div>
     </div>
+    <!-- Assign Prompt Modal -->
+    <div class="modal-overlay" id="assignPromptModal">
+      <div class="modal" style="width:420px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Reflection Prompt</div>
+            <div class="modal-subtitle" id="assignPromptSubtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('assignPromptModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div>
+            <label class="form-label">Prompt</label>
+            <select class="filter-select" style="width:100%" id="assignPromptSelect">
+              <option value="">(Use default)</option>
+            </select>
+            <div class="form-hint" id="assignPromptHint"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('assignPromptModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="closeModal('assignPromptModal')">Save</button>
+        </div>
+      </div>
+    </div>
+
     <div class="section" id="section-reportcards">
 
       <div class="section-header">
@@ -2790,32 +2806,32 @@
   // ── STUDENT PROMPTS ──
   const PROMPTS = [
     {
-      level: 'Universal', appliedTo: 'All classes', terms: ['25–26 S2','25–26 S1'],
+      name: 'General Reflection', level: 'Universal', dept: null, terms: ['25–26 S2','25–26 S1'],
       text: 'Reflect on your learning in this class over the term. What are you most proud of, and what is one thing you would approach differently?',
       minChars: 150, maxChars: 700,
     },
     {
-      level: 'Department', appliedTo: 'World Languages', terms: ['25–26 S2'],
+      name: 'Language Growth', level: 'Department', dept: 'World Languages', terms: ['25–26 S2'],
       text: 'Reflect on your growth as a language learner this term. In what moments did you feel most confident using the language, and where do you still feel challenged?',
       minChars: 150, maxChars: 600,
     },
     {
-      level: 'Course', appliedTo: 'AP Literature', terms: ['25–26 S2'],
+      name: 'AP Lit Deep Dive', level: null, dept: null, terms: ['25–26 S2'],
       text: 'Choose one text we studied this term and reflect on how it changed or challenged your thinking. What ideas from it are you still sitting with?',
       minChars: 200, maxChars: 800,
     },
     {
-      level: 'Course', appliedTo: 'Spanish for Native Speakers', terms: ['25–26 S1','25–26 S2'],
+      name: 'Heritage Speaker Reflection', level: null, dept: null, terms: ['25–26 S1','25–26 S2'],
       text: 'Reflexiona sobre tu identidad como hablante de herencia este trimestre. ¿Qué has aprendido sobre tu propia lengua y cultura?',
       minChars: 100, maxChars: 500,
     },
   ];
 
-  const LEVEL_TAG = {
-    Universal: 'level-tag-universal',
-    Department: 'level-tag-dept',
-    Course:     'level-tag-course',
-  };
+  function promptLevelTag(p) {
+    if (p.level === 'Universal')  return { cls: 'level-tag-universal', label: 'Universal default' };
+    if (p.level === 'Department') return { cls: 'level-tag-dept',      label: p.dept + ' default' };
+    return { cls: '', label: '' };
+  }
 
   function renderPrompts() {
     const termF  = document.getElementById('prompt-term-filter').value;
@@ -2833,15 +2849,23 @@
       return;
     }
 
-    document.getElementById('prompts-list').innerHTML = filtered.map((p, i) => `
+    document.getElementById('prompts-list').innerHTML = filtered.map((p) => {
+      const tag = promptLevelTag(p);
+      const coursesUsing = CLASSES.filter(c => c.prompt === p.name);
+      const usageNote = p.level ? '' :
+        (coursesUsing.length
+          ? `<div class="prompt-card-terms">Assigned to: ${coursesUsing.map(c => c.course).join(', ')}</div>`
+          : `<div class="prompt-card-terms" style="color:#f59e0b">Not assigned to any course</div>`);
+      return `
       <div class="prompt-card">
         <div class="prompt-card-header">
           <div class="prompt-card-meta">
             <div class="prompt-card-title">
-              <span class="role-tag ${LEVEL_TAG[p.level]}">${p.level}</span>
-              ${p.appliedTo}
+              ${tag.cls ? `<span class="role-tag ${tag.cls}">${tag.label}</span>` : ''}
+              ${p.name}
             </div>
             <div class="prompt-card-terms">Terms: ${p.terms.join(', ')}</div>
+            ${usageNote}
           </div>
           <div class="actions-cell">
             <button class="btn btn-secondary btn-sm" onclick="openEditPrompt(${PROMPTS.indexOf(p)})">Edit</button>
@@ -2853,8 +2877,8 @@
           <span><strong>Min:</strong> ${p.minChars ? p.minChars + ' chars' : 'none'}</span>
           <span><strong>Max:</strong> ${p.maxChars ? p.maxChars + ' chars' : 'none'}</span>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 
   function openPromptModal() {
@@ -2867,7 +2891,7 @@
   function openEditPrompt(idx) {
     const p = PROMPTS[idx];
     document.getElementById('promptModalTitle').textContent = 'Edit Prompt';
-    const levelVal = p.level === 'Universal' ? 'universal' : p.level === 'Department' ? 'dept' : 'course';
+    const levelVal = p.level === 'Department' ? 'dept' : 'universal';
     document.querySelector(`[name="promptLevel"][value="${levelVal}"]`).checked = true;
     updatePromptFields();
     openModal('promptModal');
@@ -2875,39 +2899,64 @@
 
   function updatePromptFields() {
     const val = document.querySelector('[name="promptLevel"]:checked')?.value;
-    document.getElementById('promptDeptRow').style.display   = (val === 'dept' || val === 'course') ? '' : 'none';
-    document.getElementById('promptCourseRow').style.display = (val === 'course') ? '' : 'none';
+    document.getElementById('promptDeptRow').style.display = (val === 'dept') ? '' : 'none';
   }
 
   renderPrompts();
 
   // ── ROSTERS ──
   const CLASSES = [
-    { course:'Biology 101',       teacher:'Sarah Chen',  dept:'Science',                   students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
-    { course:'English 10',        teacher:'Marcus Webb', dept:'English',                   students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
-    { course:'Algebra II',        teacher:'Priya Nair',  dept:'Math',                      students:['Hassan Ali','Ingrid Svensson','James Carter'] },
-    { course:'World History',     teacher:'Tom Okafor',  dept:'History & Social Studies',  students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
-    { course:'Spanish III',       teacher:'Priya Nair',  dept:'World Languages',           students:['Ben Kowalski','Clara Russo','Dante Osei'] },
-    { course:'AP Literature',     teacher:'Marcus Webb', dept:'English',                   students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
-    { course:'Chemistry',         teacher:'Sarah Chen',  dept:'Science',                   students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
+    { course:'Biology 101',       teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                       students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
+    { course:'English 10',        teacher:'Marcus Webb', dept:'English',                   prompt: null,                       students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
+    { course:'Algebra II',        teacher:'Priya Nair',  dept:'Math',                      prompt: null,                       students:['Hassan Ali','Ingrid Svensson','James Carter'] },
+    { course:'World History',     teacher:'Tom Okafor',  dept:'History & Social Studies',  prompt: null,                       students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
+    { course:'Spanish III',       teacher:'Priya Nair',  dept:'World Languages',           prompt: null,                       students:['Ben Kowalski','Clara Russo','Dante Osei'] },
+    { course:'AP Literature',     teacher:'Marcus Webb', dept:'English',                   prompt: 'AP Lit Deep Dive',         students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
+    { course:'Chemistry',         teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                       students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
   ];
+
+  function effectivePrompt(c) {
+    if (c.prompt) return { label: c.prompt, note: 'custom', cls: 'level-tag-universal' };
+    const deptP = PROMPTS.find(p => p.level === 'Department' && p.dept === c.dept);
+    if (deptP) return { label: deptP.name, note: 'dept default', cls: 'level-tag-dept' };
+    const uniP  = PROMPTS.find(p => p.level === 'Universal');
+    return { label: uniP ? uniP.name : '—', note: 'universal default', cls: '' };
+  }
 
   function renderRoster() {
     const dept = document.getElementById('roster-dept').value;
     const rows = CLASSES.filter(c => !dept || c.dept === dept);
-    document.getElementById('roster-tbody').innerHTML = rows.map((c, i) => `
+    document.getElementById('roster-tbody').innerHTML = rows.map((c) => {
+      const idx = CLASSES.indexOf(c);
+      const ep  = effectivePrompt(c);
+      const promptCell = `<span class="prompt-inherit-label">${ep.label}</span>
+        <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.3rem">(${ep.note})</span>
+        <br><span class="prompt-assign-link" onclick="openAssignPrompt(${idx})">Change</span>`;
+      return `
       <tr>
         <td class="td-name">${c.course}</td>
         <td>${c.teacher}</td>
         <td class="td-muted">${c.dept}</td>
         <td>${c.students.length}</td>
+        <td style="min-width:180px">${promptCell}</td>
         <td><div class="actions-cell">
-          <button class="btn btn-secondary btn-sm" onclick="openStudents(${CLASSES.indexOf(c)})">Students</button>
+          <button class="btn btn-secondary btn-sm" onclick="openStudents(${idx})">Students</button>
           <button class="btn btn-secondary btn-sm">Edit</button>
           <button class="btn btn-danger btn-sm">Remove</button>
         </div></td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
+  }
+
+  function openAssignPrompt(idx) {
+    const c  = CLASSES[idx];
+    const ep = effectivePrompt(c);
+    document.getElementById('assignPromptSubtitle').textContent = c.course + ' · ' + c.teacher;
+    document.getElementById('assignPromptHint').textContent = 'Current default: ' + ep.label + ' (' + ep.note + ')';
+    const sel = document.getElementById('assignPromptSelect');
+    sel.innerHTML = '<option value="">(Use default — ' + ep.label + ')</option>' +
+      PROMPTS.map(p => `<option value="${p.name}" ${c.prompt === p.name ? 'selected' : ''}>${p.name}</option>`).join('');
+    openModal('assignPromptModal');
   }
 
   function openStudents(idx) {
