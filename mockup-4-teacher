@@ -1,1 +1,2904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup 3 — Report Card Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    /* ── TOP NAV ── */
+    .topnav {
+      height: 48px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      gap: 1rem;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .topnav a { text-decoration: none; color: #64748b; font-size: 0.85rem; }
+    .topnav a:hover { color: #1d4ed8; }
+    .topnav-title { font-weight: 600; font-size: 0.95rem; color: #1e293b; }
+
+    /* ── LAYOUT ── */
+    .app { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      width: 290px;
+      flex-shrink: 0;
+      background: #1e293b;
+      border-right: 1px solid #0f172a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .master-area {
+      flex-shrink: 0;
+      padding: 1rem;
+      border-bottom: 2px solid #334155;
+      background: #0f172a;
+    }
+
+    .field-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin-bottom: 0.2rem;
+    }
+
+    .teacher-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #e2e8f0;
+      margin-bottom: 0.85rem;
+    }
+
+    .term-select {
+      width: 100%;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      color: #e2e8f0;
+      background: #293548;
+      font-family: inherit;
+      margin-bottom: 0.85rem;
+      cursor: pointer;
+    }
+    .term-select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+
+    .nav-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-student-label {
+      flex: 1;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-style: italic;
+    }
+    .arrow-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: #293548;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .arrow-btn:hover { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+    /* ── ROSTER ── */
+    .roster-area { flex: 1; overflow-y: auto; }
+
+    .class-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.85rem;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+      transition: background 0.12s;
+    }
+    .class-header:hover { background: #293548; }
+    .class-header.open { color: #93c5fd; background: #1e3a5f; border-bottom-color: #1d4ed8; }
+    .class-header.has-active { color: #93c5fd; background: #1e3a5f; border-bottom-color: #1d4ed8; }
+
+    .class-chevron {
+      font-size: 0.65rem;
+      color: #64748b;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .class-header.open .class-chevron { transform: rotate(90deg); color: #60a5fa; }
+
+    .class-roster { display: none; }
+    .class-roster.open { display: block; }
+
+    .student-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.38rem 0.85rem 0.38rem 1.75rem;
+      cursor: pointer;
+      font-size: 0.84rem;
+      color: #cbd5e1;
+      border-left: 3px solid transparent;
+      transition: background 0.1s;
+    }
+    .student-row:hover { background: #293548; }
+    .student-row.active {
+      background: #1d4ed8;
+      border-left-color: #60a5fa;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .status-icons { display: flex; align-items: center; gap: 4px; margin-left: auto; flex-shrink: 0; }
+
+    /* Round dot = report card status */
+    .rc-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      border: 1.5px solid #ef4444;
+      background: transparent;
+      display: inline-block;
+      title: "Report card status";
+    }
+    .rc-dot.in-progress {
+      background: linear-gradient(90deg, #f59e0b 50%, transparent 50%);
+      border-color: #f59e0b;
+    }
+    .rc-dot.complete { background: #22c55e; border-color: #22c55e; }
+    .rc-dot.finalized { background: #1d4ed8; border-color: #1d4ed8; }
+
+    /* Square dot = reflection status */
+    .ref-dot {
+      width: 9px; height: 9px;
+      border-radius: 2px;
+      border: 1.5px solid #64748b;
+      background: transparent;
+      display: inline-block;
+    }
+    .ref-dot.submitted { background: #6366f1; border-color: #6366f1; }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel { flex: 1; overflow-y: auto; padding: 1.5rem; }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .editing-area {
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 0.7rem 1.2rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #64748b;
+    }
+    .card-body { padding: 1.1rem 1.2rem; }
+
+    /* ── STUDENT HEADER ── */
+    .student-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem 1.5rem;
+      font-size: 0.875rem;
+      color: #334155;
+      margin-bottom: 1rem;
+    }
+    .meta-row { display: flex; gap: 0.4rem; align-items: baseline; }
+    .meta-label { color: #94a3b8; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+
+    .reflection-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+    }
+    .reflection-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      margin-bottom: 0.3rem;
+    }
+    .reflection-text { font-size: 0.875rem; color: #64748b; font-style: italic; line-height: 1.6; }
+
+    /* ── TRANSFERABLE SKILLS ── */
+    .skill-item {
+      padding: 0.85rem 1.2rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .skill-item:last-child { border-bottom: none; }
+
+    .skill-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.4rem;
+    }
+    .skill-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; }
+
+    .skill-btns { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+    .skill-btn {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.28rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #64748b;
+      font-family: inherit;
+      transition: all 0.12s;
+    }
+    .skill-btn.std:hover, .skill-btn.std.active { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+    .skill-btn.cus:hover, .skill-btn.cus.active { background: #f5f3ff; border-color: #c4b5fd; color: #6d28d9; }
+
+    .skill-comments { display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.1rem; }
+    .skill-comment {
+      font-size: 0.83rem;
+      color: #334155;
+      line-height: 1.5;
+      padding-left: 0.9rem;
+      position: relative;
+    }
+    .skill-comment::before {
+      content: "•";
+      position: absolute;
+      left: 0.2rem;
+      color: #94a3b8;
+    }
+
+    /* ── COMMENT PANEL ── */
+    .comment-panel {
+      display: none;
+      position: fixed;
+      top: 48px;
+      right: 0;
+      width: 455px;
+      height: calc(100vh - 48px);
+      background: #fff;
+      border-left: 1px solid #e2e8f0;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+      z-index: 41;
+      flex-direction: column;
+    }
+    .comment-panel.open { display: flex; }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      flex-shrink: 0;
+    }
+    .panel-header-text {}
+    .panel-title { font-weight: 700; font-size: 0.88rem; color: #1e293b; line-height: 1.3; }
+    .panel-subtitle { font-size: 0.72rem; color: #94a3b8; margin-top: 0.15rem; }
+    .panel-close {
+      background: none; border: none; cursor: pointer;
+      color: #94a3b8; font-size: 1.1rem; padding: 0.1rem 0.25rem;
+      border-radius: 4px; flex-shrink: 0; line-height: 1;
+    }
+    .panel-close:hover { color: #1e293b; background: #f1f5f9; }
+
+    .panel-body { flex: 1; overflow-y: auto; }
+
+    .panel-footer {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .popup-section-label {
+      padding: 0.6rem 1rem 0.2rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+    }
+
+    .popup-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      padding: 0.42rem 1rem;
+      cursor: pointer;
+      font-size: 0.83rem;
+      color: #334155;
+      line-height: 1.45;
+      transition: background 0.1s;
+    }
+    .popup-item:hover { background: #f8fafc; }
+    .popup-item.checked { background: #eff6ff; color: #1e40af; }
+    .popup-item.customize-opt {
+      color: #6d28d9;
+      font-weight: 600;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.82rem;
+    }
+    .popup-item.customize-opt:hover { background: #f5f3ff; }
+
+    .popup-divider { border: none; border-top: 1px solid #f1f5f9; margin: 0.25rem 0; }
+
+    .popup-checkbox {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #fff;
+      background: #fff;
+      transition: all 0.1s;
+    }
+    .popup-item.checked .popup-checkbox { background: #3b82f6; border-color: #3b82f6; }
+
+    /* ── NARRATIVE ── */
+    .narrative-textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: #1e293b;
+      resize: vertical;
+      line-height: 1.65;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .narrative-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .save-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.4rem; text-align: right; transition: color 0.2s; }
+    .save-hint.saved { color: #22c55e; }
+
+    /* ── PREVIEW BAR ── */
+    .preview-bar {
+      display: flex;
+      justify-content: flex-end;
+      padding-bottom: 0.5rem;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 0.55rem 1.1rem;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: #1d4ed8; color: #fff; }
+    .btn-primary:hover { background: #1e40af; }
+    .btn-ghost { background: #f1f5f9; color: #475569; }
+    .btn-ghost:hover { background: #e2e8f0; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+
+    /* ── MODALS ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 500px;
+      max-width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+      overflow: hidden;
+    }
+    .modal-lg { width: 660px; }
+
+    .modal-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .modal-title { font-weight: 700; font-size: 1rem; color: #1e293b; }
+    .modal-subtitle { font-size: 0.78rem; color: #64748b; margin-top: 0.15rem; }
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 0.15rem 0.3rem;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+    .modal-close:hover { color: #1e293b; background: #f1f5f9; }
+
+    .modal-body { padding: 1.25rem; }
+    .modal-footer {
+      padding: 0.9rem 1.25rem;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.6rem;
+    }
+
+    /* ── CUSTOMIZE MODAL ── */
+    .custom-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .custom-list-empty { font-size: 0.82rem; color: #94a3b8; font-style: italic; }
+    .custom-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.65rem;
+      background: #f8fafc;
+      border-radius: 7px;
+      border: 1px solid #e2e8f0;
+      font-size: 0.84rem;
+      color: #334155;
+      cursor: default;
+    }
+    .custom-item.dragging { opacity: 0.4; }
+    .custom-item.drag-over { border-color: #3b82f6; background: #eff6ff; }
+    .drag-handle {
+      cursor: grab;
+      color: #cbd5e1;
+      font-size: 1rem;
+      flex-shrink: 0;
+      user-select: none;
+      line-height: 1;
+    }
+    .drag-handle:hover { color: #94a3b8; }
+    .custom-item-text { flex: 1; line-height: 1.4; }
+    .custom-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      padding: 0.1rem 0.25rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: all 0.12s;
+    }
+    .custom-del:hover { color: #dc2626; background: #fee2e2; }
+
+    /* ── MOCKUP-2 SKILL SELECTION PANEL ── */
+    .subcategory-label {
+      padding: 0.45rem 0.75rem 0.2rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+    }
+    .skill-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.84rem;
+      color: #334155;
+      cursor: default;
+    }
+    .skill-checkbox-row:hover { background: #f8fafc; }
+    .skill-checkbox-pair { display: flex; gap: 0.25rem; flex-shrink: 0; }
+    .skill-chk {
+      width: 18px; height: 18px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 700;
+      cursor: pointer; flex-shrink: 0;
+      transition: background 0.1s, border-color 0.1s;
+      user-select: none;
+    }
+    .skill-chk:hover { border-color: #94a3b8; }
+    .skill-chk.strength { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
+    .skill-chk.growth   { background: #f0fdf4; border-color: #22c55e; color: #15803d; }
+    .skill-chk-label { font-size: 0.62rem; color: #94a3b8; margin-top: 1px; }
+
+    .skill-comment-pill {
+      font-size: 0.78rem;
+      color: #334155;
+      padding: 0.1rem 0 0.1rem 1em;
+      text-indent: -1em;
+      line-height: 1.4;
+    }
+    .skill-comment-pill::before { content: '• '; color: #94a3b8; }
+
+    .add-row { display: flex; gap: 0.5rem; }
+    .add-input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: #1e293b;
+    }
+    .add-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+
+    /* ── PREVIEW MODAL ── */
+    .preview-content {
+      padding: 1.5rem 2rem;
+      max-height: 65vh;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #1e293b;
+    }
+    .preview-student-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .preview-meta { font-size: 0.82rem; color: #64748b; margin-bottom: 1.1rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
+    .preview-section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin: 1.1rem 0 0.5rem;
+    }
+    .preview-reflection { font-style: italic; color: #64748b; font-size: 0.875rem; }
+    .preview-skill-block { margin-bottom: 0.85rem; }
+    .preview-skill-name { font-weight: 700; font-size: 0.875rem; margin-bottom: 0.25rem; }
+    .preview-skill-comments { list-style: disc; padding-left: 1.3rem; }
+    .preview-skill-comments li { font-size: 0.875rem; color: #334155; margin-bottom: 0.15rem; }
+    .preview-narrative {
+      font-size: 0.9rem;
+      color: #334155;
+      background: #f8fafc;
+      border-radius: 7px;
+      padding: 0.75rem 1rem;
+      line-height: 1.7;
+    }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+      /* Single-card print (preview modal)
+         Strategy: hide everything, then expose the modal as a plain
+         static block with no height/overflow constraints so the
+         content can paginate normally. */
+      body:not(.print-all) > * { display: none !important; }
+      body:not(.print-all) #previewModal {
+        display: block !important;
+        position: static !important;
+        background: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+      body:not(.print-all) #previewModal > .modal {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      body:not(.print-all) #previewModal .modal-header,
+      body:not(.print-all) #previewModal .modal-footer { display: none !important; }
+      body:not(.print-all) #previewContent {
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 1.5rem 2rem;
+        font-size: 0.9rem;
+        line-height: 1.7;
+        color: #000;
+        background: #fff;
+      }
+      body:not(.print-all) .preview-narrative {
+        background: none;
+        border: 1px solid #ccc;
+        border-radius: 0;
+      }
+
+      /* Bulk print (print-all class on body) */
+      .print-card:last-child { break-after: auto; }
+      .print-card .preview-narrative {
+        background: none;
+        border: 1px solid #ccc;
+        border-radius: 0;
+      }
+    }
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-box { padding: 1.5rem; }
+    .confirm-box h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .confirm-box p { font-size: 0.875rem; color: #64748b; line-height: 1.55; margin-bottom: 1.25rem; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.75rem;
+      padding: 0.45rem 0.85rem;
+      border-top: 1px solid #334155;
+      background: #0f172a;
+      flex-shrink: 0;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: #64748b; }
+
+    /* ── FINALIZE ROW ── */
+    .finalize-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+    }
+    .finalize-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      user-select: none;
+    }
+    .finalize-label input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: #1d4ed8;
+    }
+    .finalize-label input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.45; }
+    .finalize-label:has(input:disabled) { color: #94a3b8; cursor: default; }
+    .finalize-hint { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">← All Mockups</a>
+  <span style="color:#e2e8f0">|</span>
+  <span class="topnav-title">Mockup 3 — Report Card Generator</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem">
+    <button class="btn btn-sm" id="exportZipBtn" style="background:#fff;border:1px solid #e2e8f0;color:#475569" onclick="exportAllZip()" title="Download all report cards as individual PDFs in a zip file">Export Zip</button>
+    <span style="color:#e2e8f0">|</span>
+    <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset All Data</button>
+    <span style="font-size:0.72rem;color:#94a3b8">v.19Mar26-1610</span>
+  </div>
+</nav>
+
+<div class="app">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left-panel">
+    <div class="master-area">
+      <div class="field-label">Teacher</div>
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.85rem">
+        <div class="teacher-name" id="teacherNameDisplay" style="margin-bottom:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Edna Krabappel</div>
+        <button class="btn btn-sm" style="background:#293548;border:1px solid #334155;color:#94a3b8;font-size:0.72rem;padding:0.22rem 0.5rem;flex-shrink:0;white-space:nowrap" onclick="openRosterModal()" title="Manage terms and upload class roster">Roster</button>
+      </div>
+
+      <div class="field-label">Grading Period</div>
+      <select class="term-select" id="termSelect" onchange="onTermChange()">
+        <option>25-26 S1 Midterm</option>
+        <option>25-26 S1 Final</option>
+        <option>25-26 I1 Final</option>
+        <option>25-26 S2 Midterm</option>
+        <option selected>25-26 S2 Final</option>
+        <option>25-26 I2 Final</option>
+      </select>
+
+      <div class="nav-row">
+        <button class="arrow-btn" onclick="navigate(-1)" title="Previous student">▲</button>
+        <span class="nav-student-label" id="navLabel">No student selected</span>
+        <button class="arrow-btn" onclick="navigate(1)" title="Next student">▼</button>
+      </div>
+    </div>
+
+    <div class="roster-area" id="rosterArea"></div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="rc-dot"></span> Not started</div>
+      <div class="legend-item"><span class="rc-dot in-progress"></span> In progress</div>
+      <div class="legend-item"><span class="rc-dot complete"></span> Complete</div>
+      <div class="legend-item"><span class="rc-dot finalized"></span> Finalized</div>
+      <div class="legend-item"><span class="ref-dot submitted"></span> Reflection</div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right-panel" id="rightPanel">
+    <div class="empty-state" id="emptyState">← Select a student to begin</div>
+
+    <div class="editing-area" id="editingArea" style="display:none">
+
+      <!-- Section 1: Student info (non-editable) -->
+      <div class="card">
+        <div class="card-header">Student</div>
+        <div class="card-body">
+          <div class="student-meta" id="studentMeta"></div>
+          <div class="reflection-box">
+            <div class="reflection-label">Student Reflection</div>
+            <div class="reflection-text" id="reflectionText">Not submitted</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Transferable skills -->
+      <div class="card">
+        <div class="card-header">Transferable Skills</div>
+        <div id="skillsContainer"></div>
+      </div>
+
+      <!-- Section 3: Narrative -->
+      <div class="card">
+        <div class="card-header">Narrative Comment</div>
+        <div class="card-body">
+          <textarea class="narrative-textarea" id="narrativeInput"
+            placeholder="Write an overall narrative comment for this student…"
+            oninput="onNarrativeInput()"></textarea>
+          <div class="save-hint" id="saveHint">Changes saved automatically</div>
+          <div class="finalize-row">
+            <label class="finalize-label">
+              <input type="checkbox" id="finalizeCheck" onchange="onFinalizeChange()" disabled />
+              Mark as finalized
+            </label>
+            <span class="finalize-hint" id="finalizeHint"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-bar">
+        <button class="btn btn-primary" onclick="openPreview()">Preview Report Card</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Comment panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="panel-header">
+    <div class="panel-header-text">
+      <div class="panel-title" id="panelTitle"></div>
+      <div class="panel-subtitle" id="panelSubtitle"></div>
+    </div>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+  <div class="panel-footer">
+    <button class="btn btn-primary btn-sm" onclick="closePanel()">Done</button>
+  </div>
+</div>
+
+<!-- Customize modal -->
+<div class="modal-overlay" id="customizeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Custom Comments</div>
+        <div class="modal-subtitle" id="customizeSubtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeCustomize()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="custom-list" id="customList"></div>
+      <div class="add-row">
+        <input class="add-input" id="customInput" type="text"
+          placeholder="Type a custom comment and press Enter…"
+          onkeydown="if(event.key==='Enter')addCustomComment()" />
+        <button class="btn btn-primary btn-sm" onclick="addCustomComment()">Add</button>
+      </div>
+    </div>
+    <div id="importConfirm" style="display:none;background:#f8fafc;border-top:1px solid #e2e8f0;padding:0.75rem 1.25rem;font-size:0.83rem;color:#374151">
+      <strong id="importConfirmCount"></strong> comments ready to import.
+      How would you like to add them?
+      <div style="display:flex;gap:0.5rem;margin-top:0.55rem">
+        <button class="btn btn-primary btn-sm" onclick="applyImport('append')">Append to existing</button>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #cbd5e1;color:#374151" onclick="applyImport('replace')">Replace all custom comments</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="cancelImport()">Cancel</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCustomize()">Done</button>
+      <div style="display:flex;gap:0.5rem;margin-left:auto">
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #cbd5e1;color:#374151" onclick="exportCustomCSV()" title="Download all custom comments as CSV">Export CSV</button>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #cbd5e1;color:#374151" onclick="document.getElementById('csvFileInput').click()" title="Import comments from a CSV file">Import CSV</button>
+        <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="handleCSVImport(this)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preview modal -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Report Card Preview</div>
+        <div class="modal-subtitle" id="previewSubtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closePreview()">✕</button>
+    </div>
+    <div class="preview-content" id="previewContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePreview()">Close</button>
+      <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset confirm modal -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal" style="width:380px">
+    <div class="confirm-box">
+      <h3>Reset all data?</h3>
+      <p>This will permanently clear all entered grades, comments, and narratives for every student. This cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" onclick="closeReset()">Cancel</button>
+        <button class="btn btn-danger" onclick="doReset()">Yes, Reset Everything</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Roster upload confirm modal -->
+<div class="modal-overlay" id="rosterModal">
+  <div class="modal" style="width:520px;max-height:85vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Roster &amp; Terms</div>
+        <div class="modal-subtitle">Manage grading periods and upload class rosters</div>
+      </div>
+      <button class="modal-close" onclick="closeRosterModal()">✕</button>
+    </div>
+    <div style="overflow-y:auto;flex:1">
+
+      <!-- TERMS -->
+      <div style="padding:1rem 1.25rem 0.85rem">
+        <div class="field-label" style="margin-bottom:0.5rem">Grading Periods</div>
+        <div id="rosterTermsList"></div>
+        <div style="display:flex;gap:0.4rem;margin-top:0.5rem">
+          <input id="newTermInput" type="text" class="term-select" style="flex:1;font-size:0.8rem;padding:0.25rem 0.5rem" placeholder="New term name…" onkeydown="if(event.key==='Enter')addTerm()">
+          <button class="btn btn-sm" style="background:#3b82f6;color:#fff;border:none;flex-shrink:0" onclick="addTerm()">+ Add</button>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0">
+
+      <!-- TEMPLATE -->
+      <div style="padding:0.85rem 1.25rem">
+        <div class="field-label" style="margin-bottom:0.35rem">Template</div>
+        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.5rem">Download the current term's roster as a CSV to use as a starting point.</div>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="downloadRosterTemplate()">↓ Download CSV Template</button>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:0">
+
+      <!-- UPLOAD -->
+      <div style="padding:0.85rem 1.25rem 1.1rem">
+        <div class="field-label" style="margin-bottom:0.35rem">Upload Roster</div>
+        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.6rem">CSV format: Teacher, Course, Student, Student Reflection (optional) — one row per student.</div>
+        <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#64748b" onclick="document.getElementById('rosterFileInput').click()">Choose CSV file…</button>
+        <input type="file" id="rosterFileInput" accept=".csv,text/csv" style="display:none" onchange="handleRosterUpload(this)">
+        <div id="rosterUploadPreview" style="display:none;margin-top:0.85rem">
+          <div id="rosterPreviewDetails" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem 1rem;font-size:0.875rem;margin-bottom:0.75rem"></div>
+          <div class="field-label" style="margin-bottom:0.35rem">Apply to terms:</div>
+          <div id="rosterTermCheckboxes" style="display:flex;flex-direction:column;gap:0.3rem;font-size:0.875rem;margin-bottom:0.85rem"></div>
+          <div id="rosterImportModeLabel" class="field-label" style="margin-bottom:0.35rem">Import mode:</div>
+          <div id="rosterImportModeSection" style="display:flex;flex-direction:column;gap:0.35rem;font-size:0.875rem;margin-bottom:0.85rem">
+            <label style="display:flex;align-items:flex-start;gap:0.45rem;cursor:pointer">
+              <input type="radio" name="rosterImportMode" value="replace" checked style="margin-top:2px;width:14px;height:14px" onchange="updateApplyRosterBtn()">
+              <span><strong>Replace roster &amp; clear student data</strong><br><span style="color:#64748b;font-size:0.8rem">Removes all existing comments for the selected terms.</span></span>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.45rem;cursor:pointer">
+              <input type="radio" name="rosterImportMode" value="comments" style="margin-top:2px;width:14px;height:14px" onchange="updateApplyRosterBtn()">
+              <span><strong>Add student reflections only</strong><br><span style="color:#64748b;font-size:0.8rem">Matches students by name and sets their Student Reflection from the CSV. Existing report card data is kept.</span></span>
+            </label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:0.6rem">
+            <button class="btn btn-ghost" onclick="resetUploadSection()">Cancel</button>
+            <button id="applyRosterBtn" class="btn btn-danger" onclick="applyRoster()">Apply Roster &amp; Clear Data</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Container for printing all report cards -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────────
+const DEFAULT_CLASSES = [
+  {
+    name: "Conspiracy Theories: A Critical Examination",
+    students: ["Fatima Al-Rashid","Jonas Bergström","Owen Callahan","Marcus Delgado",
+      "Luca Ferretti","Priya Nair","Amara Osei","Brennan O'Sullivan",
+      "Theo Papadopoulos","Sofia Reyes","Yuki Tanaka","Nadia Volkov",
+      "Destiny Washington","Elliott Zhao"]
+  },
+  {
+    name: "The Science of Naps and Other Human Behaviors",
+    students: ["Leila Ahmadi","Kwame Asante","Aaliyah Brooks","Mei-Ling Chen",
+      "Valentina Cruz","Patrick Doyle","Tobias Hartmann","Soren Lindqvist",
+      "Rashid Mbeki","Declan Murphy","Imani Okafor","Ingrid Svensson",
+      "Carlos Vega","Hana Yoshida"]
+  },
+  {
+    name: "History of Bad Ideas",
+    students: ["Blessing Adeyemi","Jerome Beaumont","Lars Eriksen","Camille Fontaine",
+      "Callum Fraser","Sunita Kapoor","Finn Mackenzie","Idris Mensah",
+      "Petra Novak","Zara Okonkwo","Yuna Park","Daria Petrov",
+      "Matteo Romano","Diego Salazar"]
+  },
+  {
+    name: "Why Is Everything So Expensive: An Economic Inquiry",
+    students: ["Kofi Asare","Chiara Bianchi","Stellan Borg","Aisha Diallo",
+      "Remy Dupont","Miriam Goldstein","Tomás Guerrero","Freya Halvorsen",
+      "Nour Khalil","Arjun Mehta","Adaeze Nnaji","Elijah Oduya",
+      "Beatriz Oliveira","Henrik Olsen"]
+  }
+];
+
+// Mutable roster — overridden from state.rosters[term] on load, or reset to defaults
+let CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
+let teacherName = "Edna Krabappel";
+
+const REFLECTIONS = {
+  "Marcus Delgado": "I think I've been doing pretty well keeping up with readings, but I know I zone out during discussion sometimes. I want to push myself to share more of my ideas out loud instead of just keeping them in my head.",
+  "Owen Callahan": "Honestly I feel like this class is made for me. I come in ready to poke holes in every theory we look at. My notes are solid and I never miss a deadline. If anything I could probably listen more when others are talking instead of waiting for my turn.",
+  "Fatima Al-Rashid": "I have been working hard to engage with the material critically rather than just accepting or rejecting ideas at face value. Reading closely has helped me see how evidence gets manipulated. I want to keep developing my written analysis and use more precise academic language in my essays.",
+  "Jonas Bergström": "I show up. I do the work. I think I could take more risks in my writing.",
+  "Destiny Washington": "This class has honestly changed how I think. I catch myself questioning sources everywhere now, not just in here. I've been participating more since midterm and I feel like my ideas are getting sharper. Still working on not rushing my revisions before I submit.",
+  "Yuki Tanaka": "I am proud of how carefully I read the assigned texts. I take detailed notes and I always come prepared. My challenge is speaking up in discussion. I have things to say but I hesitate. I want to work on sharing my thinking more before the semester ends.",
+  "Brennan O'Sullivan": "I've missed two deadlines which I'm not proud of. The ideas in this class genuinely interest me and I think my writing shows that when I actually turn things in. Getting organized is my main goal for the second half.",
+  "Sofia Reyes": "I feel confident in discussion and I think I contribute ideas that move the conversation forward. Where I struggle is slowing down enough to revise carefully. I tend to trust my first draft too much.",
+  "Nadia Volkov": "I need to be more consistent. Some weeks I am fully prepared and engaged and other weeks I fall behind and spend class catching up instead of contributing. I know what I need to do.",
+  "Theo Papadopoulos": "Good class. I like arguing. Could probably argue better if I did the readings more carefully instead of skimming. Will try."
+};
+
+const SKILLS_DATA = {
+  "Ownership of Learning": {
+    "Motivation": [
+      "Curiosity-fueled motivation",
+      "Awareness of personal motivations",
+      "Bringing passions, interests, and voice to the classroom",
+      "Learning for learning's sake"
+    ],
+    "Social Engagement": [
+      "Engagement during class",
+      "Consideration of how social interactions affect academic pursuits",
+      "Respect for and learning from mentors"
+    ],
+    "Personal Reflection": [
+      "Noticing feelings and how they impact participation in class",
+      "Taking advantage of retake and review opportunities",
+      "Incorporation of feedback"
+    ]
+  },
+  "Academic Skills and Responsibility": {
+    "Documentation and Organization of Materials": [
+      "Organization of materials",
+      "Proper citation and formatting of work",
+      "Careful and thorough note-taking"
+    ],
+    "Time Management": [
+      "Effective time management and self-care",
+      "Meeting assignment deadlines",
+      "Preparation for class"
+    ],
+    "Seeking and Asking for Help": [
+      "Proactive use of tutorial and support resources",
+      "Proactive communication with teachers",
+      "Knowing when and how to seek help"
+    ],
+    "Tech and Tool Use": [
+      "Skillful use of technology",
+      "Skillful use of school-related computer programs",
+      "Appropriate use of technology",
+      "Organization of digital materials"
+    ],
+    "Agency and Resourcefulness": [
+      "Deep & careful reading and active listening",
+      "Active engagement during class",
+      "Deep & careful reading",
+      "Skillful use of resources, tools, and technology"
+    ]
+  },
+  "Collaboration": {
+    "Value": [
+      "Seeking out collaborative experiences"
+    ],
+    "Community Building and Collaborative Discussion": [
+      "Thoughtful critique of ideas & solutions",
+      "Respect for others",
+      "Supporting peers' understanding",
+      "Self-awareness in collaborative settings",
+      "Expressing appreciation for peers",
+      "Asking effective and insightful questions"
+    ],
+    "Collaborative Labor": [
+      "Sharing group work responsibilities",
+      "Facilitation and contribution during group work",
+      "Staying present and engaged during group work",
+      "Offering and seeking peer feedback",
+      "Flexibility in taking on different team roles",
+      "Establishing clear group norms"
+    ]
+  },
+  "Communication of Ideas": {
+    "Rhetorical Situation": [
+      "Flexibility and clarity in explaining ideas",
+      "Audience awareness",
+      "Use of new vocabulary & academic language"
+    ],
+    "Written Communication": [
+      "Clarity & thoroughness in written work",
+      "Documentation of problem-solving process",
+      "Strategic use of discussion before writing",
+      "Logical sequencing in writing"
+    ],
+    "Visual Communication": [
+      "Relevant and accurate visual communication"
+    ],
+    "Verbal Communication": [
+      "Clear & accurate verbal communication",
+      "Preparation and practice of verbal communication",
+      "Supplementing verbal communication with other modalities"
+    ],
+    "Non-verbal Communication": [
+      "Awareness of non-verbal communication",
+      "Intentional use of body language while listening",
+      "Alignment of body language with communication intent"
+    ]
+  },
+  "Creative Thinking and Risk Taking": {
+    "Experimentation": [
+      "Openness to brainstorming and iteration",
+      "Innovation in ideas & approaches",
+      "Willingness to take risks"
+    ],
+    "Complex Problem Solving": [
+      "Generation and exploration of multiple approaches",
+      "Proofreading, checking, and revision of work",
+      "Skillful use of resources, tools, & technology",
+      "Seeking help when needed",
+      "Experiencing and growing from failures"
+    ]
+  },
+  "Critical Thinking": {
+    "Question Asking": [
+      "Asking complex or nuanced questions"
+    ],
+    "Research and Sources": [
+      "Gathering information from diverse sources",
+      "Identifying and citing reputable sources",
+      "Can compare multiple sources for accuracy and consensus",
+      "Appropriate use of technology"
+    ],
+    "Analysis": [
+      "Analysis from multiple perspectives",
+      "Interpretation and evaluation of information",
+      "Critical Thinking"
+    ],
+    "Synthesis and Application (Meaning Making)": [
+      "Drawing and justifying logical conclusions"
+    ]
+  }
+};
+
+const SKILLS = Object.keys(SKILLS_DATA);
+
+const SKILL_SENTENCES = {
+  "Curiosity-fueled motivation": {
+    strength: "You're motivated by curiosity, asking \"why?\" and digging for understanding, rather than just checking steps off for completion.",
+    growth: "Work on asking \"why\" more consistently rather than just completing tasks—push yourself to dig into the reasoning behind what you're learning, not just the steps."
+  },
+  "Awareness of personal motivations": {
+    strength: "You understand and notice your intrinsic and external motivations.",
+    growth: "Spend time identifying what actually drives you to engage with schoolwork. Notice when you're acting from external pressure versus genuine interest, and try to cultivate more of the latter."
+  },
+  "Bringing passions, interests, and voice to the classroom": {
+    strength: "You bring your passions, interests, and voice into the classroom.",
+    growth: "Look for more opportunities to connect your outside interests to what's happening in class. When an assignment gives you latitude, bring in your own perspective rather than defaulting to what seems expected."
+  },
+  "Learning for learning's sake": {
+    strength: "You try to prioritize the process of exploring ideas, rather than focusing on outcomes and grades.",
+    growth: "Practice resisting the urge to focus on the grade. When you notice yourself thinking about outcomes, redirect toward what you find genuinely interesting about the work itself."
+  },
+  "Engagement during class": {
+    strength: "You are an engaged learner in the classroom, paying close attention, asking questions, and contributing to the ideas of your peers and teacher.",
+    growth: "Work on sustaining focus during class—especially when the pace slows or the topic feels less relevant. Practice asking at least one genuine question per class."
+  },
+  "Consideration of how social interactions affect academic pursuits": {
+    strength: "You consider how social interactions help or hinder your academic pursuits.",
+    growth: "Reflect on whether your friendships and social dynamics are helping or distracting from your academic engagement. Make deliberate choices about how you use social time."
+  },
+  "Respect for and learning from mentors": {
+    strength: "You model your learning habits and skill development after adult mentors who you respect and admire.",
+    growth: "Identify an adult at school—a teacher, advisor, or mentor—whose habits or approach you want to learn from. Start paying attention to how they think and work."
+  },
+  "Noticing feelings and how they impact participation in class": {
+    strength: "You notice how you're feeling in and about a class.",
+    growth: "Check in with yourself at the start of class: notice how you're feeling and how that might affect your participation. Build this into a regular habit."
+  },
+  "Taking advantage of retake and review opportunities": {
+    strength: "You take note of and reflect on your areas for growth and the areas you've strengthened.",
+    growth: "After getting work back, take a few minutes to identify one thing you did well and one thing you'd approach differently. Write it down."
+  },
+  "Incorporation of feedback": {
+    strength: "You reflect on your work and review the feedback you receive from your peers and teachers.",
+    growth: "When you receive feedback, read it carefully and try to act on it before the next assignment rather than setting it aside."
+  },
+  "Organization of materials": {
+    strength: "You have an organizational strategy that allows you to access your materials, assignments and work efficiently.",
+    growth: "Develop a consistent system for organizing your materials—physical and digital—so you can find what you need without stress or wasted time."
+  },
+  "Proper citation and formatting of work": {
+    strength: "You follow the formatting guidelines for assignments. You include acknowledgements of help received on your work and cite sources properly.",
+    growth: "Before submitting work, check it against the formatting guidelines. Make citing sources a default step, not an afterthought."
+  },
+  "Careful and thorough note-taking": {
+    strength: "You carefully consider how you best take notes, and consistently take notes that are useful to you.",
+    growth: "Experiment with different note-taking methods to find what actually helps you retain and use information, rather than defaulting to copying everything down."
+  },
+  "Effective time management and self-care": {
+    strength: "You have time management skills which you use to allocate accurate time for your school work. As a result, you don't leave work until the last minute. You use Flex effectively. You get a reasonable amount of sleep.",
+    growth: "Build a realistic estimate of how long your assignments actually take, and schedule your work accordingly so you're not starting things the night before they're due. Use your Flex time intentionally—plan what you'll work on before you sit down. Prioritize sleep as part of your academic routine."
+  },
+  "Meeting assignment deadlines": {
+    strength: "You turn assignments in on time.",
+    growth: "Develop a submission habit so turning things in on time becomes automatic rather than something you have to remember under pressure."
+  },
+  "Preparation for class": {
+    strength: "You can navigate your schedule so that you can both take care of yourself and be on time for your commitments.",
+    growth: "Create a weekly schedule that accounts for both academic responsibilities and personal needs, so you can consistently show up on time and prepared."
+  },
+  "Proactive use of tutorial and support resources": {
+    strength: "You know how to sign up for and actively utilize tutorial.",
+    growth: "Sign up for tutorial proactively—before you're behind—and come with specific questions rather than waiting to see if you need it."
+  },
+  "Proactive communication with teachers": {
+    strength: "You promptly respond to your teachers when they contact you, and you proactively contact your teacher when you have missed class or need to arrange for accommodations or extensions.",
+    growth: "If you miss class or need an extension, reach out to your teacher before they have to follow up with you. Practice sending that email promptly."
+  },
+  "Knowing when and how to seek help": {
+    strength: "You know how to email your teachers with questions. You know when to ask questions and to whom you should ask them.",
+    growth: "When you're confused, identify the right person to ask and reach out. Practice framing your question clearly before approaching a teacher."
+  },
+  "Skillful use of technology": {
+    strength: "You know how and where to submit assignments. You can upload clear pictures for assignments, if necessary.",
+    growth: "Familiarize yourself with submission procedures for each class so you never lose points due to technical issues or submission errors."
+  },
+  "Skillful use of school-related computer programs": {
+    strength: "You navigate Canvas fluidly to submit assignments, read teacher feedback, check deadlines, and utilize resources (e.g. teacher agendas, PDF resources, rubrics).",
+    growth: "Spend time exploring Canvas features you haven't used—teacher agendas, rubrics, embedded resources. Make sure you're not missing information that's already there."
+  },
+  "Tech and Tool Use::Appropriate use of technology": {
+    strength: "You know how and when to use your calculator.",
+    growth: "Reflect on when calculator use actually helps versus when it bypasses reasoning you need to develop. Use it strategically."
+  },
+  "Organization of digital materials": {
+    strength: "You have an organization strategy for your Google Drive and you know how to properly share your work.",
+    growth: "Organize your Google Drive with a folder structure that makes sense to you and keep it current, so you can locate any file quickly."
+  },
+  "Deep & careful reading and active listening": {
+    strength: "You read directions and carefully listen to your teachers' explanations and your peers' questions about assignments.",
+    growth: "Before starting an assignment, read the directions twice. During class, listen to your peers' questions—they often surface things you missed."
+  },
+  "Active engagement during class": {
+    strength: "You fully participate during class by actively listening, staying on task, and contributing to class discussions.",
+    growth: "When you notice yourself drifting during class, use a quick refocus strategy: restate in your head what was just said, or jot a brief note."
+  },
+  "Deep & careful reading": {
+    strength: "You recognize that you're responsible for your understanding of written materials. You read for understanding, not completion, and use necessary reading supports to understand the materials.",
+    growth: "When you don't understand something you've read, pause and identify what specifically is unclear rather than reading through it and moving on."
+  },
+  "Skillful use of resources, tools, and technology": {
+    strength: "You know when to use your digital and physical materials as resources.",
+    growth: "Build the habit of checking what resources are available before asking for help or getting stuck. Know where your materials live."
+  },
+  "Seeking out collaborative experiences": {
+    strength: "You understand the value of collaboration and seek both small group (e.g. study buddy) and large group (e.g. group project) collaborative experiences. You seek out collaboration beyond your peers, including Bay adults and outside community resources.",
+    growth: "Actively seek out collaborative work rather than waiting for it to be assigned. Look for study partners and group opportunities. Reach out for collaboration beyond your immediate peer group."
+  },
+  "Thoughtful critique of ideas & solutions": {
+    strength: "In discussions, you listen for understanding rather than to speak. You respond to what your peers have said, in addition to contributing your personal thoughts. When you don't understand an idea, you ask for clarification.",
+    growth: "In discussions, challenge yourself to respond directly to what a peer just said before introducing your own new point."
+  },
+  "Respect for others": {
+    strength: "You don't mock your peers or their ideas. You appreciate diversity of thought. You respectfully push back when you disagree. You are willing to change your mind.",
+    growth: "When you disagree with someone, practice stating your disagreement respectfully and with a reason, rather than going silent or dismissing the idea."
+  },
+  "Supporting peers' understanding": {
+    strength: "You help your partners understand ideas when they are confused, rather than merely \"saying the answer\" so you can be done working.",
+    growth: "When working with a partner who's confused, slow down and ask questions to help them build understanding rather than just moving through the problem."
+  },
+  "Self-awareness in collaborative settings": {
+    strength: "In building a new collaborative group, you are able to identify and share your strengths and challenges with your team so they know how you can contribute and where you will need support in your work.",
+    growth: "Before group work begins, be explicit with your team about where you're confident and where you'll need support. Don't wait for the gap to show up."
+  },
+  "Expressing appreciation for peers": {
+    strength: "You express gratitude for your peers and their ideas/work.",
+    growth: "Make a habit of acknowledging specific contributions from your peers during and after collaborative work."
+  },
+  "Asking effective and insightful questions": {
+    strength: "You have experimented with asking questions and learned to create effective and insightful questions.",
+    growth: "Practice asking follow-up and probing questions during class discussions—not just surface clarifications but questions that push ideas further."
+  },
+  "Sharing group work responsibilities": {
+    strength: "In collaborative work, you share responsibility with your partners and contribute to all parts of the work. You ensure the group sticks together by inviting members into the conversation when needed.",
+    growth: "In group work, track whether you're taking on your share of each part of the task, not just the parts that feel comfortable."
+  },
+  "Facilitation and contribution during group work": {
+    strength: "You offer possible solution strategies, share partially complete ideas, facilitate conversation and help others stay on task.",
+    growth: "Contribute your partial ideas even when they're not fully formed—practice offering a direction and letting the group develop it."
+  },
+  "Staying present and engaged during group work": {
+    strength: "You don't do independent work while your group is working collaboratively.",
+    growth: "When your group is working together, put away independent work entirely. Full presence helps the group and builds trust."
+  },
+  "Offering and seeking peer feedback": {
+    strength: "You offer and seek feedback from your peers.",
+    growth: "Build the habit of both asking for and giving feedback during collaborative work, not just at the end."
+  },
+  "Flexibility in taking on different team roles": {
+    strength: "You have volunteered and explored different roles within a team.",
+    growth: "Volunteer for a role in group work that's outside your comfort zone. Notice what you learn from the discomfort."
+  },
+  "Establishing clear group norms": {
+    strength: "You work to set clear expectations about group norms and agreements.",
+    growth: "At the start of collaborative work, take a few minutes to name expectations and norms with your group rather than assuming everyone's on the same page."
+  },
+  "Flexibility and clarity in explaining ideas": {
+    strength: "You can explain ideas in different ways (including using different representations). You check with others to confirm your communication is clear.",
+    growth: "When explaining something, check for understanding by asking your listener a question rather than asking if they understand."
+  },
+  "Audience awareness": {
+    strength: "You consider your audience before articulating an idea.",
+    growth: "Before communicating an idea, ask yourself: who is my audience and what do they already know? Adjust your explanation accordingly."
+  },
+  "Use of new vocabulary & academic language": {
+    strength: "You use appropriate vocabulary to support the learning in the course.",
+    growth: "Make a deliberate effort to use the vocabulary introduced in class in both speaking and writing. Notice when you revert to vague language instead."
+  },
+  "Clarity & thoroughness in written work": {
+    strength: "Your writing is specific, makes sense, reflects careful argumentation, fully addresses assignment prompts, and follows style guidelines.",
+    growth: "Before submitting written work, reread it and ask: does every sentence serve the prompt? Is the argument clear to someone who doesn't already know what I mean?"
+  },
+  "Documentation of problem-solving process": {
+    strength: "You record steps as you work through a problem to document your process and increase clarity in your (or your group's) thinking.",
+    growth: "Get in the habit of writing out your steps as you work through a problem, even when you think you can do it in your head."
+  },
+  "Strategic use of discussion before writing": {
+    strength: "You understand when it is helpful for you to talk through an idea before writing.",
+    growth: "When starting a writing assignment, try talking through your main idea with a peer or out loud to yourself before you begin drafting."
+  },
+  "Logical sequencing in writing": {
+    strength: "You can clearly articulate a story or argument in a logical sequence.",
+    growth: "Outline your argument or narrative before writing. Check that each section follows logically from the one before."
+  },
+  "Relevant and accurate visual communication": {
+    strength: "You can identify an appropriate visual to help you articulate an idea (e.g. images, graphs). Your visual communications are relevant and accurate.",
+    growth: "When selecting a visual to support an idea, ask: does this actually show what I'm trying to say, or is it just decoration? Before including it, verify it's accurate and directly relevant."
+  },
+  "Clear & accurate verbal communication": {
+    strength: "You use tools to help you more clearly articulate your ideas verbally (such as notes, outlines, speaker notes).",
+    growth: "For any verbal presentation, prepare notes or an outline in advance so your ideas stay organized under pressure."
+  },
+  "Preparation and practice of verbal communication": {
+    strength: "When appropriate, you practice your verbal presentation of an idea.",
+    growth: "Practice your verbal explanations before sharing them—say them out loud at least once so you know where the gaps are."
+  },
+  "Supplementing verbal communication with other modalities": {
+    strength: "You consider what information is missing when you're sharing verbally so that you can supplement your explanation with other forms of communication (e.g. visuals).",
+    growth: "After explaining something verbally, check whether your listener has questions—what you said might have left out information that seemed obvious to you."
+  },
+  "Awareness of non-verbal communication": {
+    strength: "You are aware that you, and those around you, express ideas and opinions non-verbally.",
+    growth: "Start noticing your own non-verbal signals during class. Pay attention to whether your body language communicates engagement or disengagement."
+  },
+  "Intentional use of body language while listening": {
+    strength: "You are aware of your body language while listening and use it to communicate with others that you're following along.",
+    growth: "When someone is speaking, use your body language deliberately—orient toward them, nod when you follow, and notice when you're signaling distraction."
+  },
+  "Alignment of body language with communication intent": {
+    strength: "When sharing, you align your body language (e.g. stance, facial expression) with the message you hope to convey to the audience. When listening, you align your body language with the message you hope to convey to the speaker.",
+    growth: "When presenting, be aware of your physical presence: make eye contact, keep a steady stance, and let your expression match your message. When listening, align your posture and expression with the message you want to send to the speaker."
+  },
+  "Openness to brainstorming and iteration": {
+    strength: "You value brainstorming, both individually and collaboratively. You don't overvalue your first idea. You understand that brainstorming is valuable and can be messy and multidirectional.",
+    growth: "When brainstorming, push past your first idea. Give yourself a quantity goal—five or ten options—before evaluating any of them."
+  },
+  "Innovation in ideas & approaches": {
+    strength: "You play with ideas and test strategies. You strive to think \"outside the box\" to see known information in new ways.",
+    growth: "Try approaches that aren't the obvious or expected ones. When you notice yourself defaulting to a familiar strategy, ask what else might work."
+  },
+  "Willingness to take risks": {
+    strength: "You offer or implement unfinished ideas and possible solution strategies, including ones not suggested by your teacher. You elaborate about an idea to explain its potential to meet a given purpose.",
+    growth: "Share your incomplete or tentative ideas rather than waiting until they're fully formed. Practice offering a direction and see where it goes."
+  },
+  "Generation and exploration of multiple approaches": {
+    strength: "You generate new ideas and build on existing ones to consider a range of ways to address a problem. You understand the value of considering and trying multiple approaches when trying to solve a problem.",
+    growth: "When you get stuck on a problem, list two or three completely different approaches before committing to one. Explore before you solve."
+  },
+  "Proofreading, checking, and revision of work": {
+    strength: "You reflect and refine on your process of reasoning through the information you gather.",
+    growth: "After completing work, go back and check your reasoning: does each step follow? Is there a gap you glossed over?"
+  },
+  "Skillful use of resources, tools, & technology": {
+    strength: "You voluntarily use provided resources (online texts, video analysis, etc.) to problem solve.",
+    growth: "Before asking for help, make use of available resources—notes, textbook, video explanations. Come to tutorial with a specific question, not just confusion."
+  },
+  "Seeking help when needed": {
+    strength: "You can identify when you're stuck and pick a strategy (e.g. asking for help, finding a new source) to help you get unstuck.",
+    growth: "When you're stuck, name it explicitly: what specifically don't you know? Then choose a strategy to address that gap rather than sitting with the frustration."
+  },
+  "Experiencing and growing from failures": {
+    strength: "You embrace failure as a productive and necessary part of the learning experience; you understand that mistakes and failures are a part of the creative/development process and you value what you learn from your mistakes/failures.",
+    growth: "When something goes wrong on an assignment or project, spend a few minutes identifying what you can learn from the mistake before moving on."
+  },
+  "Asking complex or nuanced questions": {
+    strength: "You know how to develop a line of inquiry by asking complex, probing questions.",
+    growth: "Develop the habit of asking follow-up questions that push further into a topic rather than stopping at surface-level understanding."
+  },
+  "Gathering information from diverse sources": {
+    strength: "You gather information from a variety of viewpoints and sources (observation, experience, reflection, reasoning).",
+    growth: "When researching, deliberately seek out perspectives that differ from your initial view. Note where sources agree and where they diverge."
+  },
+  "Identifying and citing reputable sources": {
+    strength: "You know how to find reputable sources and cite the sources you use.",
+    growth: "Before using a source, evaluate its credibility. Practice citing sources consistently in all work, not just formal assignments."
+  },
+  "Can compare multiple sources for accuracy and consensus": {
+    strength: "You corroborate sources to identify alignment and divergence.",
+    growth: "When two sources say different things, don't just pick the one that fits your argument—look for a third source to help evaluate the conflict."
+  },
+  "Research and Sources::Appropriate use of technology": {
+    strength: "You know when you're allowed to use tools/resources to help you problem solve and you can identify the appropriate tools/resources to support your process.",
+    growth: "Know the ground rules for each class about what resources are and aren't permitted. When in doubt, ask your teacher before using a tool."
+  },
+  "Analysis from multiple perspectives": {
+    strength: "You analyze objects, problems, systems, situations and data considering different sources and views.",
+    growth: "When analyzing something, practice asking: what other perspective or piece of evidence would change my interpretation?"
+  },
+  "Interpretation and evaluation of information": {
+    strength: "You interpret and evaluate information to guide your beliefs, problem-solving, actions or conclusions.",
+    growth: "After arriving at a conclusion, ask yourself: what would have to be true for me to be wrong? Let that question guide further evaluation."
+  },
+  "Critical Thinking": {
+    strength: "You strive to use your critical thinking skills with fair mindedness.",
+    growth: "Notice when your conclusions are being shaped by what you want to be true rather than what the evidence supports. Practice intellectual fairness."
+  },
+  "Drawing and justifying logical conclusions": {
+    strength: "You draw and justify logical conclusions.",
+    growth: "When drawing a conclusion, make your reasoning explicit: show the steps that connect your evidence to your claim."
+  },
+};
+
+function getSentence(label, subcat, type) {
+  const entry = SKILL_SENTENCES[subcat + '::' + label] || SKILL_SENTENCES[label];
+  if (!entry) return label;
+  return type === 'strength' ? (entry.strength || label) : (entry.growth || entry.strength || label);
+}
+
+/* STANDARD and STANDARD_HTML kept below but not used in mockup-2 */
+// const STANDARD = { ... };   // hidden for mockup-2
+// const STANDARD_HTML = { ... }; // hidden for mockup-2
+
+// ─────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'rc_mockup3_v1';
+
+let state = loadState();
+// Migrate legacy single-roster to per-term structure
+if (state.roster && !state.rosters) {
+  state.rosters = { [state.term]: state.roster };
+  delete state.roster;
+}
+if (!state.rosters) state.rosters = {};
+if (!state.terms) state.terms = ['25-26 S1 Midterm','25-26 S1 Final','25-26 I1 Final','25-26 S2 Midterm','25-26 S2 Final','25-26 I2 Final'];
+if (!state.terms.includes(state.term)) state.term = state.terms[0];
+// Initialize roster for current term
+(function() {
+  const r = state.rosters[state.term];
+  if (r) { CLASSES = r.classes; teacherName = r.teacherName; }
+})();
+let openClassIdx = state.openClassIdx ?? 0;
+let activeCI = state.activeCI ?? null;
+let activeSI = state.activeSI ?? null;
+let popupCtx = null;    // { ci, si, skill, type }
+let customizeCtx = null; // { skill }
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {
+    term: '25-26 S2 Final',
+    openClassIdx: 0,
+    activeCI: null,
+    activeSI: null,
+    students: {},       // "term|ci_si" → { skills: {skill: [comments]}, narrative, finalized }
+    custom: {},         // skill → [strings]
+    reflections: {}     // "term|studentName" → string
+  };
+}
+
+function persist() {
+  state.openClassIdx = openClassIdx;
+  state.activeCI = activeCI;
+  state.activeSI = activeSI;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function skey(ci, si) { return `${state.term}|${ci}_${si}`; }
+
+function studentData(ci, si) {
+  const k = skey(ci, si);
+  if (!state.students[k]) state.students[k] = { skills: {}, narrative: '' };
+  return state.students[k];
+}
+
+function skillSelections(d, skill) {
+  if (!d.skills[skill]?.selections) d.skills[skill] = { selections: [], custom: [] };
+  if (!d.skills[skill].custom) d.skills[skill].custom = [];
+  return d.skills[skill].selections;
+}
+function skillCustom(d, skill) {
+  if (!d.skills[skill]?.selections) d.skills[skill] = { selections: [], custom: [] };
+  if (!d.skills[skill].custom) d.skills[skill].custom = [];
+  return d.skills[skill].custom;
+}
+
+function studentStatus(ci, si) {
+  const d = studentData(ci, si);
+  const skillsDone = SKILLS.filter(s => {
+    return skillSelections(d, s).length > 0 || skillCustom(d, s).length > 0;
+  }).length;
+  const narrativeLen = (d.narrative || '').trim().length;
+  const meetsComplete = skillsDone >= 3 && narrativeLen >= 20;
+  if (meetsComplete && d.finalized) return 'finalized';
+  if (meetsComplete) return 'complete';
+  if (skillsDone === 0 && narrativeLen === 0) return 'none';
+  return 'in-progress';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ROSTER
+// ─────────────────────────────────────────────────────────────────
+function renderRoster() {
+  const area = document.getElementById('rosterArea');
+  area.innerHTML = '';
+  CLASSES.forEach((cls, ci) => {
+    const isOpen = ci === openClassIdx;
+    const hasActive = !isOpen && ci === activeCI;
+
+    const header = document.createElement('div');
+    header.className = 'class-header' + (isOpen ? ' open' : '') + (hasActive ? ' has-active' : '');
+    header.innerHTML = `<span class="class-chevron">▶</span><span style="flex:1;line-height:1.35">${cls.name}</span>`;
+    header.onclick = () => toggleClass(ci);
+    area.appendChild(header);
+
+    const roster = document.createElement('div');
+    roster.className = 'class-roster' + (isOpen ? ' open' : '');
+    roster.id = `roster-${ci}`;
+
+    cls.students.forEach((name, si) => {
+      const st = studentStatus(ci, si);
+      const isActive = ci === activeCI && si === activeSI;
+
+      const row = document.createElement('div');
+      row.className = 'student-row' + (isActive ? ' active' : '');
+      row.id = `sr-${ci}-${si}`;
+      row.onclick = () => activate(ci, si);
+
+      const rcDotClass = st !== 'none' ? st : '';
+      const hasReflection = !!state.reflections[`${state.term}|${name}`];
+      row.innerHTML = `
+        <span>${esc(name)}</span>
+        <span class="status-icons">
+          <span class="rc-dot ${rcDotClass}" title="Report card: ${st}"></span>
+          <span class="ref-dot ${hasReflection ? 'submitted' : ''}" title="Reflection: ${hasReflection ? 'submitted' : 'not submitted'}"></span>
+        </span>`;
+      roster.appendChild(row);
+    });
+
+    area.appendChild(roster);
+  });
+}
+
+function toggleClass(ci) {
+  openClassIdx = (openClassIdx === ci) ? -1 : ci;
+  renderRoster();
+  persist();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ACTIVATE STUDENT
+// ─────────────────────────────────────────────────────────────────
+function activate(ci, si) {
+  activeCI = ci;
+  activeSI = si;
+  openClassIdx = ci;
+
+  renderRoster();
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('editingArea').style.display = 'flex';
+  document.getElementById('editingArea').style.flexDirection = 'column';
+  document.getElementById('editingArea').style.gap = '1.25rem';
+
+  const name = CLASSES[ci].students[si];
+  const course = CLASSES[ci].name;
+  const term = document.getElementById('termSelect').value;
+
+  document.getElementById('navLabel').textContent = name;
+
+  document.getElementById('studentMeta').innerHTML = `
+    <div class="meta-row"><span class="meta-label">Student</span>${esc(name)}</div>
+    <div class="meta-row"><span class="meta-label">Course</span>${esc(course)}</div>
+    <div class="meta-row"><span class="meta-label">Teacher</span>${esc(teacherName)}</div>
+    <div class="meta-row"><span class="meta-label">Period</span>${esc(term)}</div>`;
+
+  renderSkills(ci, si);
+
+  const d = studentData(ci, si);
+  document.getElementById('narrativeInput').value = d.narrative || '';
+  updateFinalizeUI();
+  updateEditableState();
+
+  const refEl = document.getElementById('reflectionText');
+  const reflection = state.reflections[`${state.term}|${name}`] || null;
+  if (reflection) {
+    refEl.textContent = reflection;
+    refEl.style.color = '';
+  } else {
+    refEl.textContent = 'Not submitted';
+    refEl.style.color = '#94a3b8';
+  }
+
+  persist();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SKILLS
+// ─────────────────────────────────────────────────────────────────
+function renderSkills(ci, si) {
+  const container = document.getElementById('skillsContainer');
+  container.innerHTML = '';
+  const d = studentData(ci, si);
+
+  SKILLS.forEach(skill => {
+    const sid = skillId(skill);
+    const div = document.createElement('div');
+    div.className = 'skill-item';
+    div.id = `skill-${sid}`;
+    div.innerHTML = `
+      <div class="skill-row">
+        <span class="skill-name">${esc(skill)}</span>
+        <div class="skill-btns">
+          <button class="skill-btn std" id="btn-std-${sid}"
+            data-ci="${ci}" data-si="${si}" data-skill="${esc(skill)}">Skill Selection</button>
+        </div>
+      </div>
+      <div class="skill-comments" id="sc-${sid}">${skillCommentsHtml(d, skill)}</div>`;
+    div.querySelector('.skill-btn').addEventListener('click', e => openPanel(e.currentTarget));
+    container.appendChild(div);
+  });
+}
+
+function skillCommentsHtml(d, skill) {
+  const sel = skillSelections(d, skill);
+  const custom = skillCustom(d, skill);
+  const all = [
+    ...sel.map(({label, subcat, type}) => esc(getSentence(label, subcat, type))),
+    ...custom.map(c => esc(c))
+  ];
+  return all.map(s => `<div class="skill-comment-pill">${s}</div>`).join('');
+}
+
+function refreshSkillComments(skill) {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  const el = document.getElementById(`sc-${skillId(skill)}`);
+  if (el) el.innerHTML = skillCommentsHtml(d, skill);
+}
+
+function skillId(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, '-'); }
+
+// ─────────────────────────────────────────────────────────────────
+// COMMENT PANEL
+// ─────────────────────────────────────────────────────────────────
+function buildPanelBody(body, ci, si, skill) {
+  const d = studentData(ci, si);
+  const sel = skillSelections(d, skill);
+  const subcats = SKILLS_DATA[skill] || {};
+
+  // S/G CHECKBOXES
+  Object.entries(subcats).forEach(([subcat, skillLabels]) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'subcategory-label';
+    lbl.textContent = subcat;
+    body.appendChild(lbl);
+
+    skillLabels.forEach(label => {
+      const entry = sel.find(s => s.label === label && s.subcat === subcat);
+      const inS = entry?.type === 'strength';
+      const inG = entry?.type === 'growth';
+      const sEntry = SKILL_SENTENCES[subcat + '::' + label] || SKILL_SENTENCES[label];
+      const sTip = sEntry?.strength || label;
+      const gTip = sEntry?.growth || sEntry?.strength || label;
+
+      const row = document.createElement('div');
+      row.className = 'skill-checkbox-row';
+      const pair = document.createElement('div');
+      pair.className = 'skill-checkbox-pair';
+
+      const sBox = document.createElement('div');
+      sBox.className = 'skill-chk' + (inS ? ' strength' : '');
+      sBox.title = sTip;
+      sBox.textContent = inS ? 'S' : '';
+      sBox.onclick = e => { e.stopPropagation(); toggleSkillEntry(ci, si, skill, label, subcat, 'strength'); };
+
+      const gBox = document.createElement('div');
+      gBox.className = 'skill-chk' + (inG ? ' growth' : '');
+      gBox.title = gTip;
+      gBox.textContent = inG ? 'G' : '';
+      gBox.onclick = e => { e.stopPropagation(); toggleSkillEntry(ci, si, skill, label, subcat, 'growth'); };
+
+      const labelEl = document.createElement('span');
+      labelEl.textContent = label;
+      labelEl.style.cursor = 'pointer';
+      labelEl.onclick = e => {
+        e.stopPropagation();
+        const d2 = studentData(ci, si);
+        const sel2 = skillSelections(d2, skill);
+        const ent = sel2.find(s => s.label === label && s.subcat === subcat);
+        if (!ent) toggleSkillEntry(ci, si, skill, label, subcat, 'strength');
+        else if (ent.type === 'strength') toggleSkillEntry(ci, si, skill, label, subcat, 'growth');
+        else toggleSkillEntry(ci, si, skill, label, subcat, 'growth'); // growth→remove
+      };
+
+      pair.appendChild(sBox);
+      pair.appendChild(gBox);
+      row.appendChild(pair);
+      row.appendChild(labelEl);
+      body.appendChild(row);
+    });
+  });
+
+  // DIVIDER + CUSTOM SECTION
+  const hr = document.createElement('hr');
+  hr.className = 'popup-divider';
+  hr.style.margin = '0.5rem 0';
+  body.appendChild(hr);
+
+  const customHeader = document.createElement('div');
+  customHeader.className = 'subcategory-label';
+  customHeader.textContent = 'Custom Comments';
+  body.appendChild(customHeader);
+
+  // Quick add form
+  const quickForm = document.createElement('form');
+  quickForm.autocomplete = 'on';
+  quickForm.onsubmit = e => { e.preventDefault(); addQuickComment(ci, si, skill); };
+  const quickRow = document.createElement('div');
+  quickRow.style.cssText = 'display:flex;gap:0.4rem;padding:0.4rem 0.75rem;border-bottom:1px solid #f1f5f9';
+  const quickInput = document.createElement('input');
+  quickInput.type = 'text';
+  quickInput.id = 'quickCustomInput';
+  quickInput.name = 'comment-' + skill.toLowerCase().replace(/\s+/g, '-');
+  quickInput.autocomplete = 'on';
+  quickInput.placeholder = 'Add comment for this student…';
+  quickInput.style.cssText = 'flex:1;font-size:0.8rem;padding:0.25rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;outline:none;min-width:0';
+  const quickBtn = document.createElement('button');
+  quickBtn.type = 'submit';
+  quickBtn.className = 'btn btn-primary btn-sm';
+  quickBtn.textContent = 'Add';
+  quickRow.appendChild(quickInput);
+  quickRow.appendChild(quickBtn);
+  quickForm.appendChild(quickRow);
+  body.appendChild(quickForm);
+
+  // One-time comments (in student's custom but not in bank)
+  const bankComments = state.custom[skill] || [];
+  const custom = skillCustom(d, skill);
+  custom.filter(c => !bankComments.includes(c)).forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'popup-item';
+    item.style.cursor = 'default';
+    const txt = document.createElement('span');
+    txt.style.flex = '1';
+    txt.textContent = c;
+    const del = document.createElement('button');
+    del.className = 'custom-del';
+    del.title = 'Remove';
+    del.textContent = '−';
+    del.style.color = '#64748b';
+    del.onclick = e2 => { e2.stopPropagation(); removeOneTimeComment(ci, si, skill, c); };
+    item.appendChild(txt);
+    item.appendChild(del);
+    body.appendChild(item);
+  });
+
+  // Edit bank link
+  const custOpt = document.createElement('div');
+  custOpt.className = 'popup-item customize-opt';
+  custOpt.innerHTML = '✎ &nbsp;Edit comment bank…';
+  custOpt.onclick = () => openCustomize(skill);
+  body.appendChild(custOpt);
+
+  // Bank comments
+  const customs = state.custom[skill] || [];
+  if (customs.length > 0) {
+    const bankLbl = document.createElement('div');
+    bankLbl.className = 'popup-section-label';
+    bankLbl.textContent = 'Saved Comments';
+    body.appendChild(bankLbl);
+    customs.forEach(c => appendItem(body, c, custom.includes(c), () => toggleComment(ci, si, skill, c)));
+  } else {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'padding:0.5rem 0.75rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
+    empty.textContent = 'No saved comments yet. Click "Edit comment bank…" to add reusable ones.';
+    body.appendChild(empty);
+  }
+}
+
+function openPanel(btn) {
+  if (btn.classList.contains('active')) { closePanel(); return; }
+  const ci = parseInt(btn.dataset.ci);
+  const si = parseInt(btn.dataset.si);
+  const skill = btn.dataset.skill;
+  popupCtx = { ci, si, skill };
+  document.getElementById('panelTitle').textContent = 'Skill Selection';
+  document.getElementById('panelSubtitle').textContent = skill;
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildPanelBody(body, ci, si, skill);
+  document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('commentPanel').classList.add('open');
+}
+
+function toggleSkillEntry(ci, si, skill, label, subcat, type) {
+  const d = studentData(ci, si);
+  const sel = skillSelections(d, skill);
+  const idx = sel.findIndex(s => s.label === label && s.subcat === subcat);
+  if (idx >= 0) {
+    if (sel[idx].type === type) sel.splice(idx, 1);   // same → remove
+    else sel[idx].type = type;                          // different → switch
+  } else {
+    sel.push({label, subcat, type});
+  }
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildPanelBody(body, ci, si, skill);
+  refreshSkillComments(skill);
+  renderRoster();
+  showSaved();
+  updateFinalizeUI();
+}
+
+function appendSection(container, label, comments, htmlComments, selected, ci, si, skill) {
+  const lbl = document.createElement('div');
+  lbl.className = 'popup-section-label';
+  lbl.textContent = label;
+  container.appendChild(lbl);
+  comments.forEach((c, idx) => {
+    appendItem(container, c, selected.includes(c), () => toggleComment(ci, si, skill, c), htmlComments ? htmlComments[idx] : null);
+  });
+}
+
+function appendItem(container, comment, checked, onClick, displayHtml) {
+  const item = document.createElement('div');
+  item.className = 'popup-item' + (checked ? ' checked' : '');
+  item.innerHTML = `<span class="popup-checkbox">${checked ? '✓' : ''}</span><span>${displayHtml || esc(comment)}</span>`;
+  item.onclick = () => onClick();
+  container.appendChild(item);
+}
+
+function toggleComment(ci, si, skill, comment) {
+  const d = studentData(ci, si);
+  const custom = skillCustom(d, skill);
+  const idx = custom.indexOf(comment);
+  if (idx >= 0) custom.splice(idx, 1);
+  else custom.push(comment);
+  persist();
+  document.querySelectorAll('#panelBody .popup-item:not(.customize-opt)').forEach(item => {
+    const span = item.querySelectorAll('span')[1];
+    if (span && span.textContent === comment) {
+      const now = custom.includes(comment);
+      item.classList.toggle('checked', now);
+      item.querySelector('.popup-checkbox').textContent = now ? '✓' : '';
+    }
+  });
+  refreshSkillComments(skill);
+  renderRoster();
+  showSaved();
+  updateFinalizeUI();
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
+  popupCtx = null;
+}
+
+function addQuickComment(ci, si, skill) {
+  const input = document.getElementById('quickCustomInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const d = studentData(ci, si);
+  const custom = skillCustom(d, skill);
+  if (!custom.includes(text)) custom.push(text);
+  input.value = '';
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildPanelBody(body, ci, si, skill);
+  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  refreshSkillComments(skill);
+  renderRoster();
+  showSaved();
+  updateFinalizeUI();
+}
+
+function removeOneTimeComment(ci, si, skill, comment) {
+  const d = studentData(ci, si);
+  const custom = skillCustom(d, skill);
+  const idx = custom.indexOf(comment);
+  if (idx >= 0) custom.splice(idx, 1);
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildPanelBody(body, ci, si, skill);
+  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  refreshSkillComments(skill);
+  renderRoster();
+  showSaved();
+  updateFinalizeUI();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CUSTOMIZE
+// ─────────────────────────────────────────────────────────────────
+function openCustomize(skill) {
+  customizeCtx = { skill };
+  document.getElementById('customizeSubtitle').textContent = skill;
+  renderCustomList(skill);
+  document.getElementById('customInput').value = '';
+  document.getElementById('customizeModal').classList.add('open');
+  setTimeout(() => document.getElementById('customInput').focus(), 50);
+}
+
+function renderCustomList(skill) {
+  const list = document.getElementById('customList');
+  const items = state.custom[skill] || [];
+  list.innerHTML = '';
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="custom-list-empty">No custom comments yet.</div>';
+    return;
+  }
+
+  let dragSrcIdx = null;
+
+  items.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'custom-item';
+    div.draggable = true;
+    div.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <span class="custom-item-text">${esc(c)}</span>
+      <button class="custom-del" title="Remove">✕</button>`;
+    div.querySelector('.custom-del').onclick = () => deleteCustom(i);
+
+    div.addEventListener('dragstart', e => {
+      dragSrcIdx = i;
+      div.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    div.addEventListener('dragend', () => {
+      div.classList.remove('dragging');
+      list.querySelectorAll('.custom-item').forEach(el => el.classList.remove('drag-over'));
+    });
+    div.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      list.querySelectorAll('.custom-item').forEach(el => el.classList.remove('drag-over'));
+      div.classList.add('drag-over');
+    });
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrcIdx === null || dragSrcIdx === i) return;
+      const arr = state.custom[skill];
+      const [moved] = arr.splice(dragSrcIdx, 1);
+      arr.splice(i, 0, moved);
+      dragSrcIdx = null;
+      persist();
+      renderCustomList(skill);
+    });
+
+    list.appendChild(div);
+  });
+}
+
+function addCustomComment() {
+  const input = document.getElementById('customInput');
+  const text = input.value.trim();
+  if (!text || !customizeCtx) return;
+  const skill = customizeCtx.skill;
+  if (!state.custom[skill]) state.custom[skill] = [];
+  if (!state.custom[skill].includes(text)) state.custom[skill].push(text);
+  if (activeCI !== null && activeSI !== null) {
+    const d = studentData(activeCI, activeSI);
+    const custom = skillCustom(d, skill);
+    if (!custom.includes(text)) custom.push(text);
+    refreshSkillComments(skill);
+    updateFinalizeUI();
+  }
+  input.value = '';
+  renderCustomList(skill);
+  persist();
+}
+
+function deleteCustom(i) {
+  const skill = customizeCtx.skill;
+  const removed = (state.custom[skill] || []).splice(i, 1)[0];
+  Object.values(state.students).forEach(d => {
+    if (d.skills?.[skill]?.custom) {
+      d.skills[skill].custom = d.skills[skill].custom.filter(c => c !== removed);
+    }
+  });
+  renderCustomList(skill);
+  if (activeCI !== null) refreshSkillComments(skill);
+  persist();
+}
+
+function closeCustomize() {
+  document.getElementById('customizeModal').classList.remove('open');
+  cancelImport();
+  if (popupCtx && customizeCtx && popupCtx.skill === customizeCtx.skill) {
+    const body = document.getElementById('panelBody');
+    body.innerHTML = '';
+    buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill);
+  }
+  customizeCtx = null;
+}
+
+// ─── CSV helpers ───────────────────────────────────────────────────────────
+function csvEscape(val) {
+  const s = String(val);
+  return (s.includes(',') || s.includes('"') || s.includes('\n'))
+    ? '"' + s.replace(/"/g, '""') + '"'
+    : s;
+}
+
+function parseCSV(text) {
+  // Returns array of {skill_area, comment} objects
+  const rows = [];
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  let headerSkipped = false;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    // Split respecting quoted fields
+    const fields = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuote) {
+        if (ch === '"' && line[i+1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQuote = true;
+        else if (ch === ',') { fields.push(cur); cur = ''; }
+        else cur += ch;
+      }
+    }
+    fields.push(cur);
+    if (fields.length < 2) continue;
+    const [f0, ...rest] = fields;
+    const skill = f0.trim();
+    const comment = rest.join(',').trim();
+    // Skip header row
+    if (!headerSkipped && skill.toLowerCase() === 'skill_area' && comment.toLowerCase() === 'comment') {
+      headerSkipped = true;
+      continue;
+    }
+    if (skill && comment) rows.push({ skill, comment });
+  }
+  return rows;
+}
+
+let pendingImportRows = null;
+
+function exportCustomCSV() {
+  const lines = ['skill_area,comment'];
+  for (const [skill, comments] of Object.entries(state.custom)) {
+    for (const c of comments) {
+      lines.push(csvEscape(skill) + ',' + csvEscape(c));
+    }
+  }
+  if (lines.length === 1) { alert('No custom comments to export.'); return; }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'custom_comments.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function handleCSVImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCSV(e.target.result);
+    if (!rows.length) { alert('No valid rows found in the CSV.'); return; }
+    pendingImportRows = rows;
+    document.getElementById('importConfirmCount').textContent = rows.length;
+    document.getElementById('importConfirm').style.display = 'block';
+  };
+  reader.readAsText(file);
+}
+
+function applyImport(mode) {
+  if (!pendingImportRows) return;
+  if (mode === 'replace') state.custom = {};
+  for (const { skill, comment } of pendingImportRows) {
+    if (!state.custom[skill]) state.custom[skill] = [];
+    if (!state.custom[skill].includes(comment)) state.custom[skill].push(comment);
+  }
+  persist();
+  cancelImport();
+  if (customizeCtx) renderCustomList(customizeCtx.skill);
+  if (activeCI !== null && popupCtx) {
+    const body = document.getElementById('panelBody');
+    body.innerHTML = '';
+    buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill);
+  }
+}
+
+function cancelImport() {
+  pendingImportRows = null;
+  document.getElementById('importConfirm').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ROSTER CSV UPLOAD
+// ─────────────────────────────────────────────────────────────────
+let pendingRoster = null;
+
+function parseRosterCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const rows = [];
+  let headerSkipped = false;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const fields = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuote) {
+        if (ch === '"' && line[i+1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQuote = true;
+        else if (ch === ',') { fields.push(cur); cur = ''; }
+        else cur += ch;
+      }
+    }
+    fields.push(cur);
+    if (fields.length < 3) continue;
+    const teacher = fields[0].trim();
+    const course  = fields[1].trim();
+    const student = fields[2].trim();
+    if (!headerSkipped && teacher.toLowerCase() === 'teacher' && course.toLowerCase() === 'course') {
+      headerSkipped = true;
+      continue;
+    }
+    const comment = fields.length >= 4 ? fields[3].trim() : '';
+    if (teacher && course && student) rows.push({ teacher, course, student, comment });
+  }
+  return rows;
+}
+
+function openRosterModal() {
+  renderTermsInModal();
+  resetUploadSection();
+  document.getElementById('rosterModal').classList.add('open');
+}
+
+function closeRosterModal() {
+  document.getElementById('rosterModal').classList.remove('open');
+  pendingRoster = null;
+}
+
+function renderTermsInModal() {
+  const list = document.getElementById('rosterTermsList');
+  list.innerHTML = state.terms.map((t, i) => {
+    const isCurrent = t === state.term;
+    return `<div style="display:flex;align-items:center;gap:0.4rem;padding:0.2rem 0">
+      <span style="flex:1;font-size:0.82rem;color:${isCurrent?'#1e40af':'#374151'};font-weight:${isCurrent?'600':'400'}">${esc(t)}${isCurrent?' <span style="font-size:0.7rem;color:#3b82f6;font-weight:400">(current)</span>':''}</span>
+      <button class="btn btn-sm" style="background:#fff;border:1px solid #e2e8f0;color:#94a3b8;font-size:0.7rem;padding:0.1rem 0.4rem" onclick="deleteTerm(${i})" title="Delete term">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function addTerm() {
+  const input = document.getElementById('newTermInput');
+  const name = input.value.trim();
+  if (!name) return;
+  if (state.terms.includes(name)) { alert('That term already exists.'); return; }
+  state.terms.push(name);
+  input.value = '';
+  persist();
+  renderTermsInModal();
+  renderTermSelect();
+}
+
+function deleteTerm(idx) {
+  const name = state.terms[idx];
+  if (!name) return;
+  if (state.terms.length <= 1) { alert('You must have at least one grading period.'); return; }
+  if (!confirm(`Delete term "${name}"? Any roster and report card data for this term will be removed.`)) return;
+  // Clean up data for this term
+  Object.keys(state.students).forEach(k => { if (k.startsWith(name + '|')) delete state.students[k]; });
+  Object.keys(state.reflections).forEach(k => { if (k.startsWith(name + '|')) delete state.reflections[k]; });
+  delete state.rosters[name];
+  state.terms = state.terms.filter(t => t !== name);
+  // If deleting current term, switch to first remaining
+  if (state.term === name) {
+    state.term = state.terms[0];
+    const r = state.rosters[state.term];
+    if (r) { CLASSES = r.classes; teacherName = r.teacherName; }
+    else { CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] })); teacherName = 'Edna Krabappel'; }
+    document.getElementById('teacherNameDisplay').textContent = teacherName;
+    activeCI = null; activeSI = null; openClassIdx = 0;
+    state.activeCI = null; state.activeSI = null; state.openClassIdx = 0;
+    document.getElementById('navLabel').textContent = 'No student selected';
+    document.getElementById('emptyState').style.display = '';
+    document.getElementById('editingArea').style.display = 'none';
+    closePanel();
+    renderRoster();
+  }
+  persist();
+  renderTermsInModal();
+  renderTermSelect();
+}
+
+function resetUploadSection() {
+  pendingRoster = null;
+  document.getElementById('rosterFileInput').value = '';
+  document.getElementById('rosterUploadPreview').style.display = 'none';
+}
+
+function updateApplyRosterBtn() {
+  const mode = document.querySelector('input[name="rosterImportMode"]:checked')?.value || 'replace';
+  const btn = document.getElementById('applyRosterBtn');
+  if (mode === 'comments') {
+    btn.textContent = 'Add Comments to Students';
+    btn.className = 'btn btn-primary';
+  } else {
+    btn.textContent = 'Apply Roster & Clear Data';
+    btn.className = 'btn btn-danger';
+  }
+}
+
+function handleRosterUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseRosterCSV(e.target.result);
+    if (!rows.length) { alert('No valid rows found. The CSV must have Teacher, Course, Student columns.'); return; }
+    const teacher = rows[0].teacher;
+    const classMap = new Map();
+    const commentMap = new Map(); // "course|student" -> comment
+    rows.forEach(r => {
+      if (!classMap.has(r.course)) classMap.set(r.course, []);
+      if (!classMap.get(r.course).includes(r.student)) classMap.get(r.course).push(r.student);
+      if (r.comment) commentMap.set(r.course + '|' + r.student, r.comment);
+    });
+    const classes = Array.from(classMap.entries()).map(([name, students]) => ({ name, students }));
+    pendingRoster = { teacherName: teacher, classes, commentMap };
+    // Render preview
+    const total = classes.reduce((n, c) => n + c.students.length, 0);
+    const commentCount = commentMap.size;
+    let detailHtml = `<div style="margin-bottom:0.4rem"><strong>Teacher:</strong> ${esc(teacher)}</div>
+      <div style="margin-bottom:0.35rem"><strong>${classes.length} class${classes.length!==1?'es':''}, ${total} student${total!==1?'s':''}${commentCount ? `, ${commentCount} with comments` : ''}:</strong></div>`;
+    classes.forEach(cls => {
+      detailHtml += `<div style="font-size:0.82rem;color:#475569;padding:0.1rem 0 0.1rem 0.75rem">${esc(cls.name)} <span style="color:#94a3b8">(${cls.students.length})</span></div>`;
+    });
+    document.getElementById('rosterPreviewDetails').innerHTML = detailHtml;
+    // Render term checkboxes — current term pre-checked
+    document.getElementById('rosterTermCheckboxes').innerHTML = state.terms.map(t => {
+      const checked = t === state.term ? ' checked' : '';
+      return `<label style="display:flex;align-items:center;gap:0.45rem;cursor:pointer">
+        <input type="checkbox" value="${esc(t)}"${checked} style="width:14px;height:14px">
+        <span>${esc(t)}${t===state.term?' <span style="font-size:0.75rem;color:#94a3b8">(current)</span>':''}</span>
+      </label>`;
+    }).join('');
+    // Reset import mode to replace
+    const replaceRadio = document.querySelector('input[name="rosterImportMode"][value="replace"]');
+    if (replaceRadio) { replaceRadio.checked = true; updateApplyRosterBtn(); }
+    // Show import mode section only when CSV has comments to offer a real choice
+    const modeVisible = commentCount ? '' : 'none';
+    document.getElementById('rosterImportModeLabel').style.display = modeVisible;
+    document.getElementById('rosterImportModeSection').style.display = modeVisible;
+    document.getElementById('rosterUploadPreview').style.display = '';
+  };
+  reader.readAsText(file);
+}
+
+function applyRoster() {
+  if (!pendingRoster) return;
+  const checkboxes = document.getElementById('rosterTermCheckboxes').querySelectorAll('input[type=checkbox]:checked');
+  const targetTerms = Array.from(checkboxes).map(cb => cb.value);
+  if (!targetTerms.length) { alert('Select at least one term to apply the roster to.'); return; }
+  const mode = document.querySelector('input[name="rosterImportMode"]:checked')?.value || 'replace';
+
+  if (mode === 'comments') {
+    // Comments-only: match students by course+name and set narrative, no data clearing
+    targetTerms.forEach(term => {
+      // For the current term use the live CLASSES array (works even before any roster import);
+      // for other terms fall back to the saved roster.
+      const rosterClasses = (term === state.term)
+        ? CLASSES
+        : state.rosters[term]?.classes;
+      if (!rosterClasses) return;
+      rosterClasses.forEach((cls, ci) => {
+        cls.students.forEach((student, si) => {
+          const comment = pendingRoster.commentMap.get(cls.name + '|' + student);
+          if (comment) {
+            state.reflections[`${term}|${student}`] = comment;
+          }
+        });
+      });
+    });
+    // Refresh editing area if current student is in a target term
+    if (targetTerms.includes(state.term)) {
+      renderRoster();
+      if (activeCI !== null) {
+        document.getElementById('narrativeInput').value = studentData(activeCI, activeSI).narrative || '';
+      }
+    }
+  } else {
+    // Replace mode: clear student data and overwrite roster
+    targetTerms.forEach(term => {
+      Object.keys(state.students).forEach(k => { if (k.startsWith(term + '|')) delete state.students[k]; });
+      Object.keys(state.reflections).forEach(k => { if (k.startsWith(term + '|')) delete state.reflections[k]; });
+      state.rosters[term] = { teacherName: pendingRoster.teacherName, classes: pendingRoster.classes };
+      // Seed student reflections from the CSV comment column
+      if (pendingRoster.commentMap.size) {
+        pendingRoster.classes.forEach((cls) => {
+          cls.students.forEach((student) => {
+            const comment = pendingRoster.commentMap.get(cls.name + '|' + student);
+            if (comment) {
+              state.reflections[`${term}|${student}`] = comment;
+            }
+          });
+        });
+      }
+    });
+    // Reload current term if it was among the targets
+    if (targetTerms.includes(state.term)) {
+      CLASSES = pendingRoster.classes;
+      teacherName = pendingRoster.teacherName;
+      openClassIdx = 0; activeCI = null; activeSI = null;
+      state.openClassIdx = 0; state.activeCI = null; state.activeSI = null;
+      document.getElementById('teacherNameDisplay').textContent = teacherName;
+      document.getElementById('navLabel').textContent = 'No student selected';
+      document.getElementById('emptyState').style.display = '';
+      document.getElementById('editingArea').style.display = 'none';
+      closePanel();
+      renderRoster();
+    }
+  }
+  pendingRoster = null;
+  persist();
+  closeRosterModal();
+}
+
+function downloadRosterTemplate() {
+  const lines = ['Teacher,Course,Student,Student Reflection'];
+  CLASSES.forEach((cls, ci) => {
+    cls.students.forEach((s, si) => {
+      const reflection = state.reflections[`${state.term}|${s}`] || '';
+      lines.push(csvEscape(teacherName) + ',' + csvEscape(cls.name) + ',' + csvEscape(s) + ',' + csvEscape(reflection));
+    });
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'roster_template.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// FINALIZE
+// ─────────────────────────────────────────────────────────────────
+function updateFinalizeUI() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  const st = studentStatus(activeCI, activeSI);
+  const canFinalize = st === 'complete' || st === 'finalized';
+  const check = document.getElementById('finalizeCheck');
+  check.checked = !!d.finalized;
+  check.disabled = !canFinalize;
+  const hint = document.getElementById('finalizeHint');
+  if (!canFinalize) {
+    const skillsDone = SKILLS.filter(s => {
+      return skillSelections(d, s).length > 0 || skillCustom(d, s).length > 0;
+    }).length;
+    const narrativeLen = (d.narrative || '').trim().length;
+    const parts = [];
+    if (skillsDone < 3) parts.push(`selections in ${3 - skillsDone} more skill area${3 - skillsDone !== 1 ? 's' : ''} needed`);
+    if (narrativeLen < 20) parts.push(`overall comment needs ${20 - narrativeLen} more character${20 - narrativeLen !== 1 ? 's' : ''}`);
+    hint.textContent = parts.length ? parts.join('; ') : '';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function updateEditableState() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  const locked = !!d.finalized;
+  document.getElementById('narrativeInput').disabled = locked;
+  document.querySelectorAll('.skill-btn').forEach(btn => { btn.disabled = locked; });
+}
+
+function onFinalizeChange() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  d.finalized = document.getElementById('finalizeCheck').checked;
+  persist();
+  renderRoster();
+  updateEditableState();
+  if (d.finalized) closePanel();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// NARRATIVE
+// ─────────────────────────────────────────────────────────────────
+function onNarrativeInput() {
+  if (activeCI === null) return;
+  const d = studentData(activeCI, activeSI);
+  d.narrative = document.getElementById('narrativeInput').value;
+  persist();
+  renderRoster();
+  showSaved();
+  updateFinalizeUI();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// TERM
+// ─────────────────────────────────────────────────────────────────
+function renderTermSelect() {
+  const sel = document.getElementById('termSelect');
+  sel.innerHTML = state.terms.map(t => `<option value="${esc(t)}"${t===state.term?' selected':''}>${esc(t)}</option>`).join('');
+}
+
+function onTermChange() {
+  // Remember the active student's name so we can re-select them in the new term
+  let prevName = null;
+  if (activeCI !== null && activeSI !== null && CLASSES[activeCI]) {
+    prevName = CLASSES[activeCI].students[activeSI] || null;
+  }
+
+  state.term = document.getElementById('termSelect').value;
+  const r = state.rosters[state.term];
+  if (r) {
+    CLASSES = r.classes;
+    teacherName = r.teacherName;
+  } else {
+    CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
+    teacherName = 'Edna Krabappel';
+  }
+  document.getElementById('teacherNameDisplay').textContent = teacherName;
+
+  // Find the same student in the new roster
+  let foundCI = null, foundSI = null;
+  if (prevName) {
+    for (let ci = 0; ci < CLASSES.length; ci++) {
+      const si = CLASSES[ci].students.indexOf(prevName);
+      if (si >= 0) { foundCI = ci; foundSI = si; break; }
+    }
+  }
+
+  activeCI = null; activeSI = null; openClassIdx = 0;
+  state.activeCI = null; state.activeSI = null; state.openClassIdx = 0;
+  closePanel();
+  persist();
+
+  if (foundCI !== null) {
+    openClassIdx = foundCI;
+    state.openClassIdx = foundCI;
+    renderRoster();
+    activate(foundCI, foundSI);
+  } else {
+    document.getElementById('navLabel').textContent = 'No student selected';
+    document.getElementById('emptyState').style.display = '';
+    document.getElementById('editingArea').style.display = 'none';
+    renderRoster();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────────────────────
+function buildFlat() {
+  const flat = [];
+  CLASSES.forEach((cls, ci) => cls.students.forEach((_, si) => flat.push([ci, si])));
+  return flat;
+}
+
+function navigate(dir) {
+  const flat = buildFlat();
+  let cur = flat.findIndex(([ci, si]) => ci === activeCI && si === activeSI);
+  let next = cur + dir;
+  if (next < 0) next = flat.length - 1;
+  if (next >= flat.length) next = 0;
+  const [ci, si] = flat[next];
+  openClassIdx = ci;
+  activate(ci, si);
+  setTimeout(() => {
+    const row = document.getElementById(`sr-${ci}-${si}`);
+    if (row) row.scrollIntoView({ block: 'nearest' });
+  }, 30);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PREVIEW
+// ─────────────────────────────────────────────────────────────────
+function openPreview() {
+  if (activeCI === null) return;
+  const ci = activeCI, si = activeSI;
+  const d = studentData(ci, si);
+  const name = CLASSES[ci].students[si];
+  const course = CLASSES[ci].name;
+  const term = document.getElementById('termSelect').value;
+
+  document.getElementById('previewSubtitle').textContent = name;
+
+  let skillsHtml = '';
+  SKILLS.forEach(skill => {
+    const sel = skillSelections(d, skill);
+    const custom = skillCustom(d, skill);
+    if (!sel.length && !custom.length) return;
+    const bullets = [
+      ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+      ...custom
+    ];
+    skillsHtml += `<div class="preview-skill-block">
+      <div class="preview-skill-name">${esc(skill)}</div>
+      ${bullets.map(b => `<div class="skill-comment-pill">${esc(b)}</div>`).join('')}
+    </div>`;
+  });
+
+  const narrativeHtml = (d.narrative || '').trim()
+    ? `<div class="preview-section-title">Overall Comment</div>
+       <div class="preview-narrative">${esc(d.narrative)}</div>`
+    : '';
+
+  document.getElementById('previewContent').innerHTML = `
+    <div class="preview-student-name">${esc(name)}</div>
+    <div class="preview-meta">${esc(course)}<br>Teacher: ${esc(teacherName)} &nbsp;·&nbsp; ${esc(term)}</div>
+    <div class="preview-section-title">Student Reflection</div>
+    <div class="preview-reflection">${state.reflections[`${term}|${name}`] ? esc(state.reflections[`${term}|${name}`]) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
+    ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
+    ${narrativeHtml}`;
+
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('open');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// EXPORT ALL
+// ─────────────────────────────────────────────────────────────────
+function buildReportCardHTML(ci, si) {
+  const d = studentData(ci, si);
+  const name = CLASSES[ci].students[si];
+  const course = CLASSES[ci].name;
+  const term = state.term;
+  let skillsHtml = '';
+  SKILLS.forEach(skill => {
+    const sel = skillSelections(d, skill);
+    const custom = skillCustom(d, skill);
+    if (!sel.length && !custom.length) return;
+    const bullets = [
+      ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+      ...custom
+    ];
+    skillsHtml += `<div class="preview-skill-block">
+      <div class="preview-skill-name">${esc(skill)}</div>
+      ${bullets.map(b => `<div class="skill-comment-pill">${esc(b)}</div>`).join('')}
+    </div>`;
+  });
+  const narrativeHtml = (d.narrative || '').trim()
+    ? `<div class="preview-section-title">Overall Comment</div>
+       <div class="preview-narrative">${esc(d.narrative)}</div>`
+    : '';
+  const reflection = state.reflections[`${term}|${name}`];
+  return `
+    <div class="preview-student-name">${esc(name)}</div>
+    <div class="preview-meta">${esc(course)}<br>Teacher: ${esc(teacherName)} &nbsp;·&nbsp; ${esc(term)}</div>
+    <div class="preview-section-title">Student Reflection</div>
+    <div class="preview-reflection">${reflection ? esc(reflection) : '<span style="color:#94a3b8;font-style:italic">Not submitted</span>'}</div>
+    ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
+    ${narrativeHtml}`;
+}
+
+
+function generateStudentPDF(ci, si) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+  const d = studentData(ci, si);
+  const name = CLASSES[ci].students[si];
+  const course = CLASSES[ci].name;
+  const term = state.term;
+
+  const ML = 20, MT = 22, MR = 20, MB = 22;
+  const PW = 215.9, PH = 279.4, TW = PW - ML - MR;
+  let y = MT;
+
+  const newPageIfNeeded = (h) => {
+    if (y + h > PH - MB) { doc.addPage(); y = MT; }
+  };
+
+  // Header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.text(name, ML, y); y += 8;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  const cLines = doc.splitTextToSize(course, TW);
+  doc.text(cLines, ML, y); y += cLines.length * 5.2;
+
+  doc.setFontSize(8.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Teacher: ${teacherName}  ·  ${term}`, ML, y);
+  doc.setTextColor(0, 0, 0); y += 6;
+
+  doc.setLineWidth(0.25);
+  doc.setDrawColor(200, 210, 220);
+  doc.line(ML, y, PW - MR, y); y += 6;
+
+  // Student Reflection
+  const reflection = state.reflections[`${term}|${name}`];
+  if (reflection) {
+    newPageIfNeeded(16);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(148, 163, 184);
+    doc.text('STUDENT REFLECTION', ML, y);
+    doc.setTextColor(0, 0, 0); y += 4.5;
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    const rLines = doc.splitTextToSize(reflection, TW);
+    newPageIfNeeded(rLines.length * 5 + 8);
+    doc.text(rLines, ML, y);
+    doc.setTextColor(0, 0, 0); y += rLines.length * 5 + 6;
+  }
+
+  // Transferable Skills
+  const hasSkills = SKILLS.some(sk => {
+    return skillSelections(d, sk).length > 0 || skillCustom(d, sk).length > 0;
+  });
+  if (hasSkills) {
+    newPageIfNeeded(20);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(148, 163, 184);
+    doc.text('TRANSFERABLE SKILLS', ML, y);
+    doc.setTextColor(0, 0, 0); y += 5;
+
+    SKILLS.forEach(skill => {
+      const sel = skillSelections(d, skill);
+      const custom = skillCustom(d, skill);
+      if (!sel.length && !custom.length) return;
+      const sentences = [
+        ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+        ...custom
+      ];
+      const commentLines = sentences.map(s => doc.splitTextToSize('\u2022 ' + s, TW - 4));
+      let blockH = 5.5;
+      commentLines.forEach(lines => { blockH += lines.length * 4.8 + 1; });
+      blockH += 3;
+      if (y + blockH > PH - MB) { doc.addPage(); y = MT; }
+      doc.setFontSize(9.5); doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text(skill, ML, y);
+      doc.setTextColor(0, 0, 0); y += 5.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      const pageH = PH - MT - MB;
+      commentLines.forEach(lines => {
+        if (blockH > pageH) newPageIfNeeded(lines.length * 4.8 + 1);
+        doc.text(lines, ML + 3, y);
+        y += lines.length * 4.8 + 1;
+      });
+      doc.setTextColor(0, 0, 0); y += 3;
+    });
+  }
+
+  // Narrative Comment
+  const narrative = (d.narrative || '').trim();
+  if (narrative) {
+    // Calculate full height before drawing so heading + box are never split
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal');
+    const nLines = doc.splitTextToSize(narrative, TW - 6);
+    const boxH = nLines.length * 5.2 + 8;
+    const totalH = 5 + boxH + 4; // label(5) + box + breathing room
+    newPageIfNeeded(totalH);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(148, 163, 184);
+    doc.text('OVERALL COMMENT', ML, y);
+    doc.setTextColor(0, 0, 0); y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(ML, y - 2, TW, boxH, 2, 2, 'FD');
+    doc.setTextColor(51, 65, 85);
+    doc.text(nLines, ML + 4, y + 3);
+    doc.setTextColor(0, 0, 0);
+  }
+
+  return doc;
+}
+
+async function exportAllZip() {
+  if (!window.jspdf || !window.JSZip) {
+    alert('PDF libraries are still loading — please try again in a moment.');
+    return;
+  }
+  const btn = document.getElementById('exportZipBtn');
+  const orig = btn.textContent;
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+  try {
+    const zip = new JSZip();
+    const items = [];
+    let maxPages = 1;
+
+    CLASSES.forEach((cls, ci) => {
+      cls.students.forEach((_, si) => {
+        const doc = generateStudentPDF(ci, si);
+        const pages = doc.internal.getNumberOfPages();
+        if (pages > maxPages) maxPages = pages;
+        items.push({ cls, si, doc, pages });
+      });
+    });
+
+    // Equalize page counts so double-sided printing stays in sync
+    if (maxPages > 1) {
+      items.forEach(item => {
+        while (item.doc.internal.getNumberOfPages() < maxPages) {
+          item.doc.addPage();
+        }
+      });
+    }
+
+    const termSlug = state.term.replace(/[^a-zA-Z0-9 \-]/g, '').trim();
+    items.forEach(({ cls, si, doc }) => {
+      const sName = cls.students[si].replace(/[^a-zA-Z0-9 \-]/g, '').trim();
+      const cName = cls.name.replace(/[^a-zA-Z0-9 \-]/g, '').trim().substring(0, 35);
+      zip.file(`${cName}/${sName}_${cName}_${termSlug}.pdf`, doc.output('arraybuffer'));
+    });
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `report_cards_${state.term.replace(/\s+/g, '_')}.zip`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch(err) {
+    alert('Export failed: ' + err.message);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────────────────────────
+function confirmReset() { document.getElementById('resetModal').classList.add('open'); }
+function closeReset()   { document.getElementById('resetModal').classList.remove('open'); }
+
+function doReset() {
+  localStorage.removeItem(STORAGE_KEY);
+  state = loadState();
+  // Re-apply the same startup initialization that runs at page load
+  if (!state.rosters) state.rosters = {};
+  if (!state.terms) state.terms = ['25-26 S1 Midterm','25-26 S1 Final','25-26 I1 Final','25-26 S2 Midterm','25-26 S2 Final','25-26 I2 Final'];
+  if (!state.reflections) state.reflections = {};
+  Object.entries(REFLECTIONS).forEach(([name, text]) => {
+    const k = `25-26 S2 Final|${name}`;
+    if (!state.reflections[k]) state.reflections[k] = text;
+  });
+  // Reset roster to defaults
+  CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
+  teacherName = 'Edna Krabappel';
+  openClassIdx = 0;
+  activeCI = null;
+  activeSI = null;
+  document.getElementById('teacherNameDisplay').textContent = teacherName;
+  state.term = '25-26 S2 Final';
+  renderTermSelect();
+  document.getElementById('navLabel').textContent = 'No student selected';
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('editingArea').style.display = 'none';
+  closePanel();
+  persist();
+  renderRoster();
+  closeReset();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showSaved() {
+  const el = document.getElementById('saveHint');
+  el.textContent = 'Saved';
+  el.className = 'save-hint saved';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => {
+    el.textContent = 'Changes saved automatically';
+    el.className = 'save-hint';
+  }, 1500);
+}
+
+// Close modals on backdrop click
+['customizeModal','previewModal','resetModal','rosterModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+// Close comment panel on outside click
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('commentPanel');
+  if (!panel.classList.contains('open')) return;
+  if (!panel.contains(e.target) && !e.target.closest('.skill-btn') && !e.target.closest('#customizeModal')) {
+    closePanel();
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────
+// Ensure reflections object exists (for states loaded from older storage)
+if (!state.reflections) state.reflections = {};
+// Seed pre-filled reflections for 25-26 S2 Final (never overwrite existing entries)
+Object.entries(REFLECTIONS).forEach(([name, text]) => {
+  const k = `25-26 S2 Final|${name}`;
+  if (!state.reflections[k]) state.reflections[k] = text;
+});
+persist();
+
+renderTermSelect();
+document.getElementById('teacherNameDisplay').textContent = teacherName;
+renderRoster();
+if (state.activeCI !== null && state.activeSI !== null) {
+  activate(state.activeCI, state.activeSI);
+}
+</script>
+</body>
+</html>
