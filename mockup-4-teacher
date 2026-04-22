@@ -784,7 +784,7 @@
   <div class="left-panel">
     <div class="master-area">
       <div class="field-label">Teacher</div>
-      <div class="teacher-name" id="teacherNameDisplay">Edna Krabappel</div>
+      <div class="teacher-name" id="teacherNameDisplay">Sarah Chen</div>
 
       <div class="field-label">Grading Period</div>
       <select class="term-select" id="termSelect" onchange="onTermChange()">
@@ -993,7 +993,7 @@ const DEFAULT_CLASSES = [
 
 // Mutable roster — overridden from state.rosters[term] on load, or reset to defaults
 let CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
-let teacherName = "Edna Krabappel";
+let teacherName = "Sarah Chen";
 
 const REFLECTIONS = {
   "Marcus Delgado": "I think I've been doing pretty well keeping up with readings, but I know I zone out during discussion sometimes. I want to push myself to share more of my ideas out loud instead of just keeping them in my head.",
@@ -1440,7 +1440,7 @@ function getSentence(label, subcat, type) {
 // ─────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'rc_mockup3_v1';
+const STORAGE_KEY = 'rc_mockup4teacher_v1';
 
 let state = loadState();
 // Migrate legacy single-roster to per-term structure
@@ -1467,14 +1467,127 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch(e) {}
+  // Pre-seeded demo data showing the full workflow
+  const T = '25-26 S2 Final';
+  const sel = (label, subcat, type) => ({label, subcat, type});
   return {
-    term: '25-26 S2 Final',
+    term: T,
     openClassIdx: 0,
     activeCI: null,
     activeSI: null,
-    students: {},       // "term|ci_si" → { skills: {skill: [comments]}, narrative, finalized }
-    custom: {},         // skill → [strings]
-    reflections: {}     // "term|studentName" → string
+    rosters: {},
+    terms: ['25-26 S1 Midterm','25-26 S1 Final','25-26 I1 Final','25-26 S2 Midterm','25-26 S2 Final','25-26 I2 Final'],
+    custom: {},
+    reflections: {},
+    students: {
+      // Class 0 — Conspiracy Theories: A Critical Examination
+      [`${T}|0_0`]: { // Fatima Al-Rashid — reviewed
+        narrative: "Fatima has been an outstanding presence this semester. Her ability to read critically and challenge assumptions has set a high bar for the class. She approaches each source with genuine intellectual skepticism, surfacing questions that reframe our discussions. Her written work has grown significantly in precision and argumentative depth.",
+        finalized: true, advisorReviewed: true,
+        skills: {
+          "Ownership of Learning": { selections: [sel("Curiosity-fueled motivation","Motivation","strength"), sel("Incorporation of feedback","Personal Reflection","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Use of new vocabulary & academic language","Rhetorical Situation","strength"), sel("Clarity & thoroughness in written work","Written Communication","strength")], custom: [] },
+          "Critical Thinking": { selections: [sel("Analysis from multiple perspectives","Analysis","strength"), sel("Gathering information from diverse sources","Research and Sources","strength")], custom: [] },
+          "Creative Thinking and Risk Taking": { selections: [sel("Openness to brainstorming and iteration","Experimentation","strength")], custom: [] }
+        }
+      },
+      [`${T}|0_1`]: { // Jonas Bergström — finalized
+        narrative: "Jonas brings a quiet but consistent work ethic to everything he does in this class. His note-taking is meticulous and he is always prepared. He would benefit from pushing the boundaries of his analysis more boldly—the risk-taking his reflection identifies would make his strong foundation truly shine.",
+        finalized: true,
+        skills: {
+          "Academic Skills and Responsibility": { selections: [sel("Meeting assignment deadlines","Time Management","strength"), sel("Careful and thorough note-taking","Documentation and Organization of Materials","strength")], custom: [] },
+          "Ownership of Learning": { selections: [sel("Learning for learning's sake","Motivation","growth")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Clarity & thoroughness in written work","Written Communication","strength")], custom: [] }
+        }
+      },
+      [`${T}|0_2`]: { // Owen Callahan — finalized
+        narrative: "Owen is one of the most naturally skeptical thinkers I have had the pleasure of teaching. His participation in discussion is energetic and often challenges his peers to defend their reasoning more carefully. The remaining growth area is channeling that energy into his written work, where arguments sometimes move faster than his evidence.",
+        finalized: true,
+        skills: {
+          "Critical Thinking": { selections: [sel("Asking complex or nuanced questions","Question Asking","strength"), sel("Analysis from multiple perspectives","Analysis","strength")], custom: [] },
+          "Collaboration": { selections: [sel("Thoughtful critique of ideas & solutions","Community Building and Collaborative Discussion","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Clarity & thoroughness in written work","Written Communication","growth")], custom: [] }
+        }
+      },
+      [`${T}|0_3`]: { // Marcus Delgado — complete (not finalized)
+        narrative: "Marcus has shown meaningful growth in his willingness to share ideas publicly. Early in the term he held back in discussion; by midterm he was regularly contributing observations that advanced our conversations. His written analysis has been solid, and his reflection shows healthy self-awareness about where he wants to improve.",
+        skills: {
+          "Ownership of Learning": { selections: [sel("Engagement during class","Social Engagement","strength")], custom: [] },
+          "Collaboration": { selections: [sel("Supporting peers' understanding","Community Building and Collaborative Discussion","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Flexibility and clarity in explaining ideas","Rhetorical Situation","strength")], custom: [] }
+        }
+      },
+      [`${T}|0_4`]: { // Luca Ferretti — in-progress
+        narrative: "Luca shows flashes of genuine insight in discussion but has not yet found consistency in his written work.",
+        skills: {
+          "Critical Thinking": { selections: [sel("Asking complex or nuanced questions","Question Asking","strength")], custom: [] }
+        }
+      },
+      [`${T}|0_9`]: { // Sofia Reyes — complete (not finalized)
+        narrative: "Sofia is a confident and articulate contributor whose presence elevates our discussions. She has a gift for clear verbal communication and her ideas are consistently worth hearing. More careful revision would make her written work as sharp as her spoken analysis.",
+        skills: {
+          "Collaboration": { selections: [sel("Facilitation and contribution during group work","Collaborative Labor","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Clear & accurate verbal communication","Verbal Communication","strength")], custom: [] },
+          "Critical Thinking": { selections: [sel("Interpretation and evaluation of information","Analysis","strength")], custom: [] }
+        }
+      },
+      [`${T}|0_10`]: { // Yuki Tanaka — in-progress
+        narrative: "",
+        skills: {
+          "Academic Skills and Responsibility": { selections: [sel("Careful and thorough note-taking","Documentation and Organization of Materials","strength")], custom: [] },
+          "Ownership of Learning": { selections: [sel("Awareness of personal motivations","Motivation","growth")], custom: [] }
+        }
+      },
+      [`${T}|0_12`]: { // Destiny Washington — reviewed
+        narrative: "Destiny's growth this semester has been one of the highlights of the class. She came in with strong instincts and has developed those into a more systematic approach to critical analysis. Her engagement has deepened noticeably since midterm, and her work now reflects the careful reasoning this course demands at its best.",
+        finalized: true, advisorReviewed: true,
+        skills: {
+          "Ownership of Learning": { selections: [sel("Incorporation of feedback","Personal Reflection","strength")], custom: [] },
+          "Critical Thinking": { selections: [sel("Analysis from multiple perspectives","Analysis","strength"), sel("Drawing and justifying logical conclusions","Synthesis and Application (Meaning Making)","strength")], custom: [] },
+          "Collaboration": { selections: [sel("Asking effective and insightful questions","Community Building and Collaborative Discussion","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Logical sequencing in writing","Written Communication","growth")], custom: [] }
+        }
+      },
+      // Class 1 — The Science of Naps and Other Human Behaviors
+      [`${T}|1_0`]: { // Leila Ahmadi — finalized
+        narrative: "Leila is one of the most consistently prepared students in this class. Her curiosity drives genuine engagement with the material, and her analytical work reflects careful reading and thoughtful synthesis. She is an asset to every discussion she participates in.",
+        finalized: true,
+        skills: {
+          "Ownership of Learning": { selections: [sel("Curiosity-fueled motivation","Motivation","strength")], custom: [] },
+          "Academic Skills and Responsibility": { selections: [sel("Effective time management and self-care","Time Management","strength"), sel("Preparation for class","Time Management","strength")], custom: [] },
+          "Critical Thinking": { selections: [sel("Gathering information from diverse sources","Research and Sources","strength")], custom: [] }
+        }
+      },
+      [`${T}|1_2`]: { // Aaliyah Brooks — complete
+        narrative: "Aaliyah is a natural collaborator who keeps group work focused and productive. Her awareness of audience in her written work has developed considerably this term, and she brings genuine enthusiasm to the course material.",
+        skills: {
+          "Collaboration": { selections: [sel("Sharing group work responsibilities","Collaborative Labor","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Audience awareness","Rhetorical Situation","strength")], custom: [] },
+          "Ownership of Learning": { selections: [sel("Engagement during class","Social Engagement","strength")], custom: [] }
+        }
+      },
+      // Class 2 — History of Bad Ideas
+      [`${T}|2_0`]: { // Blessing Adeyemi — reviewed
+        narrative: "Blessing brings a distinctive intellectual voice to History of Bad Ideas. Her essays demonstrate sophisticated analysis that consistently moves beyond surface-level observation to examine underlying systems and assumptions. She is among the most analytically mature students I have taught.",
+        finalized: true, advisorReviewed: true,
+        skills: {
+          "Critical Thinking": { selections: [sel("Analysis from multiple perspectives","Analysis","strength"), sel("Interpretation and evaluation of information","Analysis","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Use of new vocabulary & academic language","Rhetorical Situation","strength"), sel("Clarity & thoroughness in written work","Written Communication","strength")], custom: [] },
+          "Ownership of Learning": { selections: [sel("Learning for learning's sake","Motivation","strength")], custom: [] },
+          "Collaboration": { selections: [sel("Thoughtful critique of ideas & solutions","Community Building and Collaborative Discussion","strength")], custom: [] }
+        }
+      },
+      // Class 3 — Why Is Everything So Expensive: An Economic Inquiry
+      [`${T}|3_0`]: { // Kofi Asare — finalized
+        narrative: "Kofi approaches economic questions with impressive rigor. His ability to analyze from multiple perspectives and articulate his reasoning clearly makes him a valuable contributor to the class's inquiry. His work is consistently well-organized and submitted on time.",
+        finalized: true,
+        skills: {
+          "Critical Thinking": { selections: [sel("Analysis from multiple perspectives","Analysis","strength")], custom: [] },
+          "Communication of Ideas": { selections: [sel("Clarity & thoroughness in written work","Written Communication","strength")], custom: [] },
+          "Academic Skills and Responsibility": { selections: [sel("Meeting assignment deadlines","Time Management","strength")], custom: [] }
+        }
+      }
+    }
   };
 }
 
@@ -2215,7 +2328,7 @@ function onTermChange() {
     teacherName = r.teacherName;
   } else {
     CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
-    teacherName = 'Edna Krabappel';
+    teacherName = 'Sarah Chen';
   }
   document.getElementById('teacherNameDisplay').textContent = teacherName;
 
@@ -2550,7 +2663,7 @@ function doReset() {
   });
   // Reset roster to defaults
   CLASSES = DEFAULT_CLASSES.map(c => ({ name: c.name, students: [...c.students] }));
-  teacherName = 'Edna Krabappel';
+  teacherName = 'Sarah Chen';
   openClassIdx = 0;
   activeCI = null;
   activeSI = null;
