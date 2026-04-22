@@ -429,10 +429,10 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 **Left Sidebar (Main Menu)**
 - Users
-- Terms & Settings
+- Settings
 - Comment Banks
-- Student Prompts
-- Rosters & Import
+- Student Reflection Prompts
+- Terms & Rosters
 - Report Cards
 - Analytics
 - Data Management
@@ -462,110 +462,52 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 **Delete User**
 - Archive user account (do not permanently delete due to audit trail)
 
-#### 2. Term Management
+#### 2. Settings (Validation Rules)
+
+Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These apply automatically to all terms; no per-term entry is needed. Rules are grouped to match the order of the report card.
+
+**Student Reflection**
+- Minimum characters required before submission is enabled
+- Maximum characters allowed
+- Rules set to zero are not enforced
+
+**Skill Comments**
+- Minimum number of skill areas that must have at least one comment
+- Required skills (comma-separated names; each must have at least one comment)
+- Minimum total skill comments per report card
+- Maximum comments per skill
+- Maximum character limit for custom skill comments (free text a teacher writes in the skill panel — one-time notes or personal saved comments — as opposed to selections from the standard bank)
+- Rules set to zero are not enforced and not shown to teachers
+
+**Narrative**
+- Minimum characters (default: 15)
+- Maximum characters (0 = no limit)
+- Rules set to zero are not enforced
+
+#### 3. Terms & Rosters
+
+Term management lives alongside roster management since terms define the periods that rosters are organized under.
 
 **View Terms**
-- List all school years
-- For each year, show all configured terms with:
-  - Term name
-  - Order
+- List all school years; for each year, show all configured terms with:
+  - Term name and order
   - Start/end dates
   - Locked status
   - Report card types (midterm, final, both)
 
-**Create New Term**
-- Input school year
-- Input term name
-- Input order in sequence
-- Select reporting periods to include (Midterm and/or Final); both share the same roster
-- Set student reflection freeze dates (if applicable)
-- Validation rules are inherited automatically from the global Midterm or Final configuration; no per-term rule entry needed
-
-**Edit Term**
-- Modify term name, order, dates, structure
-- Cannot edit past terms (if locked for data integrity)
-
-**Validation Configuration**
-
-Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These are set once and inherited by all terms automatically.
-
-**Teacher comment requirements:**
-- Minimum number of skill areas that must have at least one comment
-- Minimum total comments required per report card
-- Maximum comments allowed per skill
-- Maximum character limit for custom comments
-- Required skills (must have at least one comment)
-- Rules set to zero are not enforced and not shown to teachers
-
-**Student reflection requirements:**
-- Minimum character count required before submission is enabled
-- Maximum character count allowed for a reflection
-- Rules set to zero are not enforced
+**Create / Edit Term**
+- Input school year, term name, order in sequence
+- Select reporting periods (Midterm and/or Final); both share the same roster
+- Set student reflection freeze date (optional)
+- Validation rules are inherited automatically from global config; no per-term entry needed
+- Cannot edit locked terms
 
 **Lock Term**
 - Makes term read-only for teachers and advisors
-- Admin can still see and export
+- Admin can still view and export
 - Used before distributing final report cards
 
-#### 3. Comment Bank Management (Standard Comment Banks)
-
-**View Comment Banks**
-- List all standard comment bank sets
-- For each bank, show:
-  - Bank name
-  - Associated department/course level
-  - Number of subskills included
-  - Last modified date
-  - Applied to: which departments/courses use this bank
-
-**Create/Upload Comment Bank**
-- Upload CSV file with columns: Transferable Skill, Skill Area, Subskill, Strength, Growth
-- Or input comments manually through form
-- System organizes comments into the skill hierarchy automatically
-
-**Set School-wide Default Comment Bank**
-- Select the primary comment bank that all courses will use by default
-- This applies unless overridden at department or course level
-
-**Customize Comment Banks by Department/Course**
-- Override the school default for specific departments (e.g., "World Languages" uses a different bank)
-- Override department selection for specific subdepartments or courses (e.g., "Spanish for Native Speakers" within World Languages)
-- Override for individual courses if needed
-- Each course uses exactly one standard comment bank
-- More specific selections override broader defaults
-
-**Manage Standard Comments**
-- Edit comment text within a bank
-- Add new subskill with strength/growth comments
-- Delete subskills or comments
-- View which courses are using each bank
-
-**Note on Custom Comments**
-- Individual teachers' custom comments are not managed here
-- Teachers export/import their own custom comments for sharing with colleagues
-- Custom comments are stored per teacher and not shared by default
-
-#### 4. Student Prompts Configuration
-
-**View Prompts**
-- List all configured prompts by term/course/department
-- Show prompt text and customization level
-
-**Create Prompt**
-- Select customization level: Universal, Department, or Course
-- Input prompt text
-- Assign to term(s)
-- Set minimum and maximum character requirements for student submission
-
-**Edit Prompt**
-- Update prompt text
-- Change customization level
-- Update term assignment
-
-**Delete Prompt**
-- Remove prompt (affects future submissions only)
-
-#### 5. Roster Management
+**Roster Management**
 
 **View Rosters**
 - List all imported rosters by term
@@ -594,10 +536,82 @@ Admin maintains two global validation configurations — one for Midterm reporti
 - Add/edit/delete classes
 - Reassign students to classes
 - Reassign teachers to classes
+- Assign or override the reflection prompt for a course (overrides the Universal or Department default for that course only; revert to "(Use default)" to remove the override)
 
 **Export Rosters**
 - Export class roster as CSV
 - Export student list as CSV
+
+#### 4. Comment Bank Management (Standard Comment Banks)
+
+**View Comment Banks**
+- List all standard comment bank sets
+- For each bank, show:
+  - Bank name
+  - Associated department/course level
+  - Number of subskills included
+  - Last modified date
+  - Applied to: which departments/courses use this bank
+
+**Create/Upload Comment Bank**
+- Upload CSV file with columns: Transferable Skill, Skill Area, Subskill, Strength, Growth
+- Or input comments manually through form
+- System organizes comments into the skill hierarchy automatically
+
+**Set School-wide Default Comment Bank**
+- Select the primary comment bank that all courses will use by default
+- This applies unless overridden at department or course level
+
+**Customize Comment Banks by Department/Course**
+- Override the school default for specific departments (e.g., "World Languages" uses a different bank)
+- Override department selection for specific subdepartments or courses (e.g., "Spanish for Native Speakers" within World Languages)
+- Override for individual courses if needed
+- Each course uses exactly one standard comment bank
+- More specific selections override broader defaults
+
+**Assignments are per-term**
+- Comment bank assignments (which department/course uses which bank) are stored per term, not globally
+- Admin selects a term when editing assignments; changes only affect that term
+- When a new term is created, it automatically inherits the comment bank assignments from the most recent preceding term — the admin can then adjust for the upcoming term without affecting any current or past term
+
+**Manage Standard Comments**
+- Edit comment text within a bank
+- Add new subskill with strength/growth comments
+- Delete subskills or comments
+- View which courses are using each bank
+
+**Note on Custom Comments**
+- Individual teachers' custom comments are not managed here
+- Teachers export/import their own custom comments for sharing with colleagues
+- Custom comments are stored per teacher and not shared by default
+
+#### 5. Student Reflection Prompts Configuration
+
+Prompts are authored here and set as defaults at the Universal or Department level. Course-level assignment is managed from the Roster (see section 3).
+
+**View Prompts**
+- List all configured prompts filtered by term and level
+- Show prompt name, text, character limits, and terms active in
+- For prompts not set as a default (no Universal or Department scope), show which courses are currently assigned to them
+
+**Create Prompt**
+- Name the prompt
+- Set default scope: Universal (applies to all classes) or Department (applies to all classes in a department)
+- Prompts with no default scope are available for manual assignment to individual courses from the Roster
+- Assign to term(s)
+- Set minimum and maximum character requirements for student submission
+
+**Edit Prompt**
+- Update prompt name and text
+- Change default scope
+- Update term assignment
+
+**Delete Prompt**
+- Remove prompt (affects future submissions only)
+
+**Course-level Assignment**
+- Individual courses can override the default prompt from the Roster tab
+- See section 3 (Terms & Rosters → Roster) for assignment UI
 
 #### 6. Report Card Status & Management
 
@@ -647,17 +661,29 @@ Admin maintains two global validation configurations — one for Midterm reporti
 
 #### 8. Analytics
 
-**Usage Analytics**
-- Standard comment usage frequency (which comments are used most/least)
-- Comment bank performance by course/department
-- Teacher report card completion rates
-- Student reflection submission rates
-- Advisor review turnaround times
+Analytics is the default landing view for admin. It shows whether reporting is proceeding normally at a glance.
 
-**Export Analytics**
-- Export custom comment banks per teacher (for sharing/best practices)
-- Export comment usage reports
-- Export completion status reports
+**Summary KPIs**
+- Report Cards Completed (count and %, finalized or reviewed)
+- Report Cards Reviewed (count and %)
+- Student Reflections Submitted (count and %)
+
+**Completion Breakdown**
+- Summary card showing overall completion rate and any classes flagged below a threshold
+- "View Breakdown" link opens a sortable table: Class, Teacher, Students, Completed, Reviewed, % Done
+- Rows are expandable to show individual students with their report card status and whether a reflection was submitted
+- Clicking a student name opens the impersonate (spoof) dialog for quick admin assistance
+
+**Reflection Submission Breakdown**
+- Summary card showing overall submission rate and any classes flagged below threshold
+- "View Breakdown" link opens a sortable table: Class, Teacher, Students, Submitted, %
+- Rows are expandable to individual students; clicking a name opens the spoof dialog
+
+**Reports**
+- Comment usage report (CSV): which standard comments were used, by how many teachers and classes
+- Completion status report (CSV): report card and reflection status for all students in the term
+- Teacher custom comment banks (CSV): export a specific teacher's personal comment bank for sharing
+- Custom report: choose any combination of available data fields and generate a CSV export
 
 #### 9. Data Management
 
@@ -754,7 +780,7 @@ The school-wide default comment bank is loaded from a separate default file. Add
 - Report card data:
   - Skills:
     - Skill name (stored as text snapshot, not a foreign key, so bank edits don't alter existing cards)
-    - Selected standard comments (Array of comment references — subskill name + strength/growth type — resolved to text at display time from the bank, or snapshotted at finalization)
+    - Selected standard comments (Array of text snapshots — comment text is copied from the bank at finalization; report cards are fully self-contained after finalization and do not depend on the comment bank)
     - One-time custom comments (Array of text strings added for this student only; stored directly as text in the database)
     - Saved custom comments applied (Array of text strings from the teacher's reusable bank, also stored as text snapshots)
   - Narrative field (text)
