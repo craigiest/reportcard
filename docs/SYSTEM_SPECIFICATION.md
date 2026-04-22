@@ -507,6 +507,40 @@ Term management lives alongside roster management since terms define the periods
 - Admin can still view and export
 - Used before distributing final report cards
 
+**Roster Management**
+
+**View Rosters**
+- List all imported rosters by term
+- Show classes, students, teacher assignments
+
+**Import Rosters**
+- CSV import:
+  - Upload CSV file with format: `teacher,course,student`
+  - Preview import showing number of rows/classes/students
+  - Confirm and apply (with option to replace or merge)
+  - Example:
+    ```
+    teacher,course,student
+    "John Smith","Biology 101","Alice Johnson"
+    "John Smith","Biology 101","Bob Davis"
+    "Jane Doe","English 10","Charlie Brown"
+    ```
+- Blackbaud/Canvas integration (TBD: specifics for database manager)
+  - Authenticate with external system
+  - Select classes/students to sync
+  - Schedule periodic sync or one-time import
+  - View sync history
+
+**Manage Rosters**
+- Add/edit/delete students manually
+- Add/edit/delete classes
+- Reassign students to classes
+- Reassign teachers to classes
+
+**Export Rosters**
+- Export class roster as CSV
+- Export student list as CSV
+
 #### 4. Comment Bank Management (Standard Comment Banks)
 
 **View Comment Banks**
@@ -564,40 +598,6 @@ Term management lives alongside roster management since terms define the periods
 
 **Delete Prompt**
 - Remove prompt (affects future submissions only)
-
-**Roster Management**
-
-**View Rosters**
-- List all imported rosters by term
-- Show classes, students, teacher assignments
-
-**Import Rosters**
-- CSV import:
-  - Upload CSV file with format: `teacher,course,student`
-  - Preview import showing number of rows/classes/students
-  - Confirm and apply (with option to replace or merge)
-  - Example:
-    ```
-    teacher,course,student
-    "John Smith","Biology 101","Alice Johnson"
-    "John Smith","Biology 101","Bob Davis"
-    "Jane Doe","English 10","Charlie Brown"
-    ```
-- Blackbaud/Canvas integration (TBD: specifics for database manager)
-  - Authenticate with external system
-  - Select classes/students to sync
-  - Schedule periodic sync or one-time import
-  - View sync history
-
-**Manage Rosters**
-- Add/edit/delete students manually
-- Add/edit/delete classes
-- Reassign students to classes
-- Reassign teachers to classes
-
-**Export Rosters**
-- Export class roster as CSV
-- Export student list as CSV
 
 #### 6. Report Card Status & Management
 
