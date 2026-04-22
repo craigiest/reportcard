@@ -429,10 +429,10 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 **Left Sidebar (Main Menu)**
 - Users
-- Terms & Settings
+- Settings
 - Comment Banks
 - Student Prompts
-- Rosters & Import
+- Terms & Rosters
 - Report Cards
 - Analytics
 - Data Management
@@ -462,52 +462,52 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 **Delete User**
 - Archive user account (do not permanently delete due to audit trail)
 
-#### 2. Term Management
+#### 2. Settings (Validation Rules)
+
+Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These apply automatically to all terms; no per-term entry is needed. Rules are grouped to match the order of the report card.
+
+**Student Reflection**
+- Minimum characters required before submission is enabled
+- Maximum characters allowed
+- Rules set to zero are not enforced
+
+**Skill Comments**
+- Minimum number of skill areas that must have at least one comment
+- Required skills (comma-separated names; each must have at least one comment)
+- Minimum total skill comments per report card
+- Maximum comments per skill
+- Maximum character limit for custom skill comments (free text a teacher writes in the skill panel — one-time notes or personal saved comments — as opposed to selections from the standard bank)
+- Rules set to zero are not enforced and not shown to teachers
+
+**Narrative**
+- Minimum characters (default: 15)
+- Maximum characters (0 = no limit)
+- Rules set to zero are not enforced
+
+#### 3. Terms & Rosters
+
+Term management lives alongside roster management since terms define the periods that rosters are organized under.
 
 **View Terms**
-- List all school years
-- For each year, show all configured terms with:
-  - Term name
-  - Order
+- List all school years; for each year, show all configured terms with:
+  - Term name and order
   - Start/end dates
   - Locked status
   - Report card types (midterm, final, both)
 
-**Create New Term**
-- Input school year
-- Input term name
-- Input order in sequence
-- Select reporting periods to include (Midterm and/or Final); both share the same roster
-- Set student reflection freeze dates (if applicable)
-- Validation rules are inherited automatically from the global Midterm or Final configuration; no per-term rule entry needed
-
-**Edit Term**
-- Modify term name, order, dates, structure
-- Cannot edit past terms (if locked for data integrity)
-
-**Validation Configuration**
-
-Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These are set once and inherited by all terms automatically.
-
-**Teacher comment requirements:**
-- Minimum number of skill areas that must have at least one comment
-- Minimum total comments required per report card
-- Maximum comments allowed per skill
-- Maximum character limit for custom comments
-- Required skills (must have at least one comment)
-- Rules set to zero are not enforced and not shown to teachers
-
-**Student reflection requirements:**
-- Minimum character count required before submission is enabled
-- Maximum character count allowed for a reflection
-- Rules set to zero are not enforced
+**Create / Edit Term**
+- Input school year, term name, order in sequence
+- Select reporting periods (Midterm and/or Final); both share the same roster
+- Set student reflection freeze date (optional)
+- Validation rules are inherited automatically from global config; no per-term entry needed
+- Cannot edit locked terms
 
 **Lock Term**
 - Makes term read-only for teachers and advisors
-- Admin can still see and export
+- Admin can still view and export
 - Used before distributing final report cards
 
-#### 3. Comment Bank Management (Standard Comment Banks)
+#### 4. Comment Bank Management (Standard Comment Banks)
 
 **View Comment Banks**
 - List all standard comment bank sets
@@ -545,7 +545,7 @@ Admin maintains two global validation configurations — one for Midterm reporti
 - Teachers export/import their own custom comments for sharing with colleagues
 - Custom comments are stored per teacher and not shared by default
 
-#### 4. Student Prompts Configuration
+#### 5. Student Prompts Configuration
 
 **View Prompts**
 - List all configured prompts by term/course/department
@@ -565,7 +565,7 @@ Admin maintains two global validation configurations — one for Midterm reporti
 **Delete Prompt**
 - Remove prompt (affects future submissions only)
 
-#### 5. Roster Management
+**Roster Management**
 
 **View Rosters**
 - List all imported rosters by term

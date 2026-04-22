@@ -672,6 +672,19 @@
     .danger-zone-title { font-weight: 700; font-size: 0.82rem; color: #991b1b; margin-bottom: 0.4rem; }
     .danger-zone-desc  { font-size: 0.78rem; color: #b91c1c; line-height: 1.45; }
 
+    /* ── VAL SECTION LABELS ── */
+    .val-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #94a3b8;
+      padding-top: 0.4rem;
+      border-top: 1px solid #f1f5f9;
+      margin-top: 0.1rem;
+    }
+    .val-section-label:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+
     /* ── STUDENT PROMPTS ── */
     .prompt-card {
       background: #fff;
@@ -753,7 +766,7 @@
         <span class="nav-icon">👤</span> Users
       </div>
       <div class="nav-item" data-section="terms" onclick="showSection('terms')">
-        <span class="nav-icon">📅</span> Terms &amp; Settings
+        <span class="nav-icon">⚙️</span> Settings
       </div>
       <div class="nav-item" data-section="banks" onclick="showSection('banks')">
         <span class="nav-icon">💬</span> Comment Banks
@@ -762,7 +775,7 @@
         <span class="nav-icon">✏️</span> Student Prompts
       </div>
       <div class="nav-item" data-section="rosters" onclick="showSection('rosters')">
-        <span class="nav-icon">📋</span> Rosters &amp; Import
+        <span class="nav-icon">📋</span> Terms &amp; Rosters
       </div>
       <div class="nav-item" data-section="reportcards" onclick="showSection('reportcards')">
         <span class="nav-icon">📄</span> Report Cards
@@ -909,166 +922,131 @@
 
       <div class="section-header">
         <div>
-          <div class="section-title">Terms &amp; Settings</div>
-          <div class="section-subtitle">Configure school terms and global validation rules</div>
+          <div class="section-title">Settings</div>
+          <div class="section-subtitle">Global validation rules — apply automatically to all Midterm and Final reporting periods</div>
         </div>
       </div>
 
-      <!-- Sub-tabs -->
-      <div class="sub-tabs">
-        <div class="sub-tab active" onclick="showSubTab('terms','termsList')">Terms</div>
-        <div class="sub-tab" onclick="showSubTab('terms','validation')">Validation Rules</div>
-      </div>
+      <p style="font-size:0.82rem;color:#64748b;margin-bottom:1.25rem">
+        Set any numeric value to <strong>0</strong> to disable that rule. Rules are grouped to match the order of the report card.
+      </p>
 
-      <!-- Terms list sub-panel -->
-      <div class="sub-panel active" id="terms-termsList">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-          <button class="btn btn-primary" onclick="openModal('newTermModal')">+ New Term</button>
-        </div>
+      <div class="val-grid">
 
-        <div class="year-group">
-          <div class="year-heading">2025–2026</div>
-          <div class="term-row">
-            <div class="term-name">S1</div>
-            <div class="term-dates">Sep 3, 2025 – Jan 16, 2026</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
-            </div>
-            <span class="term-locked">Locked</span>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
-            </div>
-          </div>
-          <div class="term-row">
-            <div class="term-name">S2</div>
-            <div class="term-dates">Jan 27 – Jun 12, 2026</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
-            </div>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" onclick="openModal('editTermModal')">Edit</button>
-              <button class="btn btn-danger btn-sm" onclick="lockTerm(this)">Lock</button>
-            </div>
-          </div>
-        </div>
+        <!-- Midterm -->
+        <div class="val-card">
+          <div class="val-card-header">Midterm</div>
+          <div class="val-card-body">
 
-        <div class="year-group">
-          <div class="year-heading">2024–2025</div>
-          <div class="term-row">
-            <div class="term-name">S1</div>
-            <div class="term-dates">Sep 4, 2024 – Jan 17, 2025</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
+            <div class="val-section-label">Student Reflection</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="100">
             </div>
-            <span class="term-locked">Locked</span>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="500">
             </div>
-          </div>
-          <div class="term-row">
-            <div class="term-name">S2</div>
-            <div class="term-dates">Jan 28 – Jun 6, 2025</div>
-            <div class="term-periods">
-              <span class="period-tag">Midterm</span>
-              <span class="period-tag">Final</span>
+
+            <div class="val-section-label">Skill Comments</div>
+            <div class="val-row">
+              <span class="val-row-label">Min skill areas with ≥ 1 comment</span>
+              <input class="val-input" type="number" min="0" value="2">
             </div>
-            <span class="term-locked">Locked</span>
-            <div class="term-actions">
-              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            <div style="margin-bottom:0.1rem">
+              <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
+              <input class="form-input" type="text" placeholder="e.g. Collaboration, Self-Management" style="font-size:0.8rem">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Min total skill comments</span>
+              <input class="val-input" type="number" min="0" value="3">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max comments per skill</span>
+              <input class="val-input" type="number" min="0" value="3">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max chars, custom skill comment <span style="font-weight:400;color:#94a3b8;font-size:0.74rem">①</span></span>
+              <input class="val-input" type="number" min="0" value="300">
+            </div>
+
+            <div class="val-section-label">Narrative</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="15">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="0">
+            </div>
+
+            <div class="val-hint">
+              0 = rule not enforced · leave required skills blank to skip<br>
+              <span style="color:#64748b">① A custom skill comment is free text a teacher writes directly in the skill panel — either as a one-time note for that student, or saved to their personal comment bank — as opposed to a selection from the standard bank.</span>
+            </div>
+            <div class="val-save-row">
+              <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Validation rules sub-panel -->
-      <div class="sub-panel" id="terms-validation">
-        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1.25rem">
-          These two configurations apply automatically to all Midterm and Final reporting periods respectively. Set any value to <strong>0</strong> to disable that rule.
-        </p>
-        <div class="val-grid">
+        <!-- Final -->
+        <div class="val-card">
+          <div class="val-card-header">Final</div>
+          <div class="val-card-body">
 
-          <!-- Midterm -->
-          <div class="val-card">
-            <div class="val-card-header">Midterm</div>
-            <div class="val-card-body">
-              <div class="val-row">
-                <span class="val-row-label">Min skill areas with at least one comment</span>
-                <input class="val-input" type="number" min="0" value="2">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min total comments per report card</span>
-                <input class="val-input" type="number" min="0" value="3">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max comments per skill</span>
-                <input class="val-input" type="number" min="0" value="3">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max characters per custom comment</span>
-                <input class="val-input" type="number" min="0" value="300">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="100">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="500">
-              </div>
-              <div style="margin-top:0.25rem">
-                <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
-                <input class="form-input" type="text" placeholder="e.g. Collaboration, Self-Management" style="font-size:0.8rem">
-              </div>
-              <div class="val-hint">0 = rule not enforced · leave required skills blank to skip</div>
-              <div class="val-save-row">
-                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
-              </div>
+            <div class="val-section-label">Student Reflection</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="150">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="700">
+            </div>
+
+            <div class="val-section-label">Skill Comments</div>
+            <div class="val-row">
+              <span class="val-row-label">Min skill areas with ≥ 1 comment</span>
+              <input class="val-input" type="number" min="0" value="3">
+            </div>
+            <div style="margin-bottom:0.1rem">
+              <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
+              <input class="form-input" type="text" value="Collaboration, Self-Management" style="font-size:0.8rem">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Min total skill comments</span>
+              <input class="val-input" type="number" min="0" value="5">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max comments per skill</span>
+              <input class="val-input" type="number" min="0" value="4">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max chars, custom skill comment <span style="font-weight:400;color:#94a3b8;font-size:0.74rem">①</span></span>
+              <input class="val-input" type="number" min="0" value="300">
+            </div>
+
+            <div class="val-section-label">Narrative</div>
+            <div class="val-row">
+              <span class="val-row-label">Min characters</span>
+              <input class="val-input" type="number" min="0" value="15">
+            </div>
+            <div class="val-row">
+              <span class="val-row-label">Max characters</span>
+              <input class="val-input" type="number" min="0" value="0">
+            </div>
+
+            <div class="val-hint">
+              0 = rule not enforced · leave required skills blank to skip<br>
+              <span style="color:#64748b">① A custom skill comment is free text a teacher writes directly in the skill panel — either as a one-time note for that student, or saved to their personal comment bank — as opposed to a selection from the standard bank.</span>
+            </div>
+            <div class="val-save-row">
+              <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
             </div>
           </div>
-
-          <!-- Final -->
-          <div class="val-card">
-            <div class="val-card-header">Final</div>
-            <div class="val-card-body">
-              <div class="val-row">
-                <span class="val-row-label">Min skill areas with at least one comment</span>
-                <input class="val-input" type="number" min="0" value="3">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min total comments per report card</span>
-                <input class="val-input" type="number" min="0" value="5">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max comments per skill</span>
-                <input class="val-input" type="number" min="0" value="4">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max characters per custom comment</span>
-                <input class="val-input" type="number" min="0" value="300">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Min student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="150">
-              </div>
-              <div class="val-row">
-                <span class="val-row-label">Max student reflection characters</span>
-                <input class="val-input" type="number" min="0" value="700">
-              </div>
-              <div style="margin-top:0.25rem">
-                <div class="val-row-label" style="margin-bottom:0.3rem">Required skills <span style="font-weight:400;color:#94a3b8">(must have ≥ 1 comment)</span></div>
-                <input class="form-input" type="text" value="Collaboration, Self-Management" style="font-size:0.8rem">
-              </div>
-              <div class="val-hint">0 = rule not enforced · leave required skills blank to skip</div>
-              <div class="val-save-row">
-                <button class="btn btn-primary btn-sm" onclick="this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500)">Save</button>
-              </div>
-            </div>
-          </div>
-
         </div>
+
       </div>
 
     </div><!-- /section-terms -->
@@ -1640,18 +1618,82 @@
 
       <div class="section-header">
         <div>
-          <div class="section-title">Rosters &amp; Import</div>
-          <div class="section-subtitle">View class rosters, import from CSV, and manage students</div>
+          <div class="section-title">Terms &amp; Rosters</div>
+          <div class="section-subtitle">Manage school terms, class rosters, and CSV imports</div>
         </div>
       </div>
 
       <div class="sub-tabs">
-        <div class="sub-tab active" onclick="showSubTab('rosters','roster')">Roster</div>
+        <div class="sub-tab active" onclick="showSubTab('rosters','terms')">Terms</div>
+        <div class="sub-tab" onclick="showSubTab('rosters','roster')">Roster</div>
         <div class="sub-tab" onclick="showSubTab('rosters','import')">Import</div>
       </div>
 
+      <!-- Terms panel -->
+      <div class="sub-panel active" id="rosters-terms">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+          <button class="btn btn-primary" onclick="openModal('newTermModal')">+ New Term</button>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2025–2026</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 3, 2025 – Jan 16, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 27 – Jun 12, 2026</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" onclick="openModal('editTermModal')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="lockTerm(this)">Lock</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="year-group">
+          <div class="year-heading">2024–2025</div>
+          <div class="term-row">
+            <div class="term-name">S1</div>
+            <div class="term-dates">Sep 4, 2024 – Jan 17, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+          <div class="term-row">
+            <div class="term-name">S2</div>
+            <div class="term-dates">Jan 28 – Jun 6, 2025</div>
+            <div class="term-periods">
+              <span class="period-tag">Midterm</span>
+              <span class="period-tag">Final</span>
+            </div>
+            <span class="term-locked">Locked</span>
+            <div class="term-actions">
+              <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4;cursor:not-allowed">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Roster panel -->
-      <div class="sub-panel active" id="rosters-roster">
+      <div class="sub-panel" id="rosters-roster">
         <div class="filter-bar" style="margin-bottom:1rem">
           <select class="filter-select" id="roster-term" onchange="renderRoster()">
             <option>25–26 S2</option>
