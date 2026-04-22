@@ -568,6 +568,11 @@ Term management lives alongside roster management since terms define the periods
 - Each course uses exactly one standard comment bank
 - More specific selections override broader defaults
 
+**Assignments are per-term**
+- Comment bank assignments (which department/course uses which bank) are stored per term, not globally
+- Admin selects a term when editing assignments; changes only affect that term
+- When a new term is created, it automatically inherits the comment bank assignments from the most recent preceding term — the admin can then adjust for the upcoming term without affecting any current or past term
+
 **Manage Standard Comments**
 - Edit comment text within a bank
 - Add new subskill with strength/growth comments

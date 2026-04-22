@@ -1231,7 +1231,7 @@
                 <td><span class="role-tag role-teacher">Department</span></td>
                 <td>16</td>
                 <td class="td-muted">Dec 4, 2025</td>
-                <td class="td-muted">Spanish, French, Mandarin</td>
+                <td class="td-muted">Spanish, Arabic, Mandarin</td>
                 <td><div class="actions-cell">
                   <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
                   <button class="btn btn-danger btn-sm">Delete</button>
@@ -1255,6 +1255,15 @@
 
       <!-- Assignments tree -->
       <div class="sub-panel" id="banks-assignments">
+        <div class="filter-bar" style="margin-bottom:1rem">
+          <label style="font-size:0.8rem;font-weight:600;color:#374151;white-space:nowrap">Term:</label>
+          <select class="filter-select">
+            <option>25–26 S2 (current)</option>
+            <option>25–26 S1</option>
+            <option>24–25 S2</option>
+          </select>
+          <span style="font-size:0.78rem;color:#94a3b8">Edits apply only to the selected term. New terms inherit the previous term's assignments.</span>
+        </div>
         <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">
           Each course uses exactly one standard bank. More specific assignments override broader ones. Expand a department to set course-level overrides.
         </p>
@@ -1333,7 +1342,7 @@
                 <span class="assign-inherited" style="color:#4f46e5;font-style:normal;font-weight:600">Spanish for Native Speakers ↑ override</span>
               </div>
               <div class="assign-course-row">
-                <span class="assign-course-name">French I–III</span>
+                <span class="assign-course-name">Arabic I–III</span>
                 <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
                 <span class="assign-inherited">World Languages Bank</span>
               </div>
