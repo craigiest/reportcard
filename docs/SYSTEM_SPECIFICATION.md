@@ -431,7 +431,7 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Users
 - Settings
 - Comment Banks
-- Student Prompts
+- Student Reflection Prompts
 - Terms & Rosters
 - Report Cards
 - Analytics
@@ -584,7 +584,7 @@ Term management lives alongside roster management since terms define the periods
 - Teachers export/import their own custom comments for sharing with colleagues
 - Custom comments are stored per teacher and not shared by default
 
-#### 5. Student Prompts Configuration
+#### 5. Student Reflection Prompts Configuration
 
 **View Prompts**
 - List all configured prompts by term/course/department
