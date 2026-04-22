@@ -746,6 +746,41 @@
     .spoof-link:hover { color: #4338ca; }
     .sort-th { cursor: pointer; user-select: none; }
     .sort-th:hover { color: #4f46e5; }
+
+    /* ── ASSIGNMENTS SECTION ── */
+    .assign-table { width: 100%; border-collapse: collapse; }
+    .assign-table th {
+      text-align: left; font-size: 0.77rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em; color: #64748b;
+      padding: 0.5rem 0.75rem; border-bottom: 2px solid #e2e8f0; background: #f8fafc;
+    }
+    .assign-row-school td {
+      padding: 0.8rem 0.75rem; background: #f0f9ff;
+      border-bottom: 2px solid #bae6fd; font-weight: 600; color: #0c4a6e;
+    }
+    .assign-row-dept { cursor: pointer; user-select: none; }
+    .assign-row-dept td {
+      padding: 0.65rem 0.75rem; border-bottom: 1px solid #e2e8f0;
+      background: #fafafa; font-weight: 600; font-size: 0.875rem; color: #1e293b;
+    }
+    .assign-row-dept:hover td { background: #f1f5f9; }
+    .assign-row-dept.open td { background: #f8f8ff; border-bottom-color: #c7d2fe; }
+    .assign-row-course td {
+      padding: 0.5rem 0.75rem 0.5rem 2.25rem; border-bottom: 1px solid #f1f5f9;
+      font-size: 0.85rem; color: #374151;
+    }
+    .assign-row-course:last-of-type td { border-bottom: 1px solid #e2e8f0; }
+    .assign-toggle-icon {
+      display: inline-block; margin-right: 0.4rem; font-size: 0.68rem;
+      transition: transform 0.15s; color: #94a3b8;
+    }
+    .assign-row-dept.open .assign-toggle-icon { transform: rotate(90deg); }
+    .assign-course-count { font-size: 0.75rem; color: #94a3b8; font-weight: normal; margin-left: 0.4rem; }
+    .assign-select {
+      padding: 0.28rem 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;
+      font-size: 0.82rem; color: #374151; background: white; width: 100%; max-width: 230px;
+    }
+    .assign-select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px #e0e7ff; }
   </style>
 </head>
 <body>
@@ -785,6 +820,9 @@
       </div>
       <div class="nav-item" data-section="prompts" onclick="showSection('prompts')">
         <span class="nav-icon">✏️</span> Student Reflection Prompts
+      </div>
+      <div class="nav-item" data-section="assignments" onclick="showSection('assignments')">
+        <span class="nav-icon">🗂️</span> Assignments
       </div>
       <div class="nav-item" data-section="terms" onclick="showSection('terms')">
         <span class="nav-icon">⚙️</span> Settings
@@ -1400,6 +1438,230 @@
       </div>
 
     </div><!-- /section-banks -->
+
+    <!-- ── ASSIGNMENTS SECTION ── -->
+    <div class="section" id="section-assignments">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Assignments</div>
+          <div class="section-subtitle">Set comment banks and student reflection prompts by department and course</div>
+        </div>
+      </div>
+
+      <div class="filter-bar" style="margin-bottom:1.25rem">
+        <label style="font-size:0.8rem;font-weight:600;color:#374151;white-space:nowrap">Term:</label>
+        <select class="filter-select">
+          <option>25–26 S2 (current)</option>
+          <option>25–26 S1</option>
+          <option>24–25 S2</option>
+        </select>
+        <span style="font-size:0.78rem;color:#94a3b8">New terms inherit the previous term's assignments.</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="assign-table">
+          <thead>
+            <tr>
+              <th style="width:35%">Scope</th>
+              <th style="width:32%">Comment Bank</th>
+              <th style="width:33%">Student Prompt</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- School Default -->
+            <tr class="assign-row-school">
+              <td>School Default</td>
+              <td>
+                <select class="assign-select">
+                  <option selected>Core Skills Bank (v3)</option>
+                  <option>Humanities Bank</option>
+                  <option>STEM Bank</option>
+                  <option>World Languages Bank</option>
+                  <option>Spanish for Native Speakers</option>
+                </select>
+              </td>
+              <td>
+                <select class="assign-select">
+                  <option selected>General Reflection</option>
+                  <option>Language Growth</option>
+                  <option>AP Lit Deep Dive</option>
+                  <option>Heritage Speaker Reflection</option>
+                </select>
+              </td>
+            </tr>
+
+            <!-- English dept -->
+            <tr class="assign-row-dept" data-dept="english" onclick="toggleAssignDept(this)">
+              <td><span class="assign-toggle-icon">▶</span>English<span class="assign-course-count">3 courses</span></td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option>Core Skills Bank (v3)</option>
+                  <option selected>Humanities Bank</option>
+                  <option>STEM Bank</option>
+                  <option>World Languages Bank</option>
+                  <option>Spanish for Native Speakers</option>
+                </select>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option selected>General Reflection</option>
+                  <option>Language Growth</option>
+                  <option>AP Lit Deep Dive</option>
+                  <option>Heritage Speaker Reflection</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="english" style="display:none">
+              <td>English 9</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="english" style="display:none">
+              <td>English 10</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="english" style="display:none">
+              <td>AP Literature</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option>General Reflection</option><option>Language Growth</option><option selected>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+
+            <!-- Math dept -->
+            <tr class="assign-row-dept" data-dept="math" onclick="toggleAssignDept(this)">
+              <td><span class="assign-toggle-icon">▶</span>Math<span class="assign-course-count">2 courses</span></td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option>Core Skills Bank (v3)</option>
+                  <option>Humanities Bank</option>
+                  <option selected>STEM Bank</option>
+                  <option>World Languages Bank</option>
+                  <option>Spanish for Native Speakers</option>
+                </select>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option selected>General Reflection</option>
+                  <option>Language Growth</option>
+                  <option>AP Lit Deep Dive</option>
+                  <option>Heritage Speaker Reflection</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="math" style="display:none">
+              <td>Algebra II</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="math" style="display:none">
+              <td>AP Calculus</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+
+            <!-- Science dept -->
+            <tr class="assign-row-dept" data-dept="science" onclick="toggleAssignDept(this)">
+              <td><span class="assign-toggle-icon">▶</span>Science<span class="assign-course-count">2 courses</span></td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option>Core Skills Bank (v3)</option>
+                  <option>Humanities Bank</option>
+                  <option selected>STEM Bank</option>
+                  <option>World Languages Bank</option>
+                  <option>Spanish for Native Speakers</option>
+                </select>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option selected>General Reflection</option>
+                  <option>Language Growth</option>
+                  <option>AP Lit Deep Dive</option>
+                  <option>Heritage Speaker Reflection</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="science" style="display:none">
+              <td>Biology 101</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="science" style="display:none">
+              <td>Chemistry</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+
+            <!-- World Languages dept -->
+            <tr class="assign-row-dept" data-dept="worldlang" onclick="toggleAssignDept(this)">
+              <td><span class="assign-toggle-icon">▶</span>World Languages<span class="assign-course-count">3 courses</span></td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option>Core Skills Bank (v3)</option>
+                  <option>Humanities Bank</option>
+                  <option>STEM Bank</option>
+                  <option selected>World Languages Bank</option>
+                  <option>Spanish for Native Speakers</option>
+                </select>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option>General Reflection</option>
+                  <option selected>Language Growth</option>
+                  <option>AP Lit Deep Dive</option>
+                  <option>Heritage Speaker Reflection</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="worldlang" style="display:none">
+              <td>Spanish I–III</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option>STEM Bank</option><option selected>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option>General Reflection</option><option selected>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="worldlang" style="display:none">
+              <td>Spanish for Native Speakers</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option selected>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option selected>Heritage Speaker Reflection</option></select></td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="worldlang" style="display:none">
+              <td>Arabic I–III</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option>STEM Bank</option><option selected>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option>General Reflection</option><option selected>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+
+            <!-- History & Social Studies dept -->
+            <tr class="assign-row-dept" data-dept="history" onclick="toggleAssignDept(this)">
+              <td><span class="assign-toggle-icon">▶</span>History &amp; Social Studies<span class="assign-course-count">1 course</span></td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option>Core Skills Bank (v3)</option>
+                  <option selected>Humanities Bank</option>
+                  <option>STEM Bank</option>
+                  <option>World Languages Bank</option>
+                  <option>Spanish for Native Speakers</option>
+                </select>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <select class="assign-select">
+                  <option selected>General Reflection</option>
+                  <option>Language Growth</option>
+                  <option>AP Lit Deep Dive</option>
+                  <option>Heritage Speaker Reflection</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="assign-row-course" data-dept-member="history" style="display:none">
+              <td>World History</td>
+              <td><select class="assign-select"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select></td>
+              <td><select class="assign-select"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /section-assignments -->
 
     <!-- Upload CSV Modal -->
     <div class="modal-overlay" id="uploadBankModal">
@@ -3069,6 +3331,13 @@
     const courses = header.nextElementSibling;
     const open    = courses.classList.toggle('open');
     toggle.classList.toggle('open', open);
+  }
+
+  function toggleAssignDept(row) {
+    const dept = row.dataset.dept;
+    const isOpen = row.classList.toggle('open');
+    document.querySelectorAll('[data-dept-member="' + dept + '"]')
+      .forEach(r => r.style.display = isOpen ? '' : 'none');
   }
 
   // ── ANALYTICS ──
