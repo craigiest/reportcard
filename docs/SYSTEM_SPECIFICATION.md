@@ -647,17 +647,29 @@ Admin maintains two global validation configurations — one for Midterm reporti
 
 #### 8. Analytics
 
-**Usage Analytics**
-- Standard comment usage frequency (which comments are used most/least)
-- Comment bank performance by course/department
-- Teacher report card completion rates
-- Student reflection submission rates
-- Advisor review turnaround times
+Analytics is the default landing view for admin. It shows whether reporting is proceeding normally at a glance.
 
-**Export Analytics**
-- Export custom comment banks per teacher (for sharing/best practices)
-- Export comment usage reports
-- Export completion status reports
+**Summary KPIs**
+- Report Cards Completed (count and %, finalized or reviewed)
+- Report Cards Reviewed (count and %)
+- Student Reflections Submitted (count and %)
+
+**Completion Breakdown**
+- Summary card showing overall completion rate and any classes flagged below a threshold
+- "View Breakdown" link opens a sortable table: Class, Teacher, Students, Completed, Reviewed, % Done
+- Rows are expandable to show individual students with their report card status and whether a reflection was submitted
+- Clicking a student name opens the impersonate (spoof) dialog for quick admin assistance
+
+**Reflection Submission Breakdown**
+- Summary card showing overall submission rate and any classes flagged below threshold
+- "View Breakdown" link opens a sortable table: Class, Teacher, Students, Submitted, %
+- Rows are expandable to individual students; clicking a name opens the spoof dialog
+
+**Reports**
+- Comment usage report (CSV): which standard comments were used, by how many teachers and classes
+- Completion status report (CSV): report card and reflection status for all students in the term
+- Teacher custom comment banks (CSV): export a specific teacher's personal comment bank for sharing
+- Custom report: choose any combination of available data fields and generate a CSV export
 
 #### 9. Data Management
 
