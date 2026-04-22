@@ -311,6 +311,99 @@
     }
     .submitted-notice-title { font-weight: 700; }
 
+    /* ── MOBILE MENU BUTTON ── */
+    .menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+      color: #64748b;
+      flex-shrink: 0;
+      border-radius: 6px;
+    }
+    .menu-btn:hover { background: #f1f5f9; color: #1e293b; }
+
+    /* ── SIDEBAR BACKDROP ── */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      z-index: 40;
+    }
+    .sidebar-backdrop.open { display: block; }
+
+    /* ── BACK-TO-CLASSES BUTTON (mobile only) ── */
+    .back-to-classes { display: none; }
+
+    /* ── MOBILE EMPTY STATE BUTTON ── */
+    .btn-open-classes { display: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .menu-btn { display: flex; }
+
+      /* Compress topnav for small screens */
+      .topnav-sep { display: none; }
+      .topnav a[href="index.html"] { display: none; }
+      .topnav-title { display: none; }
+      .topnav-username { display: none; }
+      .topnav { gap: 0.5rem; }
+
+      /* Sidebar becomes a fixed off-canvas drawer */
+      .left-panel {
+        position: fixed;
+        top: 48px;
+        left: -280px;
+        width: 260px;
+        height: calc(100vh - 48px);
+        z-index: 50;
+        transition: left 0.25s ease;
+        box-shadow: none;
+      }
+      .left-panel.open {
+        left: 0;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+      }
+
+      /* Main content fills full width */
+      .main-content { padding: 1rem; }
+
+      /* Back button visible on mobile */
+      .back-to-classes {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.82rem;
+        font-family: inherit;
+        color: #64748b;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin-bottom: 0.85rem;
+      }
+      .back-to-classes:hover { color: #1d4ed8; }
+
+      /* Empty state shows a tap-friendly button */
+      .empty-state-desktop { display: none; }
+      .btn-open-classes {
+        display: block;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 0.65rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        background: #1d4ed8;
+        color: #fff;
+      }
+    }
+
     /* ── MODALS ── */
     .modal-overlay {
       display: none;
@@ -348,6 +441,11 @@
 
 <!-- ── TOP NAV ── -->
 <nav class="topnav">
+  <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle class list">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+      <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+    </svg>
+  </button>
   <a href="index.html">← All Mockups</a>
   <span class="topnav-sep">|</span>
   <span class="topnav-school">Westbrook Academy</span>
@@ -359,6 +457,8 @@
     <button class="btn-topnav">Log out</button>
   </div>
 </nav>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 
 <div class="app">
 
@@ -382,9 +482,14 @@
 
   <!-- ── MAIN CONTENT ── -->
   <div class="main-content">
-    <div class="empty-state" id="emptyState">← Select a class to begin</div>
+    <div class="empty-state" id="emptyState">
+      <span class="empty-state-desktop">← Select a class to begin</span>
+      <button class="btn-open-classes" onclick="openSidebar()">Select a Class</button>
+    </div>
 
     <div class="editing-area" id="editingArea" style="display:none">
+
+      <button class="back-to-classes" onclick="openSidebar()">← All Classes</button>
 
       <!-- Class info -->
       <div class="card">
@@ -662,6 +767,7 @@ function activate(course) {
   state.activeClass = course;
   persist();
 
+  closeSidebar();
   renderClassList();
 
   document.getElementById("emptyState").style.display = "none";
@@ -815,6 +921,25 @@ function doSubmit() {
   persist();
   refreshReflectionUI();
   renderClassList();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SIDEBAR DRAWER (mobile)
+// ─────────────────────────────────────────────────────────────────
+function openSidebar() {
+  document.querySelector('.left-panel').classList.add('open');
+  document.getElementById('sidebarBackdrop').classList.add('open');
+}
+function closeSidebar() {
+  document.querySelector('.left-panel').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+function toggleSidebar() {
+  if (document.querySelector('.left-panel').classList.contains('open')) {
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────
