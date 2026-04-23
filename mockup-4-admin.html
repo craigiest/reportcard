@@ -2433,7 +2433,7 @@
       <div class="section-header">
         <div>
           <div class="section-title">Data Management</div>
-          <div class="section-subtitle">Archive old data and verify system integrity</div>
+          <div class="section-subtitle">Export and restore data by year, and verify system integrity</div>
         </div>
       </div>
 
@@ -2486,6 +2486,45 @@
           </div>
         </div>
 
+        <!-- Restore from Backup -->
+        <div class="data-card">
+          <div class="data-card-header">Restore from Backup</div>
+          <div class="data-card-body">
+            <p style="font-size:0.82rem;color:#64748b;line-height:1.5">
+              Upload a previously exported backup to restore data for a school year. Useful after a system reset or data loss.
+            </p>
+
+            <div>
+              <label class="form-label">School year to restore</label>
+              <select class="filter-select" style="width:100%" id="restoreYear">
+                <option value="2024-25">2024–2025</option>
+                <option value="2023-24">2023–2024</option>
+                <option value="2022-23">2022–2023</option>
+                <option value="2021-22">2021–2022</option>
+                <option value="2025-26">2025–2026 (current)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label">Backup file</label>
+              <div style="border:2px dashed #cbd5e1;border-radius:6px;padding:1.2rem;text-align:center;cursor:pointer;background:#f8fafc" onclick="document.getElementById('restoreFileInput').click()">
+                <div style="font-size:1.4rem;margin-bottom:0.3rem">⬆</div>
+                <div style="font-size:0.82rem;color:#64748b" id="restoreFileName">Click to select a ZIP or CSV file</div>
+              </div>
+              <input type="file" id="restoreFileInput" accept=".zip,.csv" style="display:none" onchange="handleRestoreFile(this)">
+            </div>
+
+            <div class="danger-zone">
+              <div class="danger-zone-title">⚠ This will overwrite existing data</div>
+              <div class="danger-zone-desc">
+                Restoring will replace all current records for the selected year. This is intended for system recovery only.
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="openRestoreConfirm()" id="restoreBtn" disabled style="opacity:0.4">⬆ Upload &amp; Restore</button>
+          </div>
+        </div>
+
         <!-- Data Integrity -->
         <div>
           <div class="data-card" style="margin-bottom:1rem">
@@ -2527,6 +2566,35 @@
       </div>
 
     </div><!-- /section-data -->
+
+    <!-- Restore Confirm Modal -->
+    <div class="modal-overlay" id="restoreConfirmModal">
+      <div class="modal" style="width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" style="color:#dc2626">Confirm Restore</div>
+            <div class="modal-subtitle" id="restoreConfirmSubtitle">School year 2024–2025</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('restoreConfirmModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.85rem">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5" id="restoreConfirmBody">
+            This will replace all existing records for school year <strong>2024–2025</strong> with the contents of the uploaded backup.
+          </p>
+          <div class="danger-zone">
+            <div class="danger-zone-desc">Only proceed if you have verified this backup is complete and from the correct school year.</div>
+          </div>
+          <div>
+            <label class="form-label" style="color:#dc2626">Type RESTORE to confirm</label>
+            <input class="form-input" id="restoreConfirmInput" type="text" placeholder="RESTORE" oninput="toggleRestoreBtn()">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('restoreConfirmModal')">Cancel</button>
+          <button class="btn btn-danger" id="restoreConfirmBtn" disabled style="opacity:0.4">Restore Backup</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Archive Export Confirm Modal -->
     <div class="modal-overlay" id="archiveConfirmModal">
@@ -2910,6 +2978,39 @@
     const btn = document.getElementById('deleteConfirmBtn');
     btn.disabled = val !== 'DELETE';
     btn.style.opacity = val === 'DELETE' ? '1' : '0.4';
+  }
+
+  function handleRestoreFile(input) {
+    const file = input.files[0];
+    const nameEl = document.getElementById('restoreFileName');
+    const btn = document.getElementById('restoreBtn');
+    if (file) {
+      nameEl.textContent = file.name;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    } else {
+      nameEl.textContent = 'Click to select a ZIP or CSV file';
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+    }
+  }
+
+  function openRestoreConfirm() {
+    const key = document.getElementById('restoreYear').value;
+    const d = ARCHIVE_DATA[key];
+    document.getElementById('restoreConfirmSubtitle').textContent = 'School year ' + d.label;
+    document.getElementById('restoreConfirmBody').innerHTML =
+      'This will replace all existing records for school year <strong>' + d.label + '</strong> with the contents of the uploaded backup.';
+    document.getElementById('restoreConfirmInput').value = '';
+    toggleRestoreBtn();
+    openModal('restoreConfirmModal');
+  }
+
+  function toggleRestoreBtn() {
+    const val = document.getElementById('restoreConfirmInput').value;
+    const btn = document.getElementById('restoreConfirmBtn');
+    btn.disabled = val !== 'RESTORE';
+    btn.style.opacity = val === 'RESTORE' ? '1' : '0.4';
   }
 
   // ── SUB-TABS ──
