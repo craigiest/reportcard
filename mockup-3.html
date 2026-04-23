@@ -2998,6 +2998,9 @@ function doReset() {
   openClassIdx = 0;
   activeCI = null;
   activeSI = null;
+  activeSkillsData = SKILLS_DATA;
+  activeSentences  = SKILL_SENTENCES;
+  document.getElementById('resetCommentBankBtn').style.display = 'none';
   document.getElementById('teacherNameDisplay').textContent = teacherName;
   state.term = '25-26 S2 Final';
   renderTermSelect();
