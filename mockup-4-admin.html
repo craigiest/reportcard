@@ -2433,37 +2433,37 @@
       <div class="section-header">
         <div>
           <div class="section-title">Data Management</div>
-          <div class="section-subtitle">Archive old data and verify system integrity</div>
+          <div class="section-subtitle">Export and restore data by year, and verify system integrity</div>
         </div>
       </div>
 
       <div class="data-grid">
 
-        <!-- Export & Archive -->
+        <!-- Export by Year -->
         <div class="data-card">
-          <div class="data-card-header">Export &amp; Archive Old Data</div>
+          <div class="data-card-header">Export Data by Year</div>
           <div class="data-card-body">
             <p style="font-size:0.82rem;color:#64748b;line-height:1.5">
-              Export data from completed school years for records and compliance. A manual confirmation is required before any deletion.
+              Export a complete set of report cards, reflections, and related records for any school year. Data is retained for up to 5 years.
             </p>
 
             <div>
-              <label class="form-label">Export data older than</label>
+              <label class="form-label">School year</label>
               <select class="filter-select" style="width:100%" id="archiveCutoff" onchange="updateArchivePreview()">
-                <option value="5">5 years (before 2020–2021)</option>
-                <option value="4">4 years (before 2021–2022)</option>
-                <option value="3">3 years (before 2022–2023)</option>
-                <option value="7">7 years (before 2018–2019)</option>
+                <option value="2024-25">2024–2025</option>
+                <option value="2023-24">2023–2024</option>
+                <option value="2022-23">2022–2023</option>
+                <option value="2021-22">2021–2022</option>
+                <option value="2025-26">2025–2026 (current)</option>
               </select>
             </div>
 
             <div class="archive-preview" id="archivePreview">
               <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin-bottom:0.3rem">Records in scope</div>
-              <div class="archive-preview-row"><span>School years</span><span id="ap-years">2</span></div>
               <div class="archive-preview-row"><span>Terms</span><span id="ap-terms">4</span></div>
-              <div class="archive-preview-row"><span>Report cards</span><span id="ap-cards">312</span></div>
-              <div class="archive-preview-row"><span>Student reflections</span><span id="ap-reflections">289</span></div>
-              <div class="archive-preview-row"><span>Export records</span><span id="ap-exports">18</span></div>
+              <div class="archive-preview-row"><span>Report cards</span><span id="ap-cards">145</span></div>
+              <div class="archive-preview-row"><span>Student reflections</span><span id="ap-reflections">133</span></div>
+              <div class="archive-preview-row"><span>Export records</span><span id="ap-exports">13</span></div>
             </div>
 
             <div>
@@ -2474,15 +2474,54 @@
               </div>
             </div>
 
-            <button class="btn btn-secondary" onclick="openModal('archiveConfirmModal')">⬇ Export Archive</button>
+            <button class="btn btn-secondary" onclick="openExportConfirm()">⬇ Export Year Data</button>
 
             <div class="danger-zone">
               <div class="danger-zone-title">⚠ Delete After Export</div>
               <div class="danger-zone-desc">
-                After exporting, you may permanently delete the archived records from the live system. This cannot be undone. Export must be completed first.
+                After exporting, you may permanently delete this year's records from the live system. This cannot be undone. Export must be completed first.
               </div>
-              <button class="btn btn-danger btn-sm" style="margin-top:0.6rem" onclick="openModal('deleteConfirmModal')">Delete Archived Records…</button>
+              <button class="btn btn-danger btn-sm" style="margin-top:0.6rem" onclick="openDeleteConfirm()">Delete Year Records…</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Restore from Backup -->
+        <div class="data-card">
+          <div class="data-card-header">Restore from Backup</div>
+          <div class="data-card-body">
+            <p style="font-size:0.82rem;color:#64748b;line-height:1.5">
+              Upload a previously exported backup to restore data for a school year. Useful after a system reset or data loss.
+            </p>
+
+            <div>
+              <label class="form-label">School year to restore</label>
+              <select class="filter-select" style="width:100%" id="restoreYear">
+                <option value="2024-25">2024–2025</option>
+                <option value="2023-24">2023–2024</option>
+                <option value="2022-23">2022–2023</option>
+                <option value="2021-22">2021–2022</option>
+                <option value="2025-26">2025–2026 (current)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label">Backup file</label>
+              <div style="border:2px dashed #cbd5e1;border-radius:6px;padding:1.2rem;text-align:center;cursor:pointer;background:#f8fafc" onclick="document.getElementById('restoreFileInput').click()">
+                <div style="font-size:1.4rem;margin-bottom:0.3rem">⬆</div>
+                <div style="font-size:0.82rem;color:#64748b" id="restoreFileName">Click to select a ZIP or CSV file</div>
+              </div>
+              <input type="file" id="restoreFileInput" accept=".zip,.csv" style="display:none" onchange="handleRestoreFile(this)">
+            </div>
+
+            <div class="danger-zone">
+              <div class="danger-zone-title">⚠ This will overwrite existing data</div>
+              <div class="danger-zone-desc">
+                Restoring will replace all current records for the selected year. This is intended for system recovery only.
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="openRestoreConfirm()" id="restoreBtn" disabled style="opacity:0.4">⬆ Upload &amp; Restore</button>
           </div>
         </div>
 
@@ -2528,19 +2567,48 @@
 
     </div><!-- /section-data -->
 
+    <!-- Restore Confirm Modal -->
+    <div class="modal-overlay" id="restoreConfirmModal">
+      <div class="modal" style="width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" style="color:#dc2626">Confirm Restore</div>
+            <div class="modal-subtitle" id="restoreConfirmSubtitle">School year 2024–2025</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('restoreConfirmModal')">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.85rem">
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5" id="restoreConfirmBody">
+            This will replace all existing records for school year <strong>2024–2025</strong> with the contents of the uploaded backup.
+          </p>
+          <div class="danger-zone">
+            <div class="danger-zone-desc">Only proceed if you have verified this backup is complete and from the correct school year.</div>
+          </div>
+          <div>
+            <label class="form-label" style="color:#dc2626">Type RESTORE to confirm</label>
+            <input class="form-input" id="restoreConfirmInput" type="text" placeholder="RESTORE" oninput="toggleRestoreBtn()">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('restoreConfirmModal')">Cancel</button>
+          <button class="btn btn-danger" id="restoreConfirmBtn" disabled style="opacity:0.4">Restore Backup</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Archive Export Confirm Modal -->
     <div class="modal-overlay" id="archiveConfirmModal">
       <div class="modal" style="width:440px">
         <div class="modal-header">
           <div>
             <div class="modal-title">Confirm Export</div>
-            <div class="modal-subtitle">Data older than 5 years</div>
+            <div class="modal-subtitle" id="archiveConfirmSubtitle">School year 2024–2025</div>
           </div>
           <button class="modal-close" onclick="closeModal('archiveConfirmModal')">✕</button>
         </div>
         <div class="modal-body">
-          <p style="font-size:0.85rem;color:#374151;line-height:1.5;margin-bottom:1rem">
-            You are about to export <strong>312 report cards</strong>, <strong>289 reflections</strong>, and related records from <strong>2 school years</strong> (2019–2020, 2020–2021).
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5;margin-bottom:1rem" id="archiveConfirmBody">
+            You are about to export <strong>145 report cards</strong>, <strong>133 reflections</strong>, and related records from school year <strong>2024–2025</strong>.
           </p>
           <p style="font-size:0.85rem;color:#374151;line-height:1.5">
             The export will be downloaded to your computer. No data will be deleted from the system until you explicitly choose to delete it.
@@ -2564,8 +2632,8 @@
           <button class="modal-close" onclick="closeModal('deleteConfirmModal')">✕</button>
         </div>
         <div class="modal-body" style="display:flex;flex-direction:column;gap:0.85rem">
-          <p style="font-size:0.85rem;color:#374151;line-height:1.5">
-            This will permanently remove <strong>312 report cards</strong>, <strong>289 reflections</strong>, and related records from the live system.
+          <p style="font-size:0.85rem;color:#374151;line-height:1.5" id="deleteConfirmBody">
+            This will permanently remove <strong>145 report cards</strong>, <strong>133 reflections</strong>, and related records for school year <strong>2024–2025</strong> from the live system.
           </p>
           <div class="danger-zone">
             <div class="danger-zone-desc">Only proceed if you have verified the exported archive is complete and stored securely.</div>
@@ -2836,19 +2904,36 @@
 
   // ── DATA MANAGEMENT ──
   const ARCHIVE_DATA = {
-    5: { years:2, terms:4,  cards:312, reflections:289, exports:18 },
-    4: { years:3, terms:6,  cards:487, reflections:451, exports:27 },
-    3: { years:4, terms:8,  cards:641, reflections:589, exports:35 },
-    7: { years:1, terms:2,  cards:158, reflections:140, exports:9  },
+    '2025-26': { label:'2025–2026', terms:2,  cards:87,  reflections:78,  exports:6  },
+    '2024-25': { label:'2024–2025', terms:4,  cards:145, reflections:133, exports:13 },
+    '2023-24': { label:'2023–2024', terms:4,  cards:138, reflections:124, exports:12 },
+    '2022-23': { label:'2022–2023', terms:4,  cards:121, reflections:109, exports:10 },
+    '2021-22': { label:'2021–2022', terms:4,  cards:108, reflections:97,  exports:8  },
   };
   function updateArchivePreview() {
-    const cutoff = document.getElementById('archiveCutoff').value;
-    const d = ARCHIVE_DATA[cutoff];
-    document.getElementById('ap-years').textContent       = d.years;
+    const key = document.getElementById('archiveCutoff').value;
+    const d = ARCHIVE_DATA[key];
     document.getElementById('ap-terms').textContent       = d.terms;
     document.getElementById('ap-cards').textContent       = d.cards;
     document.getElementById('ap-reflections').textContent = d.reflections;
     document.getElementById('ap-exports').textContent     = d.exports;
+  }
+  function openExportConfirm() {
+    const key = document.getElementById('archiveCutoff').value;
+    const d = ARCHIVE_DATA[key];
+    document.getElementById('archiveConfirmSubtitle').textContent = 'School year ' + d.label;
+    document.getElementById('archiveConfirmBody').innerHTML =
+      'You are about to export <strong>' + d.cards + ' report cards</strong>, <strong>' + d.reflections + ' reflections</strong>, and related records from school year <strong>' + d.label + '</strong>.';
+    openModal('archiveConfirmModal');
+  }
+  function openDeleteConfirm() {
+    const key = document.getElementById('archiveCutoff').value;
+    const d = ARCHIVE_DATA[key];
+    document.getElementById('deleteConfirmBody').innerHTML =
+      'This will permanently remove <strong>' + d.cards + ' report cards</strong>, <strong>' + d.reflections + ' reflections</strong>, and related records for school year <strong>' + d.label + '</strong> from the live system.';
+    document.getElementById('deleteConfirmInput').value = '';
+    toggleDeleteBtn();
+    openModal('deleteConfirmModal');
   }
 
   const INTEGRITY_CHECKS = [
@@ -2893,6 +2978,39 @@
     const btn = document.getElementById('deleteConfirmBtn');
     btn.disabled = val !== 'DELETE';
     btn.style.opacity = val === 'DELETE' ? '1' : '0.4';
+  }
+
+  function handleRestoreFile(input) {
+    const file = input.files[0];
+    const nameEl = document.getElementById('restoreFileName');
+    const btn = document.getElementById('restoreBtn');
+    if (file) {
+      nameEl.textContent = file.name;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    } else {
+      nameEl.textContent = 'Click to select a ZIP or CSV file';
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+    }
+  }
+
+  function openRestoreConfirm() {
+    const key = document.getElementById('restoreYear').value;
+    const d = ARCHIVE_DATA[key];
+    document.getElementById('restoreConfirmSubtitle').textContent = 'School year ' + d.label;
+    document.getElementById('restoreConfirmBody').innerHTML =
+      'This will replace all existing records for school year <strong>' + d.label + '</strong> with the contents of the uploaded backup.';
+    document.getElementById('restoreConfirmInput').value = '';
+    toggleRestoreBtn();
+    openModal('restoreConfirmModal');
+  }
+
+  function toggleRestoreBtn() {
+    const val = document.getElementById('restoreConfirmInput').value;
+    const btn = document.getElementById('restoreConfirmBtn');
+    btn.disabled = val !== 'RESTORE';
+    btn.style.opacity = val === 'RESTORE' ? '1' : '0.4';
   }
 
   // ── SUB-TABS ──
