@@ -424,8 +424,9 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 **Top Navigation**
 - School name/logo
-- Admin section title
-- User menu (profile, logout)
+- "Admin" badge (distinguishes from teacher/student interfaces)
+- Current user name (top right)
+- Log out button
 
 **Left Sidebar (Main Menu)**
 - Terms & Rosters
@@ -434,6 +435,7 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 - Users
 - Comment Banks
 - Student Reflection Prompts
+- Assignments
 - Settings
 - Data Management
 
@@ -441,144 +443,116 @@ If a report card doesn't meet validation criteria, the "Mark as finalized" check
 
 #### 1. User Management
 
-**View & Search Users**
-- Search by name, email, role
-- Filter by role (Teacher, Advisor, Admin, Student)
-- View user account status
+**Search and filter**: Live search by name or email; role filter (All / Teacher / Advisor / Admin / Student); status filter (Active & Archived / Active Only / Archived Only).
 
-**Create User**
-- Input name, email, role
-- Generate temporary password or send Google login instructions
-- Assign role
+Table columns: Name, Email, Roles (colored tags — multiple roles displayed simultaneously), Status (Active/Archived), Last Login, Actions.
 
-**Manage User**
-- Change role
-- Reset password
-- Spoof user (see interface as that user)
-  - Use case: Add student reflection on behalf of student (for comments submitted outside system)
-  - Use case: Mark student reflection as complete for missing submissions
-  - Use case: Complete a report card section if teacher is unable
+**Actions per user row:**
+- **Edit**: opens the User modal pre-filled with the user's current data
+- **Spoof**: opens a confirmation modal explaining that the admin will temporarily assume the user's identity. Upon confirming ("Enter as User"), the admin's session switches to the target user's full interface. A persistent banner is shown at the top of the screen indicating that the admin is currently spoofing, with an option to exit and return to the admin view. The spoof session is recorded in the Audit Log.
+- **Archive**: opens a confirmation modal. Archiving deactivates the user account — they can no longer log in — but all their data and history are preserved. Archived users can be reactivated at any time by editing their account. Archived users are not permanently deleted.
 
-**Delete User**
-- Archive user account (do not permanently delete due to audit trail)
+**New/Edit User modal fields:**
+- Full Name
+- School Email — must match the user's school-issued Google account (the one they use for OAuth login); a hint confirms this. The email address is the identity anchor and cannot be changed after account creation.
+- Roles: checkboxes for Teacher, Advisor, Admin, Student. Multiple roles can be assigned simultaneously. Role changes take effect immediately on the user's next page load.
 
 #### 2. Settings (Validation Rules)
 
-Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These apply automatically to all terms; no per-term entry is needed. Rules are grouped to match the order of the report card.
+Admin maintains two global validation configurations — one for Midterm reporting periods and one for Final reporting periods. These apply automatically to all terms of that type; no per-term configuration is needed. The two configurations are displayed as side-by-side cards (Midterm and Final), each with its own Save button. Rules are grouped to match the order of the report card.
+
+Setting any numeric value to **0** disables that rule; disabled rules are not surfaced in the teacher interface. Leave the required skills field blank to skip that rule.
 
 **Student Reflection**
-- Minimum characters required before submission is enabled
-- Maximum characters allowed
-- Rules set to zero are not enforced
+- Minimum characters required before the submit button becomes active
+- Maximum characters allowed (0 = no limit)
 
 **Skill Comments**
-- Minimum number of skill areas that must have at least one comment
-- Required skills (comma-separated names; each must have at least one comment)
+- Minimum number of skill areas that must have at least one comment selected
+- Required skills: a comma-separated list of skill names; each listed skill must have at least one comment before the teacher can finalize
 - Minimum total skill comments per report card
-- Maximum comments per skill
-- Maximum character limit for custom skill comments (free text a teacher writes in the skill panel — one-time notes or personal saved comments — as opposed to selections from the standard bank)
-- Rules set to zero are not enforced and not shown to teachers
+- Maximum comments per skill area
+- Maximum character limit for custom skill comments (free text a teacher writes in the skill panel — either a one-time note for that student or a saved personal comment — as opposed to a selection from the standard bank)
 
 **Narrative**
 - Minimum characters (default: 15)
 - Maximum characters (0 = no limit)
-- Rules set to zero are not enforced
 
 #### 3. Terms & Rosters
 
-Term management lives alongside roster management since terms define the periods that rosters are organized under.
+This section has three sub-tabs: **Terms**, **Class Sections**, and **Import**.
 
-**View Terms**
-- List all school years; for each year, show all configured terms with:
-  - Term name and order
-  - Start/end dates
-  - Locked status
-  - Report card types (midterm, final, both)
+**Terms sub-tab**
 
-**Create / Edit Term**
-- Input school year, term name, order in sequence
-- Select reporting periods (Midterm and/or Final); both share the same roster
-- Set student reflection freeze date (optional)
-- Validation rules are inherited automatically from global config; no per-term entry needed
-- Cannot edit locked terms
+Displays all school years with their terms grouped by year. Each term row shows: term name, date range, reporting period tags (Midterm, Final, or both), locked status, and action buttons.
 
-**Lock Term**
-- Makes term read-only for teachers and advisors
-- Admin can still view and export
-- Used before distributing final report cards
+- Locked terms display a "Locked" badge; their Edit button is present but disabled (grayed out)
+- Unlocked terms show Edit and Lock buttons
 
-**Roster Management**
+**Create Term** (modal):
+- School year (text, e.g., "2025-2026")
+- Term name (e.g., "S1", "T2", "Q3") and Order (integer — position within the school year)
+- Start date and End date
+- Reporting periods: Midterm and/or Final checkboxes (both enabled by default); both periods share the same class roster
+- Student Reflection Freeze Date (optional): students cannot edit their reflections after this date
+- Validation rules are inherited automatically from global Midterm/Final config; no per-term configuration is needed
 
-**View Rosters**
-- List all imported rosters by term
-- Show classes, students, teacher assignments
+**Edit Term** (same modal, pre-filled; locked terms cannot be edited):
 
-**Import Rosters**
-- CSV import:
-  - Upload CSV file with format: `teacher,course,student`
-  - Preview import showing number of rows/classes/students
-  - Confirm and apply (with option to replace or merge)
-  - Example:
-    ```
-    teacher,course,student
-    "John Smith","Biology 101","Alice Johnson"
-    "John Smith","Biology 101","Bob Davis"
-    "Jane Doe","English 10","Charlie Brown"
-    ```
-- Blackbaud/Canvas integration (TBD: specifics for database manager)
-  - Authenticate with external system
-  - Select classes/students to sync
-  - Schedule periodic sync or one-time import
-  - View sync history
+**Lock Term**: makes the term read-only for all teachers and advisors. Admin can still view and export. Used before distributing final report cards. Locking is intended to be permanent once report cards are distributed — there is no UI to unlock a term.
 
-**Manage Rosters**
-- Add/edit/delete students manually
-- Add/edit/delete classes
-- Reassign students to classes
-- Reassign teachers to classes
-- Assign or override the reflection prompt for a course (overrides the Universal or Department default for that course only; revert to "(Use default)" to remove the override)
+**Class Sections sub-tab**
 
-**Export Rosters**
-- Export class roster as CSV
-- Export student list as CSV
+Displays class sections for the selected term, filterable by department. Table columns: Course, Section, Teacher, Department, Students (count).
+
+- Clicking a course name opens a **Students modal** showing the enrolled student list with a search field and a "+ Add Student" button; admin can add or remove individual students from within this modal
+- Each section row has Edit and Remove action buttons
+
+**Add Class** modal (also accessible from this sub-tab):
+- Term selector
+- Course Name
+- Department selector
+- Teacher selector
+
+**Import sub-tab**
+
+Two panels displayed side by side:
+
+*Import from CSV:*
+- File drop zone; expected columns: `teacher, course, student`
+- After file selection, an import preview appears showing counts (teachers, classes, students, total rows) and a sample of the first rows from the file
+- Import mode: "Merge with existing roster" (adds to current data) or "Replace existing roster for this term" (overwrites)
+- Cancel and Apply Import buttons
+
+*Export Roster:*
+- Term selector
+- Format: Class roster (`teacher, course, student`) or Student list only
+- Download CSV button
+
+**Blackbaud/Canvas integration** (TBD: specifics for database manager):
+- Authenticate with external system
+- Select classes/students to sync
+- Schedule periodic sync or one-time import
+- View sync history
 
 #### 4. Comment Bank Management (Standard Comment Banks)
 
-**View Comment Banks**
-- List all standard comment bank sets
-- For each bank, show:
-  - Bank name
-  - Associated department/course level
-  - Number of subskills included
-  - Last modified date
-  - Applied to: which departments/courses use this bank
+This section manages the standard comment bank files. Assigning banks to specific departments and courses is done in the **Assignments** section.
 
-**Create/Upload Comment Bank**
-- Upload CSV file with columns: Transferable Skill, Skill Area, Subskill, Strength, Growth
-- Or input comments manually through form
-- System organizes comments into the skill hierarchy automatically
+**School-wide default bar** (above the bank list): a dropdown selects which uploaded bank is the school-wide default. A "Set Default" button saves the selection. A note explains that all departments and courses use this bank unless overridden in Assignments.
 
-**Set School-wide Default Comment Bank**
-- Select the primary comment bank that all courses will use by default
-- This applies unless overridden at department or course level
+**Bank list table** columns: Bank Name (with a "School Default" badge on the current default), Subskills (count of subskill rows in the bank), Last Modified, Applied To (descriptive summary of where this bank is currently assigned).
 
-**Customize Comment Banks by Department/Course**
-- Override the school default for specific departments (e.g., "World Languages" uses a different bank)
-- Override department selection for specific subdepartments or courses (e.g., "Spanish for Native Speakers" within World Languages)
-- Override for individual courses if needed
-- Each course uses exactly one standard comment bank
-- More specific selections override broader defaults
+**Actions per bank:**
+- **Replace** (⬆): opens the Upload modal with the bank name pre-filled and read-only; uploading a new CSV replaces all comments in that bank entirely. The submit button reads "Upload & Replace".
+- **⬇ CSV**: downloads the bank in the standard five-column CSV format (Transferable Skill, Skill Area, Subskill, Strength, Growth).
+- **Delete**: removes the bank. A bank cannot be deleted if it is currently assigned to any department or course in any term; those assignments must be changed first. The school-wide default bank cannot be deleted.
 
-**Assignments are per-term**
-- Comment bank assignments (which department/course uses which bank) are stored per term, not globally
-- Admin selects a term when editing assignments; changes only affect that term
-- When a new term is created, it automatically inherits the comment bank assignments from the most recent preceding term — the admin can then adjust for the upcoming term without affecting any current or past term
-
-**Manage Standard Comments**
-- Edit comment text within a bank
-- Add new subskill with strength/growth comments
-- Delete subskills or comments
-- View which courses are using each bank
+**Upload New Bank** button opens a modal:
+- Bank Name (required; must be unique)
+- File drop zone: click to select or drag-and-drop a CSV file
+- A format reference shows the expected column order and an example data row
+- The submit button reads "Upload & Preview": the system parses the CSV and shows a preview of the parsed bank before it is created. Admin can cancel from the preview.
 
 **Note on Custom Comments**
 - Individual teachers' custom comments are not managed here
@@ -587,116 +561,172 @@ Term management lives alongside roster management since terms define the periods
 
 #### 5. Student Reflection Prompts Configuration
 
-Prompts are authored here and set as defaults at the Universal or Department level. Course-level assignment is managed from the Roster (see section 3).
+Prompts are authored here and set as defaults at the Universal or Department level. Assignments to specific departments and courses are managed in the **Assignments** section.
 
 **View Prompts**
-- List all configured prompts filtered by term and level
-- Show prompt name, text, character limits, and terms active in
-- For prompts not set as a default (no Universal or Department scope), show which courses are currently assigned to them
 
-**Create Prompt**
-- Name the prompt
-- Set default scope: Universal (applies to all classes) or Department (applies to all classes in a department)
-- Prompts with no default scope are available for manual assignment to individual courses from the Roster
-- Assign to term(s)
-- Set minimum and maximum character requirements for student submission
+Prompts are displayed as cards, filterable by term and level (Universal / Department). Each card shows:
+- Prompt name and scope tag (e.g., "Universal" or "Department: World Languages")
+- Terms the prompt is active in
+- A preview of the prompt text
+- Min and max character requirements
+- Edit and Delete action buttons
 
-**Edit Prompt**
-- Update prompt name and text
-- Change default scope
-- Update term assignment
+**Create / Edit Prompt** (modal):
+- **Default For** (radio buttons):
+  - "All classes (Universal)": this prompt is the school-wide default in the selected terms
+  - "A specific department": a department dropdown appears; this prompt becomes the department-level default for the selected terms
+  - Hint: "To assign a prompt to individual departments or courses, use the Assignments section."
+- **Terms**: checkboxes for available terms, plus an "All future terms" option
+- **Prompt Text**: the question or instruction shown to the student when writing their reflection
+- **Min Characters** and **Max Characters** (0 = not enforced)
 
-**Delete Prompt**
-- Remove prompt (affects future submissions only)
+When saved, a Universal prompt becomes the active default for all classes in the selected terms that have no more specific assignment. A Department prompt becomes the default for that department in the selected terms. These defaults are reflected automatically in the Assignments section.
 
-**Course-level Assignment**
-- Individual courses can override the default prompt from the Roster tab
-- See section 3 (Terms & Rosters → Roster) for assignment UI
+**Delete Prompt**: if the prompt is currently the active assignment for any class or department (as shown in Assignments), those assignments revert to the next broader default automatically. The admin should verify assignments after deleting a prompt.
 
-#### 6. Report Card Status & Management
+#### 6. Assignments
 
-**View All Report Cards**
-- Filter by term, class, teacher, status
-- Status options: Draft, Finalized, Reviewed
-- Show:
-  - Student name
-  - Class
-  - Teacher
-  - Current status
-  - Whether advisor has reviewed
-  - Export status (exported, not exported, newly reviewed)
+The Assignments section provides a single, unified view for managing which comment bank and which reflection prompt applies to each department and course. All assignments are stored per term — changes to one term do not affect any other.
 
-**Flag Unreviewed Cards**
-- Automatic flagging of report cards where advisor review is pending
-- Option to exclude from bulk export
-- Track which cards have been exported
+**Term selector** (top of section): changing the term reloads the assignment table for that term. When a new term is created, it automatically inherits all assignments from the most recent preceding term; the admin can adjust for the new term without affecting past terms.
 
-**Resolve Issues**
-- View report cards with validation errors
-- Manually unfinalize if needed
-- Add admin notes
+**Assignment table structure**
 
-#### 7. Report Card Export
+Columns: Scope, Comment Bank, Student Prompt, and an action column.
 
-**Bulk Export**
-- Select export criteria:
-  - By term
-  - By class
-  - By teacher
-  - By status (include only reviewed, or all)
-- Options for organization and file naming (TBD: specifics to be defined)
-- System tracks what has been exported
-- Option to export only newly-reviewed cards since last export
-- Files generate as individual PDFs in a zip or as organized folder structure (TBD)
+Rows are organized in a three-level hierarchy:
 
-**Local Export**
-- Teachers/advisors can export individual or small batch PDFs locally (same as now)
+**School Default row** (always first): dropdowns select the school-wide default bank and prompt. An "Apply to all depts & courses" button resets all overrides in the current term's table, reverting every department and course to inheriting from the school default.
 
-**Customize PDF**
-- Upload/change school logo
-- Edit header (school name, district name, etc.)
-- Edit footer (address, contact, etc.)
-- Edit boilerplate text (e.g., grading scale, competency descriptions)
-- Preview PDF layout with customizations
+**Department rows** (one per department, expandable): clicking a department row toggles its courses visible/hidden. Each department row shows its current bank and prompt assignment in one of two states:
+- **Inherited**: the selector is grayed out and displays the currently inherited value; a small badge (e.g., "school") identifies the source; an "Override" link is shown. Clicking "Override" activates the selector for that department.
+- **Overridden**: the selector is active with the chosen value; a "× Reset" link is shown. Clicking "× Reset" reverts to inheriting from the school default.
+- An "Apply to all courses" button within each department row resets all course-level overrides for that department (courses revert to inheriting from the department).
+
+**Course rows** (shown indented under the department when expanded): same inherited/overridden pattern, but inheriting from the department (not the school). The inherited badge shows "dept".
+
+**Effective value resolution**: the value applied to a course is the most specific override that exists:
+1. Course-level override (if set)
+2. Department-level override (if set)
+3. School default
+
+Individual cell changes save immediately; there is no separate Save step for the table.
+
+#### 7. Report Cards
+
+The Report Cards section has two sub-tabs: **Status & Export** and **PDF Settings**.
+
+**Status & Export sub-tab**
+
+Filters (applied simultaneously): Term, Reporting Period (All / Midterm / Final), Teacher, Status (All / Draft / Finalized / Reviewed), Export Status (Any / Not Exported / Exported / Newly Reviewed).
+
+A stat strip below the filters shows counts for the current filter: Total, Draft, Finalized, Reviewed, Exported.
+
+Table columns: Student, Class, Teacher, Period, Status (color-coded pill badge), Advisor Reviewed (checkmark), Exported (checkmark), Actions.
+
+Actions per row:
+- **Unfinalize** (appears only on Finalized cards): reverts the report card to Draft, removing the teacher's finalize lock and restoring their editing access. Any advisor edits made after finalization are preserved in the draft; the teacher will see the standard conflict notification when they next open the card.
+- **Note** (appears on all cards): opens a modal for the admin to write or edit an admin note attached to that report card. Notes are not visible to teachers, advisors, or students — they are internal admin records only.
+
+**Bulk Export** button (top-right of the sub-panel) opens a modal:
+- Term + Reporting Period selector (combined, e.g., "25–26 S1 — Final")
+- Include: Reviewed cards only / Newly reviewed since last export / All finalized cards
+- Optional filter by Teacher
+- Optional filter by Class
+- A count preview updates live to show how many cards match the current criteria (e.g., "41 reviewed cards match current criteria. Export will be tracked.")
+- The Export button is labeled with the count (e.g., "Export 41 PDFs")
+- After export, all included report cards are marked as Exported; this is reflected in the Exported column and the Export Status filter
+
+**PDF Settings sub-tab**
+
+*Branding & Logo:*
+- Upload school logo (PNG or SVG; recommended 200×60px; max 1MB)
+- School Name (appears in the PDF header)
+- District / Subtitle (optional second header line)
+
+*Footer:*
+- Footer Text: appears at the bottom of every page of every exported PDF
+
+*Boilerplate Text:*
+- Introductory paragraph: shown at the top of each report card body, before skill comments
+- Competency / grading scale note: explains the S/G designation system or any grading key
+
+*Preview:*
+- A thumbnail preview shows how the header and footer will appear; an "Open Preview" button opens a full-size layout preview
+
+A single "Save PDF Settings" button persists all branding fields together.
 
 #### 8. Analytics
 
-Analytics is the default landing view for admin. It shows whether reporting is proceeding normally at a glance.
+Analytics is the default landing view when admin logs in.
 
-**Summary KPIs**
-- Report Cards Completed (count and %, finalized or reviewed)
-- Report Cards Reviewed (count and %)
-- Student Reflections Submitted (count and %)
+**Term + Period selector** (top right): selects a specific term and reporting period (e.g., "25–26 S2 — Final") for all data shown on the page.
 
-**Completion Breakdown**
-- Summary card showing overall completion rate and any classes flagged below a threshold
-- "View Breakdown" link opens a sortable table: Class, Teacher, Students, Completed, Reviewed, % Done
-- Rows are expandable to show individual students with their report card status and whether a reflection was submitted
-- Clicking a student name opens the impersonate (spoof) dialog for quick admin assistance
+**KPI cards** (three, across the top):
+- Report Cards Completed: count and % that are finalized or reviewed out of total report cards in that term/period
+- Report Cards Reviewed: count and % that advisors have marked as reviewed
+- Student Reflections Submitted: count and % of enrolled students who have submitted a reflection
 
-**Reflection Submission Breakdown**
-- Summary card showing overall submission rate and any classes flagged below threshold
-- "View Breakdown" link opens a sortable table: Class, Teacher, Students, Submitted, %
-- Rows are expandable to individual students; clicking a name opens the spoof dialog
+**Summary cards** (two, side by side):
 
-**Reports**
+*Report Card Completion by Class:*
+- A one-sentence summary of how many classes are on-track (e.g., "5 of 7 classes are ≥ 75% completed")
+- A progress bar showing overall completion rate
+- "View Breakdown →" button — opens the Completion Breakdown modal
+
+*Student Reflection Submission by Class:*
+- A one-sentence summary (e.g., "2 of 7 classes at 100% submitted")
+- A progress bar
+- "View Breakdown →" button — opens the Reflection Breakdown modal
+
+**Completion Breakdown modal**: a sortable table — Class, Teacher, Students, Completed, Reviewed, % Done. Clicking a class row expands it to show individual students with their report card status and whether a reflection was submitted. Clicking a student name opens the Spoof confirmation dialog for immediate admin access. The modal footer includes an "⬇ Export Table" button that downloads the table as CSV.
+
+**Reflection Breakdown modal**: same structure. Columns: Class, Teacher, Students, Submitted, %. Same expand/spoof/export behavior.
+
+**Reports panel** (below summary cards):
 - Comment usage report (CSV): which standard comments were used, by how many teachers and classes
-- Completion status report (CSV): report card and reflection status for all students in the term
-- Teacher custom comment banks (CSV): export a specific teacher's personal comment bank for sharing
-- Custom report: choose any combination of available data fields and generate a CSV export
+- Completion status report (CSV): report card and reflection status for all students in the selected term
+- Teacher custom comment banks (CSV): a teacher selector plus download button — exports that teacher's personal comment bank as CSV (for sharing between colleagues)
+- "Custom Report…" button opens a modal with:
+  - Term selector (specific term+period, or all terms)
+  - Column checkboxes: Student name, Class, Teacher, Report card status, Reflection status, Advisor reviewed, Finalized date, Reviewed date, Last exported, Comment count, Narrative character count, Reflection character count
+  - "Generate CSV" downloads the report with selected columns
 
 #### 9. Data Management
 
-**Export Old Data**
-- Select data older than 5 years
-- Generate export file (CSV or archives)
-- Manual confirmation required before deletion
-- Archive exported data (for records/compliance)
+**Export Data by Year**
 
-**View Data Integrity**
-- Check for orphaned records
-- Verify data consistency
-- Generate audit report (if audit trail is implemented)
+- School year dropdown: select any available year
+- Records in scope preview: shows counts for the selected year (terms, report cards, student reflections, export records)
+- Format: CSV files (one file per data type) or ZIP archive with all files
+- "⬇ Export Year Data" button opens a confirmation modal summarizing the record counts; confirming starts the download. The data remains in the live system after download — nothing is deleted automatically.
+
+*Delete Year Records* (within the same panel, in a danger zone):
+- Permanently removes all records for the selected year from the live system
+- Admin must type "DELETE" in a confirmation input to enable the delete button
+- This cannot be undone; admin should verify the exported archive is complete and stored securely before proceeding
+- Intended for data hygiene once records are no longer needed in the live system (typically after 5+ years)
+
+**Restore from Backup**
+
+- Uploads a previously exported backup (ZIP or CSV) to restore data for a selected school year
+- School year selector and file drop zone
+- Admin must type "RESTORE" in a confirmation input to enable the restore button
+- Restoring replaces all current records for the selected year with the contents of the backup file
+- Intended for system recovery after data loss; not for routine use
+
+**Data Integrity**
+
+- "Run Check" button scans for orphaned records, broken foreign-key relationships, and data inconsistencies
+- Results appear inline with pass / warn / fail indicators for each check category
+
+**Audit Log**
+
+- A persistent, automatically maintained log of significant admin actions
+- Events captured: role changes, user archiving and reactivation, spoof sessions, term locks, bulk PDF exports, comment bank uploads and replacements, term creation, data exports, and data deletions
+- Displayed as a scrollable table: Date, Admin, Action (descriptive text)
+- "⬇ Export Full Audit Log" button downloads the complete log as CSV
 
 ---
 
