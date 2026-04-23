@@ -1738,7 +1738,7 @@
       <!-- Roster panel -->
       <div class="sub-panel" id="rosters-roster">
         <div class="filter-bar" style="margin-bottom:1rem">
-          <select class="filter-select" id="roster-term" onchange="renderRoster()">
+          <select class="filter-select" id="roster-term">
             <option>25–26 S2</option>
             <option>25–26 S1</option>
             <option>24–25 S2</option>
@@ -1768,7 +1768,80 @@
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="roster-tbody"></tbody>
+            <tbody id="roster-tbody">
+              <tr data-dept="Science">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('Biology 101')">Biology 101</td>
+                <td>Period 1</td>
+                <td>Sarah Chen</td>
+                <td class="td-muted">Science</td>
+                <td>5</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="English">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('English 10')">English 10</td>
+                <td>Period 2</td>
+                <td>Marcus Webb</td>
+                <td class="td-muted">English</td>
+                <td>4</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="Math">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('Algebra II')">Algebra II</td>
+                <td>Period 3</td>
+                <td>Priya Nair</td>
+                <td class="td-muted">Math</td>
+                <td>3</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="Math">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('AP Calculus')">AP Calculus</td>
+                <td>Period 4</td>
+                <td>Priya Nair</td>
+                <td class="td-muted">Math</td>
+                <td>4</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="History &amp; Social Studies">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('World History')">World History</td>
+                <td>Period 2</td>
+                <td>Tom Okafor</td>
+                <td class="td-muted">History &amp; Social Studies</td>
+                <td>3</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="World Languages">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('Spanish III')">Spanish III</td>
+                <td>Period 5</td>
+                <td>Priya Nair</td>
+                <td class="td-muted">World Languages</td>
+                <td>3</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="World Languages">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('Spanish for Native Speakers')">Spanish for Native Speakers</td>
+                <td>Period 3</td>
+                <td>Tom Okafor</td>
+                <td class="td-muted">World Languages</td>
+                <td>3</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="English">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('AP Literature')">AP Literature</td>
+                <td>Period 1</td>
+                <td>Marcus Webb</td>
+                <td class="td-muted">English</td>
+                <td>4</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+              <tr data-dept="Science">
+                <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudentsByName('Chemistry')">Chemistry</td>
+                <td>Period 4</td>
+                <td>Sarah Chen</td>
+                <td class="td-muted">Science</td>
+                <td>3</td>
+                <td><div class="actions-cell"><button class="btn btn-secondary btn-sm">Edit</button><button class="btn btn-danger btn-sm">Remove</button></div></td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -3158,55 +3231,38 @@
 
   let sectionsSort = { col: -1, asc: true };
 
+  function renderRoster() {
+    const dept = document.getElementById('roster-dept').value;
+    document.querySelectorAll('#roster-tbody tr').forEach(row => {
+      row.style.display = (!dept || row.dataset.dept === dept) ? '' : 'none';
+    });
+  }
+
   function sortSections(col) {
     if (sectionsSort.col === col) sectionsSort.asc = !sectionsSort.asc;
     else { sectionsSort.col = col; sectionsSort.asc = true; }
+
+    const tbody = document.getElementById('roster-tbody');
+    const rows = [...tbody.querySelectorAll('tr')];
+    rows.sort((a, b) => {
+      const av = a.cells[col].textContent.trim();
+      const bv = b.cells[col].textContent.trim();
+      if (col === 4) return sectionsSort.asc ? +av - +bv : +bv - +av;
+      return sectionsSort.asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+
     renderRoster();
-  }
-
-  function sectionSortKey(c, col) {
-    switch (col) {
-      case 0: return c.course;
-      case 1: return c.section;
-      case 2: return c.teacher;
-      case 3: return c.dept;
-      case 4: return c.students.length;
-    }
-  }
-
-  function renderRoster() {
-    const dept = document.getElementById('roster-dept').value;
-    let rows = CLASSES.filter(c => !dept || c.dept === dept);
-
-    if (sectionsSort.col >= 0) {
-      rows = [...rows].sort((a, b) => {
-        const av = sectionSortKey(a, sectionsSort.col);
-        const bv = sectionSortKey(b, sectionsSort.col);
-        const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
-        return sectionsSort.asc ? cmp : -cmp;
-      });
-    }
-
-    document.getElementById('roster-tbody').innerHTML = rows.map((c) => {
-      const idx = CLASSES.indexOf(c);
-      return `
-      <tr>
-        <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudents(${idx})">${c.course}</td>
-        <td>${c.section}</td>
-        <td>${c.teacher}</td>
-        <td class="td-muted">${c.dept}</td>
-        <td>${c.students.length}</td>
-        <td><div class="actions-cell">
-          <button class="btn btn-secondary btn-sm">Edit</button>
-          <button class="btn btn-danger btn-sm">Remove</button>
-        </div></td>
-      </tr>`;
-    }).join('');
 
     for (let i = 0; i < 5; i++) {
       const el = document.getElementById('sec-sort-' + i);
       if (el) el.textContent = sectionsSort.col === i ? (sectionsSort.asc ? ' ▲' : ' ▼') : '';
     }
+  }
+
+  function openStudentsByName(course) {
+    const idx = CLASSES.findIndex(c => c.course === course);
+    if (idx >= 0) openStudents(idx);
   }
 
   function openAssignPrompt(idx) {
@@ -3243,8 +3299,6 @@
     document.getElementById('importDropZone').style.display = '';
     document.getElementById('importPreview').style.display = 'none';
   }
-
-  renderRoster();
 
   // ── COMMENT BANKS ──
   function toggleDept(header) {
