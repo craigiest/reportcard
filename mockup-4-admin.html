@@ -1216,7 +1216,7 @@
       <div class="section-header">
         <div>
           <div class="section-title">Comment Banks</div>
-          <div class="section-subtitle">Manage standard comment banks and department/course assignments</div>
+          <div class="section-subtitle">Create and edit standard comment banks — assign them to departments and courses in <strong>Assignments</strong></div>
         </div>
         <div style="display:flex;gap:0.5rem">
           <button class="btn btn-secondary" onclick="openModal('uploadBankModal')">⬆ Upload CSV</button>
@@ -1224,14 +1224,8 @@
         </div>
       </div>
 
-      <!-- Sub-tabs -->
-      <div class="sub-tabs">
-        <div class="sub-tab active" onclick="showSubTab('banks','bankList')">Banks</div>
-        <div class="sub-tab" onclick="showSubTab('banks','assignments')">Assignments</div>
-      </div>
-
       <!-- Banks list -->
-      <div class="sub-panel active" id="banks-bankList">
+      <div id="banks-bankList">
         <div class="default-bank-bar">
           <label>School-wide default:</label>
           <select class="filter-select" id="defaultBankSelect">
@@ -1316,145 +1310,6 @@
         </div>
       </div>
 
-      <!-- Assignments tree -->
-      <div class="sub-panel" id="banks-assignments">
-        <div class="filter-bar" style="margin-bottom:1rem">
-          <label style="font-size:0.8rem;font-weight:600;color:#374151;white-space:nowrap">Term:</label>
-          <select class="filter-select">
-            <option>25–26 S2 (current)</option>
-            <option>25–26 S1</option>
-            <option>24–25 S2</option>
-          </select>
-          <span style="font-size:0.78rem;color:#94a3b8">Edits apply only to the selected term. New terms inherit the previous term's assignments.</span>
-        </div>
-        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">
-          Each course uses exactly one standard bank. More specific assignments override broader ones. Expand a department to set course-level overrides.
-        </p>
-        <div class="assign-tree">
-
-          <div class="assign-dept">
-            <div class="assign-dept-header" onclick="toggleDept(this)">
-              <span class="assign-toggle">▶</span>
-              <span class="assign-dept-name">English</span>
-              <select class="assign-bank-select" onclick="event.stopPropagation()">
-                <option>Humanities Bank</option>
-                <option>Core Skills Bank (v3)</option>
-                <option>STEM Bank</option>
-              </select>
-            </div>
-            <div class="assign-courses">
-              <div class="assign-course-row">
-                <span class="assign-course-name">English 9</span>
-                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option></select>
-                <span class="assign-inherited">Humanities Bank</span>
-              </div>
-              <div class="assign-course-row">
-                <span class="assign-course-name">English 10</span>
-                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option></select>
-                <span class="assign-inherited">Humanities Bank</span>
-              </div>
-              <div class="assign-course-row">
-                <span class="assign-course-name">AP Literature</span>
-                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option selected>Core Skills Bank (v3)</option><option>Humanities Bank</option></select>
-                <span class="assign-inherited" style="color:#4f46e5;font-style:normal;font-weight:600">Core Skills Bank (v3) ↑ override</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="assign-dept">
-            <div class="assign-dept-header" onclick="toggleDept(this)">
-              <span class="assign-toggle">▶</span>
-              <span class="assign-dept-name">Math</span>
-              <select class="assign-bank-select" onclick="event.stopPropagation()">
-                <option>STEM Bank</option>
-                <option>Core Skills Bank (v3)</option>
-              </select>
-            </div>
-            <div class="assign-courses">
-              <div class="assign-course-row">
-                <span class="assign-course-name">Algebra II</span>
-                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option><option>Core Skills Bank (v3)</option></select>
-                <span class="assign-inherited">STEM Bank</span>
-              </div>
-              <div class="assign-course-row">
-                <span class="assign-course-name">AP Calculus</span>
-                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option><option>Core Skills Bank (v3)</option></select>
-                <span class="assign-inherited">STEM Bank</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="assign-dept">
-            <div class="assign-dept-header" onclick="toggleDept(this)">
-              <span class="assign-toggle">▶</span>
-              <span class="assign-dept-name">World Languages</span>
-              <select class="assign-bank-select" onclick="event.stopPropagation()">
-                <option>World Languages Bank</option>
-                <option>Core Skills Bank (v3)</option>
-              </select>
-            </div>
-            <div class="assign-courses">
-              <div class="assign-course-row">
-                <span class="assign-course-name">Spanish I–III</span>
-                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
-                <span class="assign-inherited">World Languages Bank</span>
-              </div>
-              <div class="assign-course-row">
-                <span class="assign-course-name">Spanish for Native Speakers</span>
-                <select class="assign-bank-select"><option value="">— inherit from dept —</option><option selected>Spanish for Native Speakers</option></select>
-                <span class="assign-inherited" style="color:#4f46e5;font-style:normal;font-weight:600">Spanish for Native Speakers ↑ override</span>
-              </div>
-              <div class="assign-course-row">
-                <span class="assign-course-name">Arabic I–III</span>
-                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
-                <span class="assign-inherited">World Languages Bank</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="assign-dept">
-            <div class="assign-dept-header" onclick="toggleDept(this)">
-              <span class="assign-toggle">▶</span>
-              <span class="assign-dept-name">Science</span>
-              <select class="assign-bank-select" onclick="event.stopPropagation()">
-                <option>STEM Bank</option>
-                <option>Core Skills Bank (v3)</option>
-              </select>
-            </div>
-            <div class="assign-courses">
-              <div class="assign-course-row">
-                <span class="assign-course-name">Biology 101</span>
-                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
-                <span class="assign-inherited">STEM Bank</span>
-              </div>
-              <div class="assign-course-row">
-                <span class="assign-course-name">Chemistry</span>
-                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
-                <span class="assign-inherited">STEM Bank</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="assign-dept">
-            <div class="assign-dept-header" onclick="toggleDept(this)">
-              <span class="assign-toggle">▶</span>
-              <span class="assign-dept-name">History &amp; Social Studies</span>
-              <select class="assign-bank-select" onclick="event.stopPropagation()">
-                <option>Humanities Bank</option>
-                <option>Core Skills Bank (v3)</option>
-              </select>
-            </div>
-            <div class="assign-courses">
-              <div class="assign-course-row">
-                <span class="assign-course-name">World History</span>
-                <select class="assign-bank-select"><option value="" selected>— inherit from dept —</option></select>
-                <span class="assign-inherited">Humanities Bank</span>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /assign-tree -->
-      </div>
 
     </div><!-- /section-banks -->
 
@@ -1725,51 +1580,8 @@
             <label class="form-label">Bank Name</label>
             <input class="form-input" type="text" placeholder="e.g. Arts &amp; Music Bank">
           </div>
-          <div>
-            <label class="form-label">Level</label>
-            <div style="display:flex;flex-direction:column;gap:0.45rem;font-size:0.85rem">
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="bankLevel" value="school" onchange="updateBankLevelFields()"> School-wide default</label>
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="bankLevel" value="dept" checked onchange="updateBankLevelFields()"> Department override</label>
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="radio" name="bankLevel" value="course" onchange="updateBankLevelFields()"> Course override</label>
-            </div>
-          </div>
-          <div id="bankDeptRow">
-            <label class="form-label">Apply to departments</label>
-            <div style="display:flex;flex-direction:column;gap:0.35rem;font-size:0.85rem">
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="checkbox"> English</label>
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="checkbox"> Math</label>
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="checkbox"> Science</label>
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="checkbox"> World Languages</label>
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="checkbox"> History &amp; Social Studies</label>
-              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer"><input type="checkbox"> Arts</label>
-            </div>
-          </div>
-          <div id="bankCourseRow" style="display:none">
-            <label class="form-label">Apply to course</label>
-            <select class="form-input">
-              <option value="">Select a course…</option>
-              <optgroup label="English">
-                <option>English 9</option>
-                <option>English 10</option>
-                <option>AP Literature</option>
-              </optgroup>
-              <optgroup label="Math">
-                <option>Algebra II</option>
-                <option>AP Calculus</option>
-              </optgroup>
-              <optgroup label="Science">
-                <option>Biology 101</option>
-                <option>Chemistry</option>
-              </optgroup>
-              <optgroup label="World Languages">
-                <option>Spanish I–III</option>
-                <option>Spanish for Native Speakers</option>
-                <option>Arabic I–III</option>
-              </optgroup>
-              <optgroup label="History &amp; Social Studies">
-                <option>World History</option>
-              </optgroup>
-            </select>
+          <div class="note-box" style="margin:0">
+            After creating, go to <strong>Assignments</strong> to attach this bank to departments or courses.
           </div>
         </div>
         <div class="modal-footer">
@@ -1880,7 +1692,7 @@
                 <input type="radio" name="promptLevel" value="dept" onchange="updatePromptFields()"> A specific department
               </label>
             </div>
-            <div class="form-hint" style="margin-top:0.4rem">To assign a prompt to individual courses, use the Roster tab.</div>
+            <div class="form-hint" style="margin-top:0.4rem">To assign a prompt to individual departments or courses, use the <strong>Assignments</strong> section.</div>
           </div>
 
           <div id="promptDeptRow" style="display:none">
@@ -3242,12 +3054,6 @@
     document.querySelector(`[name="promptLevel"][value="${levelVal}"]`).checked = true;
     updatePromptFields();
     openModal('promptModal');
-  }
-
-  function updateBankLevelFields() {
-    const val = document.querySelector('[name="bankLevel"]:checked')?.value;
-    document.getElementById('bankDeptRow').style.display = (val === 'dept') ? '' : 'none';
-    document.getElementById('bankCourseRow').style.display = (val === 'course') ? '' : 'none';
   }
 
   function updatePromptFields() {
