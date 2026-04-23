@@ -795,6 +795,11 @@
     .assign-override-link:hover { color: #4338ca; }
     .assign-reset-link:hover { color: #475569; }
     .assign-inherited-state, .assign-override-state { display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
+    .assign-apply-btn {
+      font-size: 0.73rem; background: none; border: 1px solid #c7d2fe; border-radius: 4px;
+      padding: 0.2rem 0.5rem; cursor: pointer; color: #4f46e5; font-family: inherit; white-space: nowrap;
+    }
+    .assign-apply-btn:hover { background: #eef2ff; }
   </style>
 </head>
 <body>
@@ -1477,9 +1482,10 @@
         <table class="assign-table">
           <thead>
             <tr>
-              <th style="width:35%">Scope</th>
-              <th style="width:32%">Comment Bank</th>
-              <th style="width:33%">Student Prompt</th>
+              <th style="width:30%">Scope</th>
+              <th style="width:30%">Comment Bank</th>
+              <th style="width:30%">Student Prompt</th>
+              <th style="width:10%"></th>
             </tr>
           </thead>
           <tbody>
@@ -1504,6 +1510,7 @@
                   <option>Heritage Speaker Reflection</option>
                 </select>
               </td>
+              <td><button class="assign-apply-btn" onclick="applySchoolToAll()">Apply to all depts &amp; courses</button></td>
             </tr>
 
             <!-- English dept — bank: override (Humanities), prompt: inherited (school=General Reflection) -->
@@ -1523,22 +1530,23 @@
                   <span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="deptReset(this)">× Reset</button></span>
                 </div>
               </td>
+              <td onclick="event.stopPropagation()"><button class="assign-apply-btn" onclick="applyDeptToAll('english')">Apply to all courses</button></td>
             </tr>
             <!-- English courses — all bank: inherited (Humanities), prompt: inherited except AP Lit -->
             <tr class="assign-row-course" data-dept-member="english" style="display:none">
               <td>English 9</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="english" style="display:none">
               <td>English 10</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="english" style="display:none">
               <td>AP Literature</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select"><option>General Reflection</option><option>Language Growth</option><option selected>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state" style="display:none"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select"><option>General Reflection</option><option>Language Growth</option><option selected>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state" style="display:none"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
 
             <!-- Math dept — bank: override (STEM), prompt: inherited (school=General Reflection) -->
@@ -1558,16 +1566,17 @@
                   <span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="deptReset(this)">× Reset</button></span>
                 </div>
               </td>
+              <td onclick="event.stopPropagation()"><button class="assign-apply-btn" onclick="applyDeptToAll('math')">Apply to all courses</button></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="math" style="display:none">
               <td>Algebra II</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="math" style="display:none">
               <td>AP Calculus</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
 
             <!-- Science dept — bank: override (STEM), prompt: inherited (school=General Reflection) -->
@@ -1587,16 +1596,17 @@
                   <span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="deptReset(this)">× Reset</button></span>
                 </div>
               </td>
+              <td onclick="event.stopPropagation()"><button class="assign-apply-btn" onclick="applyDeptToAll('science')">Apply to all courses</button></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="science" style="display:none">
               <td>Biology 101</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="science" style="display:none">
               <td>Chemistry</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option selected>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
 
             <!-- World Languages dept — bank: override (WL Bank), prompt: override (Language Growth) -->
@@ -1616,22 +1626,23 @@
                   <span class="assign-override-state"><button class="assign-action-link assign-reset-link" onclick="deptReset(this)">× Reset</button></span>
                 </div>
               </td>
+              <td onclick="event.stopPropagation()"><button class="assign-apply-btn" onclick="applyDeptToAll('worldlang')">Apply to all courses</button></td>
             </tr>
             <!-- Spanish I–III and Arabic I–III inherit from World Languages; Spanish for Native Speakers overrides both -->
             <tr class="assign-row-course" data-dept-member="worldlang" style="display:none">
               <td>Spanish I–III</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option>STEM Bank</option><option selected>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option>General Reflection</option><option selected>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option>General Reflection</option><option selected>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="worldlang" style="display:none">
               <td>Spanish for Native Speakers</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option selected>Spanish for Native Speakers</option></select><span class="assign-inherited-state" style="display:none"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select"><option>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option selected>Heritage Speaker Reflection</option></select><span class="assign-inherited-state" style="display:none"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select"><option>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option selected>Heritage Speaker Reflection</option></select><span class="assign-inherited-state" style="display:none"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="worldlang" style="display:none">
               <td>Arabic I–III</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option>Humanities Bank</option><option>STEM Bank</option><option selected>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option>General Reflection</option><option selected>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option>General Reflection</option><option selected>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
 
             <!-- History & Social Studies dept — bank: override (Humanities), prompt: inherited (school=General Reflection) -->
@@ -1651,11 +1662,12 @@
                   <span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="deptReset(this)">× Reset</button></span>
                 </div>
               </td>
+              <td onclick="event.stopPropagation()"><button class="assign-apply-btn" onclick="applyDeptToAll('history')">Apply to all courses</button></td>
             </tr>
             <tr class="assign-row-course" data-dept-member="history" style="display:none">
               <td>World History</td>
               <td><div class="assign-cell" data-field="bank"><select class="assign-select inherited"><option>Core Skills Bank (v3)</option><option selected>Humanities Bank</option><option>STEM Bank</option><option>World Languages Bank</option><option>Spanish for Native Speakers</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
-              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td>
+              <td><div class="assign-cell" data-field="prompt"><select class="assign-select inherited"><option selected>General Reflection</option><option>Language Growth</option><option>AP Lit Deep Dive</option><option>Heritage Speaker Reflection</option></select><span class="assign-inherited-state"><span class="assign-badge">dept</span><button class="assign-action-link assign-override-link" onclick="courseOverride(this)">Override</button></span><span class="assign-override-state" style="display:none"><button class="assign-action-link assign-reset-link" onclick="courseReset(this)">× Reset</button></span></div></td><td></td>
             </tr>
 
           </tbody>
@@ -3407,6 +3419,38 @@
         sel.value = newVal;
         cascadeToInheritedCourses(deptRow.dataset.dept, field, newVal);
       }
+    });
+  }
+
+  function applyDeptToAll(dept) {
+    const deptRow = document.querySelector('tr.assign-row-dept[data-dept="' + dept + '"]');
+    ['bank', 'prompt'].forEach(field => {
+      const deptVal = deptRow.querySelector('.assign-cell[data-field="' + field + '"] select').value;
+      document.querySelectorAll('tr[data-dept-member="' + dept + '"]').forEach(row => {
+        const cell = row.querySelector('.assign-cell[data-field="' + field + '"]');
+        const sel = cell.querySelector('select');
+        sel.value = deptVal;
+        sel.classList.add('inherited');
+        cell.querySelector('.assign-inherited-state').style.display = '';
+        cell.querySelector('.assign-override-state').style.display = 'none';
+      });
+    });
+  }
+
+  function applySchoolToAll() {
+    const bankVal   = document.getElementById('school-bank-select').value;
+    const promptVal = document.getElementById('school-prompt-select').value;
+    document.querySelectorAll('tr.assign-row-dept').forEach(deptRow => {
+      ['bank', 'prompt'].forEach(field => {
+        const val = field === 'bank' ? bankVal : promptVal;
+        const cell = deptRow.querySelector('.assign-cell[data-field="' + field + '"]');
+        const sel = cell.querySelector('select');
+        sel.value = val;
+        sel.classList.add('inherited');
+        cell.querySelector('.assign-inherited-state').style.display = '';
+        cell.querySelector('.assign-override-state').style.display = 'none';
+        cascadeToInheritedCourses(deptRow.dataset.dept, field, val);
+      });
     });
   }
 
