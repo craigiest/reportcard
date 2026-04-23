@@ -1668,7 +1668,7 @@
 
       <div class="sub-tabs">
         <div class="sub-tab active" onclick="showSubTab('rosters','terms')">Terms</div>
-        <div class="sub-tab" onclick="showSubTab('rosters','roster')">Roster</div>
+        <div class="sub-tab" onclick="showSubTab('rosters','roster')">Class Sections</div>
         <div class="sub-tab" onclick="showSubTab('rosters','import')">Import</div>
       </div>
 
@@ -1760,11 +1760,11 @@
           <table>
             <thead>
               <tr>
-                <th>Course</th>
-                <th>Teacher</th>
-                <th>Department</th>
-                <th>Students</th>
-                <th>Reflection Prompt</th>
+                <th onclick="sortSections(0)" style="cursor:pointer">Course<span id="sec-sort-0"></span></th>
+                <th onclick="sortSections(1)" style="cursor:pointer">Section<span id="sec-sort-1"></span></th>
+                <th onclick="sortSections(2)" style="cursor:pointer">Teacher<span id="sec-sort-2"></span></th>
+                <th onclick="sortSections(3)" style="cursor:pointer">Department<span id="sec-sort-3"></span></th>
+                <th onclick="sortSections(4)" style="cursor:pointer">Students<span id="sec-sort-4"></span></th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -3137,15 +3137,15 @@
 
   // ── ROSTERS ──
   const CLASSES = [
-    { course:'Biology 101',                teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                          students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
-    { course:'English 10',                 teacher:'Marcus Webb', dept:'English',                   prompt: null,                          students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
-    { course:'Algebra II',                 teacher:'Priya Nair',  dept:'Math',                      prompt: null,                          students:['Hassan Ali','Ingrid Svensson','James Carter'] },
-    { course:'AP Calculus',                teacher:'Priya Nair',  dept:'Math',                      prompt: 'AP Calculus Reflection',      students:['Elena Marsh','Hassan Ali','Ingrid Svensson','Maya Singh'] },
-    { course:'World History',              teacher:'Tom Okafor',  dept:'History & Social Studies',  prompt: null,                          students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
-    { course:'Spanish III',                teacher:'Priya Nair',  dept:'World Languages',           prompt: null,                          students:['Ben Kowalski','Clara Russo','Dante Osei'] },
-    { course:'Spanish for Native Speakers',teacher:'Tom Okafor',  dept:'World Languages',           prompt: 'Heritage Speaker Reflection', students:['Felix Huang','Grace Kim','Keiko Tanaka'] },
-    { course:'AP Literature',              teacher:'Marcus Webb', dept:'English',                   prompt: 'AP Lit Deep Dive',            students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
-    { course:'Chemistry',                  teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                          students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
+    { course:'Biology 101',                section:'Period 1', teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                          students:['Aisha Patel','Ben Kowalski','Clara Russo','Leo Fernandez','Maya Singh'] },
+    { course:'English 10',                 section:'Period 2', teacher:'Marcus Webb', dept:'English',                   prompt: null,                          students:['Dante Osei','Elena Marsh','Felix Huang','Grace Kim'] },
+    { course:'Algebra II',                 section:'Period 3', teacher:'Priya Nair',  dept:'Math',                      prompt: null,                          students:['Hassan Ali','Ingrid Svensson','James Carter'] },
+    { course:'AP Calculus',                section:'Period 4', teacher:'Priya Nair',  dept:'Math',                      prompt: 'AP Calculus Reflection',      students:['Elena Marsh','Hassan Ali','Ingrid Svensson','Maya Singh'] },
+    { course:'World History',              section:'Period 2', teacher:'Tom Okafor',  dept:'History & Social Studies',  prompt: null,                          students:['Keiko Tanaka','Leo Fernandez','Aisha Patel'] },
+    { course:'Spanish III',                section:'Period 5', teacher:'Priya Nair',  dept:'World Languages',           prompt: null,                          students:['Ben Kowalski','Clara Russo','Dante Osei'] },
+    { course:'Spanish for Native Speakers',section:'Period 3', teacher:'Tom Okafor',  dept:'World Languages',           prompt: 'Heritage Speaker Reflection', students:['Felix Huang','Grace Kim','Keiko Tanaka'] },
+    { course:'AP Literature',              section:'Period 1', teacher:'Marcus Webb', dept:'English',                   prompt: 'AP Lit Deep Dive',            students:['Elena Marsh','Felix Huang','Grace Kim','Hassan Ali'] },
+    { course:'Chemistry',                  section:'Period 4', teacher:'Sarah Chen',  dept:'Science',                   prompt: null,                          students:['Ingrid Svensson','James Carter','Keiko Tanaka'] },
   ];
 
   function effectivePrompt(c) {
@@ -3156,24 +3156,52 @@
     return { label: uniP ? uniP.name : '—', note: 'universal default', cls: '' };
   }
 
+  let sectionsSort = { col: -1, asc: true };
+
+  function sortSections(col) {
+    if (sectionsSort.col === col) sectionsSort.asc = !sectionsSort.asc;
+    else { sectionsSort.col = col; sectionsSort.asc = true; }
+    renderRoster();
+  }
+
+  function sectionSortKey(c, col) {
+    switch (col) {
+      case 0: return c.course;
+      case 1: return c.section;
+      case 2: return c.teacher;
+      case 3: return c.dept;
+      case 4: return c.students.length;
+    }
+  }
+
   function renderRoster() {
     const dept = document.getElementById('roster-dept').value;
-    const rows = CLASSES.filter(c => !dept || c.dept === dept);
+    let rows = CLASSES.filter(c => !dept || c.dept === dept);
+
+    if (sectionsSort.col >= 0) {
+      rows = [...rows].sort((a, b) => {
+        const av = sectionSortKey(a, sectionsSort.col);
+        const bv = sectionSortKey(b, sectionsSort.col);
+        const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+        return sectionsSort.asc ? cmp : -cmp;
+      });
+    }
+
+    for (let i = 0; i < 5; i++) {
+      document.getElementById('sec-sort-' + i).textContent =
+        sectionsSort.col === i ? (sectionsSort.asc ? ' ▲' : ' ▼') : '';
+    }
+
     document.getElementById('roster-tbody').innerHTML = rows.map((c) => {
       const idx = CLASSES.indexOf(c);
-      const ep  = effectivePrompt(c);
-      const promptCell = `<span class="prompt-inherit-label">${ep.label}</span>
-        <span style="font-size:0.72rem;color:#94a3b8;margin-left:0.3rem">(${ep.note})</span>
-        <br><span class="prompt-assign-link" onclick="openAssignPrompt(${idx})">Change</span>`;
       return `
       <tr>
-        <td class="td-name">${c.course}</td>
+        <td class="td-name" style="cursor:pointer;color:#3b82f6" onclick="openStudents(${idx})">${c.course}</td>
+        <td>${c.section}</td>
         <td>${c.teacher}</td>
         <td class="td-muted">${c.dept}</td>
         <td>${c.students.length}</td>
-        <td style="min-width:180px">${promptCell}</td>
         <td><div class="actions-cell">
-          <button class="btn btn-secondary btn-sm" onclick="openStudents(${idx})">Students</button>
           <button class="btn btn-secondary btn-sm">Edit</button>
           <button class="btn btn-danger btn-sm">Remove</button>
         </div></td>
