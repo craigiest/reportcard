@@ -1668,7 +1668,7 @@
 
       <div class="sub-tabs">
         <div class="sub-tab active" onclick="showSubTab('rosters','terms')">Terms</div>
-        <div class="sub-tab" onclick="showSubTab('rosters','roster')">Class Sections</div>
+        <div class="sub-tab" onclick="showSubTab('rosters','roster'); renderRoster()">Class Sections</div>
         <div class="sub-tab" onclick="showSubTab('rosters','import')">Import</div>
       </div>
 
@@ -3187,11 +3187,6 @@
       });
     }
 
-    for (let i = 0; i < 5; i++) {
-      document.getElementById('sec-sort-' + i).textContent =
-        sectionsSort.col === i ? (sectionsSort.asc ? ' ▲' : ' ▼') : '';
-    }
-
     document.getElementById('roster-tbody').innerHTML = rows.map((c) => {
       const idx = CLASSES.indexOf(c);
       return `
@@ -3207,6 +3202,11 @@
         </div></td>
       </tr>`;
     }).join('');
+
+    for (let i = 0; i < 5; i++) {
+      const el = document.getElementById('sec-sort-' + i);
+      if (el) el.textContent = sectionsSort.col === i ? (sectionsSort.asc ? ' ▲' : ' ▼') : '';
+    }
   }
 
   function openAssignPrompt(idx) {
