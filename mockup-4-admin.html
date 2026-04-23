@@ -1216,12 +1216,9 @@
       <div class="section-header">
         <div>
           <div class="section-title">Comment Banks</div>
-          <div class="section-subtitle">Create and edit standard comment banks — assign them to departments and courses in <strong>Assignments</strong></div>
+          <div class="section-subtitle">Upload and manage standard comment banks — assign them to departments and courses in <strong>Assignments</strong></div>
         </div>
-        <div style="display:flex;gap:0.5rem">
-          <button class="btn btn-secondary" onclick="openModal('uploadBankModal')">⬆ Upload CSV</button>
-          <button class="btn btn-primary" onclick="openModal('newBankModal')">+ New Bank</button>
-        </div>
+        <button class="btn btn-primary" onclick="openUploadBankModal()">⬆ Upload New Bank</button>
       </div>
 
       <!-- Banks list -->
@@ -1243,7 +1240,6 @@
             <thead>
               <tr>
                 <th>Bank Name</th>
-                <th>Level</th>
                 <th>Subskills</th>
                 <th>Last Modified</th>
                 <th>Applied To</th>
@@ -1252,56 +1248,56 @@
             </thead>
             <tbody id="banks-tbody">
               <tr>
-                <td class="td-name">Core Skills Bank (v3)</td>
-                <td><span class="role-tag role-admin">School Default</span></td>
+                <td class="td-name">Core Skills Bank (v3) <span class="role-tag role-admin" style="margin-left:0.4rem">School Default</span></td>
                 <td>24</td>
                 <td class="td-muted">Mar 10, 2026</td>
                 <td class="td-muted">All (default)</td>
                 <td><div class="actions-cell">
-                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-secondary btn-sm" onclick="openUploadBankModal('Core Skills Bank (v3)')">⬆ Replace</button>
+                  <button class="btn btn-secondary btn-sm">⬇ CSV</button>
                 </div></td>
               </tr>
               <tr>
                 <td class="td-name">Humanities Bank</td>
-                <td><span class="role-tag role-teacher">Department</span></td>
                 <td>18</td>
                 <td class="td-muted">Feb 2, 2026</td>
                 <td class="td-muted">English, History, Arts</td>
                 <td><div class="actions-cell">
-                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-secondary btn-sm" onclick="openUploadBankModal('Humanities Bank')">⬆ Replace</button>
+                  <button class="btn btn-secondary btn-sm">⬇ CSV</button>
                   <button class="btn btn-danger btn-sm">Delete</button>
                 </div></td>
               </tr>
               <tr>
                 <td class="td-name">STEM Bank</td>
-                <td><span class="role-tag role-teacher">Department</span></td>
                 <td>21</td>
                 <td class="td-muted">Jan 15, 2026</td>
                 <td class="td-muted">Math, Science</td>
                 <td><div class="actions-cell">
-                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-secondary btn-sm" onclick="openUploadBankModal('STEM Bank')">⬆ Replace</button>
+                  <button class="btn btn-secondary btn-sm">⬇ CSV</button>
                   <button class="btn btn-danger btn-sm">Delete</button>
                 </div></td>
               </tr>
               <tr>
                 <td class="td-name">World Languages Bank</td>
-                <td><span class="role-tag role-teacher">Department</span></td>
                 <td>16</td>
                 <td class="td-muted">Dec 4, 2025</td>
                 <td class="td-muted">Spanish, Arabic, Mandarin</td>
                 <td><div class="actions-cell">
-                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-secondary btn-sm" onclick="openUploadBankModal('World Languages Bank')">⬆ Replace</button>
+                  <button class="btn btn-secondary btn-sm">⬇ CSV</button>
                   <button class="btn btn-danger btn-sm">Delete</button>
                 </div></td>
               </tr>
               <tr>
                 <td class="td-name">Spanish for Native Speakers</td>
-                <td><span class="role-tag role-student">Course</span></td>
                 <td>14</td>
                 <td class="td-muted">Nov 19, 2025</td>
                 <td class="td-muted">Spanish for Native Speakers</td>
                 <td><div class="actions-cell">
-                  <button class="btn btn-secondary btn-sm" onclick="openModal('editBankModal')">Edit</button>
+                  <button class="btn btn-secondary btn-sm" onclick="openUploadBankModal('Spanish for Native Speakers')">⬆ Replace</button>
+                  <button class="btn btn-secondary btn-sm">⬇ CSV</button>
                   <button class="btn btn-danger btn-sm">Delete</button>
                 </div></td>
               </tr>
@@ -1309,7 +1305,6 @@
           </table>
         </div>
       </div>
-
 
     </div><!-- /section-banks -->
 
@@ -1536,15 +1531,15 @@
       <div class="modal" style="width:480px">
         <div class="modal-header">
           <div>
-            <div class="modal-title">Upload Comment Bank CSV</div>
-            <div class="modal-subtitle">CSV columns: Transferable Skill, Skill Area, Subskill, Strength, Growth</div>
+            <div class="modal-title" id="uploadBankTitle">Upload New Bank</div>
+            <div class="modal-subtitle" id="uploadBankSubtitle">CSV columns: Transferable Skill, Skill Area, Subskill, Strength, Growth</div>
           </div>
           <button class="modal-close" onclick="closeModal('uploadBankModal')">✕</button>
         </div>
         <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem">
-          <div class="form-row" style="margin:0">
-            <label class="form-label">Bank Name</label>
-            <input class="form-input" type="text" placeholder="e.g. STEM Bank v2">
+          <div class="form-row" style="margin:0" id="uploadBankNameRow">
+            <label class="form-label" id="uploadBankNameLabel">Bank Name</label>
+            <input class="form-input" type="text" id="uploadBankName" placeholder="e.g. Arts &amp; Music Bank">
           </div>
           <div class="drop-zone" onclick="this.querySelector('input').click()">
             <div style="font-size:1.5rem;margin-bottom:0.4rem">📂</div>
@@ -1560,86 +1555,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal('uploadBankModal')">Cancel</button>
-          <button class="btn btn-primary">Upload &amp; Preview</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- New Bank Modal -->
-    <div class="modal-overlay" id="newBankModal">
-      <div class="modal" style="width:460px">
-        <div class="modal-header">
-          <div>
-            <div class="modal-title">New Comment Bank</div>
-            <div class="modal-subtitle">Create a bank manually or upload a CSV</div>
-          </div>
-          <button class="modal-close" onclick="closeModal('newBankModal')">✕</button>
-        </div>
-        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem">
-          <div class="form-row" style="margin:0">
-            <label class="form-label">Bank Name</label>
-            <input class="form-input" type="text" placeholder="e.g. Arts &amp; Music Bank">
-          </div>
-          <div class="note-box" style="margin:0">
-            After creating, go to <strong>Assignments</strong> to attach this bank to departments or courses.
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="closeModal('newBankModal')">Cancel</button>
-          <button class="btn btn-primary" onclick="closeModal('newBankModal')">Create Bank</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Edit Bank Modal -->
-    <div class="modal-overlay" id="editBankModal">
-      <div class="modal modal-lg">
-        <div class="modal-header">
-          <div>
-            <div class="modal-title">Edit Bank — Core Skills Bank (v3)</div>
-            <div class="modal-subtitle">24 subskills &nbsp;·&nbsp; School default</div>
-          </div>
-          <button class="modal-close" onclick="closeModal('editBankModal')">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-wrap" style="max-height:340px;overflow-y:auto">
-            <table>
-              <thead>
-                <tr><th>Transferable Skill</th><th>Skill Area</th><th>Subskill</th><th>Strength Comment</th><th>Growth Comment</th><th></th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Collaboration</td><td>Teamwork</td><td>Active Listening</td>
-                  <td><input class="form-input" style="min-width:140px" value="Consistently listens attentively to peers"></td>
-                  <td><input class="form-input" style="min-width:140px" value="Working on listening before responding"></td>
-                  <td><button class="btn btn-danger btn-sm">✕</button></td>
-                </tr>
-                <tr>
-                  <td>Collaboration</td><td>Teamwork</td><td>Contributing Ideas</td>
-                  <td><input class="form-input" style="min-width:140px" value="Reliably brings thoughtful ideas to group work"></td>
-                  <td><input class="form-input" style="min-width:140px" value="Developing confidence to share ideas"></td>
-                  <td><button class="btn btn-danger btn-sm">✕</button></td>
-                </tr>
-                <tr>
-                  <td>Self-Management</td><td>Organization</td><td>Meeting Deadlines</td>
-                  <td><input class="form-input" style="min-width:140px" value="Consistently submits work on time"></td>
-                  <td><input class="form-input" style="min-width:140px" value="Building habits to meet deadlines"></td>
-                  <td><button class="btn btn-danger btn-sm">✕</button></td>
-                </tr>
-                <tr>
-                  <td>Communication</td><td>Written</td><td>Clarity of Expression</td>
-                  <td><input class="form-input" style="min-width:140px" value="Writes with clarity and precision"></td>
-                  <td><input class="form-input" style="min-width:140px" value="Working to express ideas more clearly in writing"></td>
-                  <td><button class="btn btn-danger btn-sm">✕</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <button class="btn btn-secondary btn-sm" style="margin-top:0.75rem">+ Add Subskill</button>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="closeModal('editBankModal')">Cancel</button>
-          <button class="btn btn-primary" onclick="closeModal('editBankModal')">Save Changes</button>
+          <button class="btn btn-primary" id="uploadBankSubmit">Upload &amp; Preview</button>
         </div>
       </div>
     </div>
@@ -2677,6 +2593,32 @@
 
   function openModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function openUploadBankModal(replaceName) {
+    const title  = document.getElementById('uploadBankTitle');
+    const sub    = document.getElementById('uploadBankSubtitle');
+    const nameEl = document.getElementById('uploadBankName');
+    const label  = document.getElementById('uploadBankNameLabel');
+    const submit = document.getElementById('uploadBankSubmit');
+    if (replaceName) {
+      title.textContent  = 'Replace Bank';
+      sub.textContent    = 'Upload a CSV to replace: ' + replaceName;
+      label.textContent  = 'Replacing';
+      nameEl.value       = replaceName;
+      nameEl.readOnly    = true;
+      nameEl.style.color = '#64748b';
+      submit.textContent = 'Upload & Replace';
+    } else {
+      title.textContent  = 'Upload New Bank';
+      sub.textContent    = 'CSV columns: Transferable Skill, Skill Area, Subskill, Strength, Growth';
+      label.textContent  = 'Bank Name';
+      nameEl.value       = '';
+      nameEl.readOnly    = false;
+      nameEl.style.color = '';
+      submit.textContent = 'Upload & Preview';
+    }
+    openModal('uploadBankModal');
+  }
   document.querySelectorAll('.modal-overlay').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
   });
