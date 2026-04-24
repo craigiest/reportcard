@@ -720,6 +720,66 @@
     .confirm-box p { font-size: 0.875rem; color: #64748b; line-height: 1.55; margin-bottom: 1.25rem; }
     .confirm-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
 
+    /* ── KEYBOARD NAV HINT ── */
+    .nav-hint {
+      padding: 0.45rem 0.85rem;
+      border-top: 1px solid #1e3a5f;
+      background: #0f172a;
+      flex-shrink: 0;
+      font-size: 0.68rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .nav-hint-row { display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; }
+    .nav-hint kbd {
+      display: inline-block;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 3px;
+      padding: 0 0.28rem;
+      font-size: 0.64rem;
+      color: #94a3b8;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    .nav-hint-label { color: #374151; }
+
+    /* ── KEYBOARD FOCUS HIGHLIGHTS ── */
+    /* Layer 1 — student rows */
+    .student-row.kb-focus {
+      background: #1e3a5f;
+      border-left-color: #60a5fa;
+      outline: none;
+    }
+    /* Layer 2 — skill items in right panel */
+    .skill-item.kb-focus {
+      background: #eff6ff;
+      border-left: 3px solid #3b82f6;
+      outline: none;
+    }
+    /* Narrative card focus */
+    .card.kb-focus-narrative {
+      outline: 3px solid #3b82f6;
+      outline-offset: -2px;
+    }
+    /* Layer 3 — items inside comment panel */
+    .skill-checkbox-row.kb-focus {
+      background: #eff6ff;
+      outline: none;
+    }
+    .popup-item.kb-focus {
+      background: #eff6ff;
+      outline: none;
+    }
+    .customize-opt.kb-focus {
+      background: #f5f3ff;
+      outline: none;
+    }
+    .panel-custom-input-row.kb-focus {
+      background: #fffbeb;
+      outline: none;
+    }
+
     /* ── LEGEND ── */
     .legend {
       display: flex;
@@ -833,6 +893,10 @@
     </div>
 
     <div class="roster-area" id="rosterArea"></div>
+
+    <div class="nav-hint" id="navHint">
+      <div class="nav-hint-row" id="navHintRow"></div>
+    </div>
 
     <div class="legend">
       <div class="legend-item"><span class="rc-dot"></span> Not started</div>
@@ -1556,6 +1620,34 @@ let activeCI = state.activeCI ?? null;
 let activeSI = state.activeSI ?? null;
 let popupCtx = null;    // { ci, si, skill, type }
 let customizeCtx = null; // { skill }
+
+// ── KEYBOARD NAV STATE ──
+let navLayer = 1;          // 1=students, 2=skills, 3=panel
+let navStudentIdx = -1;    // index into buildFlat() array (-1 = none)
+let navSkillIdx = -1;      // 0-5 = skill items, 6 = narrative
+let navPanelIdx = -1;      // index into panelNavItems[]
+let panelNavItems = [];    // ordered navigable elements in comment panel
+let kbTypeBuffer = '';     // for letter-jump in Layer 3
+let kbTypeTimer = null;
+
+// ─────────────────────────────────────────────────────────────────
+// KEYBOARD NAV HINT
+// ─────────────────────────────────────────────────────────────────
+function k(key) { return `<kbd>${key}</kbd>`; }
+
+const NAV_HINTS = {
+  1: `${k('↑')}${k('↓')} students &nbsp; ${k('→')} select`,
+  2: `${k('↑')}${k('↓')} skills &nbsp; ${k('→')} open &nbsp; ${k('←')} back`,
+  '2n': `${k('↑')}${k('↓')} skills &nbsp; ${k('←')} back &nbsp; ${k('Tab')} exit narrative`,
+  3: `${k('↑')}${k('↓')} move &nbsp; ${k('→')}${k('↵')} toggle &nbsp; ${k('←')} back &nbsp; A–Z jump`,
+  '3c': `${k('↵')} add &nbsp; ${k('↑')}${k('↓')} exit field &nbsp; ${k('Esc')} back`,
+};
+
+function updateNavHint(variant) {
+  const row = document.getElementById('navHintRow');
+  if (!row) return;
+  row.innerHTML = NAV_HINTS[variant] ?? NAV_HINTS[navLayer] ?? '';
+}
 
 function loadState() {
   try {
@@ -3131,6 +3223,7 @@ renderRoster();
 if (state.activeCI !== null && state.activeSI !== null) {
   activate(state.activeCI, state.activeSI);
 }
+updateNavHint(1);
 </script>
 </body>
 </html>
