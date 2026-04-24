@@ -1875,7 +1875,13 @@ function renderRoster() {
     const header = document.createElement('div');
     header.className = 'class-header' + (isOpen ? ' open' : '') + (hasActive ? ' has-active' : '');
     header.innerHTML = `<span class="class-chevron">▶</span><span style="flex:1;line-height:1.35">${cls.name}</span>`;
+    header.tabIndex = 0;
+    header.setAttribute('role', 'button');
+    header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     header.onclick = () => toggleClass(ci);
+    header.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleClass(ci); }
+    };
     area.appendChild(header);
 
     const roster = document.createElement('div');
@@ -1889,7 +1895,12 @@ function renderRoster() {
       const row = document.createElement('div');
       row.className = 'student-row' + (isActive ? ' active' : '');
       row.id = `sr-${ci}-${si}`;
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
       row.onclick = () => activate(ci, si);
+      row.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(ci, si); }
+      };
 
       const rcDotClass = st !== 'none' ? st : '';
       const hasReflection = !!state.reflections[`${state.term}|${name}`];
@@ -3058,7 +3069,13 @@ function renderAdvisoryRoster() {
     const header = document.createElement('div');
     header.className = 'class-header' + (isOpen ? ' open' : '') + (isActiveAdvisee && !isOpen ? ' has-active' : '');
     header.innerHTML = `<span class="class-chevron">▶</span><span style="flex:1;line-height:1.35">${esc(advisee.name)}</span>`;
+    header.tabIndex = 0;
+    header.setAttribute('role', 'button');
+    header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     header.onclick = () => toggleAdvisee(ai);
+    header.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAdvisee(ai); }
+    };
     area.appendChild(header);
 
     const courseList = document.createElement('div');
@@ -3069,7 +3086,12 @@ function renderAdvisoryRoster() {
       const isActive = ai === activeAdviseeIdx && ci === activeAdvisoryCourseIdx;
       const row = document.createElement('div');
       row.className = 'advisory-course-row' + (isActive ? ' active' : '');
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
       row.onclick = () => activateAdvisory(ai, ci);
+      row.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateAdvisory(ai, ci); }
+      };
       row.innerHTML = `
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(courseEntry.course)}</span>
         <span class="status-icons" aria-label="Report card: ${st}">
@@ -3173,6 +3195,23 @@ function onAdvisoryReviewChange() {
   // Re-render advisory panel to update badge color
   activateAdvisory(activeAdviseeIdx, activeAdvisoryCourseIdx);
 }
+
+// ─────────────────────────────────────────────────────────────────
+// ROSTER ARROW-KEY NAVIGATION
+// ─────────────────────────────────────────────────────────────────
+document.getElementById('rosterArea').addEventListener('keydown', function(e) {
+  if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+  // Collect all visible student rows and advisory course rows
+  const rows = [
+    ...this.querySelectorAll('.class-roster.open .student-row'),
+    ...this.querySelectorAll('.class-roster.open .advisory-course-row')
+  ];
+  const idx = rows.indexOf(document.activeElement);
+  if (idx === -1) return;
+  e.preventDefault();
+  const next = e.key === 'ArrowDown' ? idx + 1 : idx - 1;
+  if (next >= 0 && next < rows.length) rows[next].focus();
+});
 
 // ─────────────────────────────────────────────────────────────────
 // INIT
