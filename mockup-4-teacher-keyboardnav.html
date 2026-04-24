@@ -785,6 +785,41 @@
       background: #1d4ed8; border-left-color: #60a5fa;
       font-weight: 600; color: #fff;
     }
+
+    /* ── FOCUS STYLES ── */
+    /* Default focus ring for light-background elements */
+    :focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    /* Dark-sidebar elements need a lighter ring and inset so it doesn't clip */
+    .arrow-btn:focus-visible,
+    .mode-tab:focus-visible,
+    .class-header:focus-visible,
+    .student-row:focus-visible,
+    .advisory-course-row:focus-visible {
+      outline: 2px solid #60a5fa;
+      outline-offset: -2px;
+    }
+    /* Elements that use box-shadow for focus — suppress duplicate outline */
+    .term-select:focus-visible,
+    .narrative-textarea:focus-visible,
+    .add-input:focus-visible,
+    .add-input:focus-visible {
+      outline: none;
+    }
+
+    /* ── VISUALLY HIDDEN (for screen-reader-only text) ── */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -876,7 +911,7 @@
           <textarea class="narrative-textarea" id="narrativeInput"
             placeholder="Write an overall narrative comment for this student…"
             oninput="onNarrativeInput()"></textarea>
-          <div class="save-hint" id="saveHint">Changes saved automatically</div>
+          <div class="save-hint" id="saveHint" aria-live="polite">Changes saved automatically</div>
           <div class="finalize-row">
             <label class="finalize-label">
               <input type="checkbox" id="finalizeCheck" onchange="onFinalizeChange()" disabled />
@@ -1856,11 +1891,12 @@ function renderRoster() {
 
       const rcDotClass = st !== 'none' ? st : '';
       const hasReflection = !!state.reflections[`${state.term}|${name}`];
+      const reflectionLabel = hasReflection ? 'submitted' : 'not submitted';
       row.innerHTML = `
         <span>${esc(name)}</span>
-        <span class="status-icons">
-          <span class="rc-dot ${rcDotClass}" title="Report card: ${st}"></span>
-          <span class="ref-dot ${hasReflection ? 'submitted' : ''}" title="Reflection: ${hasReflection ? 'submitted' : 'not submitted'}"></span>
+        <span class="status-icons" aria-label="Report card: ${st}; Reflection: ${reflectionLabel}">
+          <span class="rc-dot ${rcDotClass}" aria-hidden="true"></span>
+          <span class="ref-dot ${hasReflection ? 'submitted' : ''}" aria-hidden="true"></span>
         </span>`;
       roster.appendChild(row);
     });
@@ -3011,7 +3047,9 @@ function renderAdvisoryRoster() {
       row.onclick = () => activateAdvisory(ai, ci);
       row.innerHTML = `
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(courseEntry.course)}</span>
-        <span class="status-icons"><span class="rc-dot ${st !== 'none' ? st : ''}" title="${st}"></span></span>`;
+        <span class="status-icons" aria-label="Report card: ${st}">
+          <span class="rc-dot ${st !== 'none' ? st : ''}" aria-hidden="true"></span>
+        </span>`;
       courseList.appendChild(row);
     });
 
