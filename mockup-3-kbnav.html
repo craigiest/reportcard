@@ -1727,6 +1727,10 @@ function activate(ci, si) {
   activeSI = si;
   openClassIdx = ci;
 
+  // Sync keyboard nav state
+  navStudentIdx = buildFlat().findIndex(([c, s]) => c === ci && s === si);
+  navLayer = 1;
+
   renderRoster();
 
   document.getElementById('emptyState').style.display = 'none';
@@ -1763,6 +1767,7 @@ function activate(ci, si) {
     refEl.style.color = '#94a3b8';
   }
 
+  updateNavHint(1);
   persist();
 }
 
