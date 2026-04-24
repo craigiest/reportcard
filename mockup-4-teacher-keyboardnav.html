@@ -561,8 +561,14 @@
       flex-shrink: 0;
       user-select: none;
       line-height: 1;
+      /* button reset */
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
     }
     .drag-handle:hover { color: #94a3b8; }
+    .drag-handle:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; border-radius: 3px; }
     .custom-item-text { flex: 1; line-height: 1.4; }
     .custom-del {
       background: none;
@@ -962,14 +968,14 @@
 </div>
 
 <!-- Customize modal -->
-<div class="modal-overlay" id="customizeModal">
+<div class="modal-overlay" id="customizeModal" role="dialog" aria-modal="true" aria-labelledby="customizeModalTitle">
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title">Custom Comments</div>
+        <div class="modal-title" id="customizeModalTitle">Custom Comments</div>
         <div class="modal-subtitle" id="customizeSubtitle"></div>
       </div>
-      <button class="modal-close" onclick="closeCustomize()">✕</button>
+      <button class="modal-close" onclick="closeCustomize()" aria-label="Close custom comments">✕</button>
     </div>
     <div class="modal-body">
       <div class="custom-list" id="customList"></div>
@@ -2357,7 +2363,10 @@ function removeOneTimeComment(ci, si, skill, comment) {
 // ─────────────────────────────────────────────────────────────────
 // CUSTOMIZE
 // ─────────────────────────────────────────────────────────────────
+let focusBeforeCustomize = null;
+
 function openCustomize(skill) {
+  focusBeforeCustomize = document.activeElement;
   customizeCtx = { skill };
   document.getElementById('customizeSubtitle').textContent = skill;
   renderCustomList(skill);
@@ -2382,11 +2391,46 @@ function renderCustomList(skill) {
     const div = document.createElement('div');
     div.className = 'custom-item';
     div.draggable = true;
-    div.innerHTML = `
-      <span class="drag-handle" title="Drag to reorder">⠿</span>
-      <span class="custom-item-text">${esc(c)}</span>
-      <button class="custom-del" title="Remove">✕</button>`;
-    div.querySelector('.custom-del').onclick = () => deleteCustom(i);
+
+    const handle = document.createElement('button');
+    handle.type = 'button';
+    handle.className = 'drag-handle';
+    handle.textContent = '⠿';
+    handle.setAttribute('aria-label', `Reorder: ${c}. Item ${i + 1} of ${items.length}. Use arrow keys to move.`);
+    handle.onkeydown = (e) => {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      const arr = state.custom[skill];
+      if (e.key === 'ArrowUp' && i > 0) {
+        [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+        persist();
+        renderCustomList(skill);
+        const handles = document.querySelectorAll('#customList .drag-handle');
+        if (handles[i - 1]) handles[i - 1].focus();
+      } else if (e.key === 'ArrowDown' && i < arr.length - 1) {
+        [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        persist();
+        renderCustomList(skill);
+        const handles = document.querySelectorAll('#customList .drag-handle');
+        if (handles[i + 1]) handles[i + 1].focus();
+      }
+    };
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'custom-item-text';
+    textSpan.textContent = c;
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'custom-del';
+    delBtn.type = 'button';
+    delBtn.title = 'Remove';
+    delBtn.setAttribute('aria-label', `Remove: ${c}`);
+    delBtn.textContent = '✕';
+    delBtn.onclick = () => deleteCustom(i);
+
+    div.appendChild(handle);
+    div.appendChild(textSpan);
+    div.appendChild(delBtn);
 
     div.addEventListener('dragstart', e => {
       dragSrcIdx = i;
@@ -2452,6 +2496,7 @@ function deleteCustom(i) {
 
 function closeCustomize() {
   document.getElementById('customizeModal').classList.remove('open');
+  if (focusBeforeCustomize) { focusBeforeCustomize.focus(); focusBeforeCustomize = null; }
   cancelImport();
   if (popupCtx && customizeCtx && popupCtx.skill === customizeCtx.skill) {
     const body = document.getElementById('panelBody');
@@ -3091,6 +3136,13 @@ const previewModal = document.getElementById('previewModal');
 previewModal.addEventListener('keydown', makeFocusTrap(previewModal));
 previewModal.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closePreview();
+});
+
+// Customize modal: focus trap + Escape
+const customizeModal = document.getElementById('customizeModal');
+customizeModal.addEventListener('keydown', makeFocusTrap(customizeModal));
+customizeModal.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeCustomize();
 });
 
 // Close comment panel on outside click
