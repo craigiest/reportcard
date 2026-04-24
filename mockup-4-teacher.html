@@ -1618,7 +1618,8 @@ if (!state.terms.includes(state.term)) state.term = state.terms[0];
 let openClassIdx = state.openClassIdx ?? 0;
 let activeCI = state.activeCI ?? null;
 let activeSI = state.activeSI ?? null;
-let popupCtx = null;    // { ci, si, skill, type }
+let popupCtx = null;         // { ci, si, skill } teacher panel context
+let popupAdvisoryCtx = null; // { ai, ci, skill } advisory panel context
 let customizeCtx = null; // { skill }
 
 // ── KEYBOARD NAV STATE ──
@@ -2312,6 +2313,7 @@ function closePanel() {
   document.getElementById('commentPanel').classList.remove('open');
   document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
   popupCtx = null;
+  popupAdvisoryCtx = null;
   // Return to Layer 2 if we were in Layer 3
   if (navLayer === 3 && activeCI !== null) {
     clearKbFocus();
@@ -2477,6 +2479,10 @@ function closeCustomize() {
       const editBankIdx = panelNavItems.findIndex(it => it.type === 'edit-bank');
       rebuildPanelNav(editBankIdx >= 0 ? editBankIdx : navPanelIdx);
     }
+  } else if (popupAdvisoryCtx && customizeCtx && popupAdvisoryCtx.skill === customizeCtx.skill) {
+    const body = document.getElementById('panelBody');
+    body.innerHTML = '';
+    buildAdvisoryPanelBody(body, popupAdvisoryCtx.ai, popupAdvisoryCtx.ci, popupAdvisoryCtx.skill);
   }
   customizeCtx = null;
 }
@@ -3209,24 +3215,6 @@ function activateAdvisory(ai, ci) {
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('editingArea').style.display = 'none';
 
-  // Build read-only skills list
-  let skillsHtml = '';
-  SKILLS.forEach(skill => {
-    const sel = d.skills?.[skill]?.selections || [];
-    const custom = d.skills?.[skill]?.custom || [];
-    if (!sel.length && !custom.length) return;
-    const comments = [
-      ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
-      ...custom
-    ];
-    skillsHtml += `<div class="skill-item">
-      <div class="skill-row"><span class="skill-name">${esc(skill)}</span></div>
-      <div class="skill-comments">${comments.map(c => `<div class="skill-comment">${esc(c)}</div>`).join('')}</div>
-    </div>`;
-  });
-  if (!skillsHtml) skillsHtml = '<div style="padding:1rem 1.2rem;color:#94a3b8;font-size:0.875rem">No skills selected.</div>';
-
-  // Build advisor review control
   const canReview = !!d.finalized;
   const isReviewed = !!d.advisorReviewed;
   const reviewHtml = canReview
@@ -3241,38 +3229,105 @@ function activateAdvisory(ai, ci) {
     : `<div style="margin-top:0.5rem;font-size:0.82rem;color:#94a3b8">Not yet finalized by teacher — cannot mark as reviewed.</div>`;
 
   const area = document.getElementById('advisoryArea');
-  area.innerHTML = `
-    <div class="card">
-      <div class="card-header">Student</div>
-      <div class="card-body">
-        <div class="student-meta">
-          <div class="meta-row"><span class="meta-label">Advisee</span>${esc(advisee.name)}</div>
-          <div class="meta-row"><span class="meta-label">Course</span>${esc(courseEntry.course)}</div>
-          <div class="meta-row"><span class="meta-label">Teacher</span>${esc(courseEntry.teacher)}</div>
-          <div class="meta-row"><span class="meta-label">Period</span>${esc(state.term)}</div>
-        </div>
-        <div style="margin-top:0.75rem">
-          <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border-radius:99px;font-size:0.78rem;font-weight:600;background:${badge.bg};color:${badge.color};border:1px solid ${badge.border}">
-            <span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:0.8"></span>
-            ${badge.label}
-          </span>
-        </div>
+  area.innerHTML = '';
+  area.style.display = 'flex';
+  area.style.flexDirection = 'column';
+  area.style.gap = '1.25rem';
+
+  // Student info card
+  const studentCard = document.createElement('div');
+  studentCard.className = 'card';
+  studentCard.innerHTML = `
+    <div class="card-header">Student</div>
+    <div class="card-body">
+      <div class="student-meta">
+        <div class="meta-row"><span class="meta-label">Advisee</span>${esc(advisee.name)}</div>
+        <div class="meta-row"><span class="meta-label">Course</span>${esc(courseEntry.course)}</div>
+        <div class="meta-row"><span class="meta-label">Teacher</span>${esc(courseEntry.teacher)}</div>
+        <div class="meta-row"><span class="meta-label">Period</span>${esc(state.term)}</div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-header">Transferable Skills</div>
-      ${skillsHtml}
-    </div>
-    <div class="card">
+      <div style="margin-top:0.75rem">
+        <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border-radius:99px;font-size:0.78rem;font-weight:600;background:${badge.bg};color:${badge.color};border:1px solid ${badge.border}">
+          <span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:0.8"></span>
+          ${badge.label}
+        </span>
+      </div>
+    </div>`;
+  area.appendChild(studentCard);
+
+  // Skills card
+  const skillsCard = document.createElement('div');
+  skillsCard.className = 'card';
+  const skillsHeader = document.createElement('div');
+  skillsHeader.className = 'card-header';
+  skillsHeader.textContent = 'Transferable Skills';
+  skillsCard.appendChild(skillsHeader);
+
+  if (d.finalized) {
+    // Editable: show skill buttons (same interaction as teacher view)
+    const skillsContainer = document.createElement('div');
+    skillsContainer.id = 'advisorySkillsContainer';
+    SKILLS.forEach(skill => {
+      const sid = skillId(skill);
+      const div = document.createElement('div');
+      div.className = 'skill-item';
+      div.innerHTML = `
+        <div class="skill-row">
+          <span class="skill-name">${esc(skill)}</span>
+          <div class="skill-btns">
+            <button class="skill-btn std" data-ai="${ai}" data-ci="${ci}" data-skill="${esc(skill)}">Skill Selection</button>
+          </div>
+        </div>
+        <div class="skill-comments adv-sc-${sid}">${skillCommentsHtml(d, skill)}</div>`;
+      div.querySelector('.skill-btn').addEventListener('click', e => openAdvisoryPanel(e.currentTarget));
+      skillsContainer.appendChild(div);
+    });
+    skillsCard.appendChild(skillsContainer);
+  } else {
+    // Read-only: plain text display
+    let skillsHtml = '';
+    SKILLS.forEach(skill => {
+      const sel = d.skills?.[skill]?.selections || [];
+      const custom = d.skills?.[skill]?.custom || [];
+      if (!sel.length && !custom.length) return;
+      const comments = [
+        ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
+        ...custom
+      ];
+      skillsHtml += `<div class="skill-item">
+        <div class="skill-row"><span class="skill-name">${esc(skill)}</span></div>
+        <div class="skill-comments">${comments.map(c => `<div class="skill-comment">${esc(c)}</div>`).join('')}</div>
+      </div>`;
+    });
+    if (!skillsHtml) skillsHtml = '<div style="padding:1rem 1.2rem;color:#94a3b8;font-size:0.875rem">No skills selected.</div>';
+    skillsCard.insertAdjacentHTML('beforeend', skillsHtml);
+  }
+  area.appendChild(skillsCard);
+
+  // Narrative card
+  const narrativeCard = document.createElement('div');
+  narrativeCard.className = 'card';
+  if (d.finalized) {
+    narrativeCard.innerHTML = `
+      <div class="card-header">Narrative Comment</div>
+      <div class="card-body">
+        <textarea class="narrative-textarea" id="advisoryNarrativeInput"
+          placeholder="Write an overall narrative comment for this student…"
+          oninput="onAdvisoryNarrativeInput()"></textarea>
+        ${reviewHtml}
+      </div>`;
+  } else {
+    narrativeCard.innerHTML = `
       <div class="card-header">Narrative Comment</div>
       <div class="card-body">
         <div style="font-size:0.875rem;color:${d.narrative ? '#1e293b' : '#94a3b8'};line-height:1.65;white-space:pre-wrap;min-height:3rem">${d.narrative ? esc(d.narrative) : 'No narrative comment yet.'}</div>
         ${reviewHtml}
-      </div>
-    </div>`;
-  area.style.display = 'flex';
-  area.style.flexDirection = 'column';
-  area.style.gap = '1.25rem';
+      </div>`;
+  }
+  area.appendChild(narrativeCard);
+  if (d.finalized) {
+    document.getElementById('advisoryNarrativeInput').value = d.narrative || '';
+  }
 }
 
 function onAdvisoryReviewChange() {
@@ -3283,6 +3338,241 @@ function onAdvisoryReviewChange() {
   renderRoster();
   // Re-render advisory panel to update badge color
   activateAdvisory(activeAdviseeIdx, activeAdvisoryCourseIdx);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ADVISORY EDITING (enabled when teacher has finalized the report card)
+// ─────────────────────────────────────────────────────────────────
+
+function openAdvisoryPanel(btn) {
+  if (btn.classList.contains('active')) { closePanel(); return; }
+  const ai = parseInt(btn.dataset.ai);
+  const ci = parseInt(btn.dataset.ci);
+  const skill = btn.dataset.skill;
+  popupAdvisoryCtx = { ai, ci, skill };
+  popupCtx = null;
+  document.getElementById('panelTitle').textContent = 'Skill Selection';
+  document.getElementById('panelSubtitle').textContent = skill;
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildAdvisoryPanelBody(body, ai, ci, skill);
+  document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('commentPanel').classList.add('open');
+}
+
+function buildAdvisoryPanelBody(body, ai, ci, skill) {
+  const d = advisoryData(ai, ci);
+  const sel = skillSelections(d, skill);
+  const subcats = SKILLS_DATA[skill] || {};
+
+  Object.entries(subcats).forEach(([subcat, skillLabels]) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'subcategory-label';
+    lbl.textContent = subcat;
+    body.appendChild(lbl);
+
+    skillLabels.forEach(label => {
+      const entry = sel.find(s => s.label === label && s.subcat === subcat);
+      const inS = entry?.type === 'strength';
+      const inG = entry?.type === 'growth';
+      const sEntry = SKILL_SENTENCES[subcat + '::' + label] || SKILL_SENTENCES[label];
+      const sTip = sEntry?.strength || label;
+      const gTip = sEntry?.growth || sEntry?.strength || label;
+
+      const row = document.createElement('div');
+      row.className = 'skill-checkbox-row';
+      const pair = document.createElement('div');
+      pair.className = 'skill-checkbox-pair';
+
+      const sBox = document.createElement('div');
+      sBox.className = 'skill-chk' + (inS ? ' strength' : '');
+      sBox.title = sTip;
+      sBox.textContent = inS ? 'S' : '';
+      sBox.onclick = e => { e.stopPropagation(); toggleAdvisorySkillEntry(ai, ci, skill, label, subcat, 'strength'); };
+
+      const gBox = document.createElement('div');
+      gBox.className = 'skill-chk' + (inG ? ' growth' : '');
+      gBox.title = gTip;
+      gBox.textContent = inG ? 'G' : '';
+      gBox.onclick = e => { e.stopPropagation(); toggleAdvisorySkillEntry(ai, ci, skill, label, subcat, 'growth'); };
+
+      const labelEl = document.createElement('span');
+      labelEl.textContent = label;
+      labelEl.style.cursor = 'pointer';
+      labelEl.onclick = e => {
+        e.stopPropagation();
+        const d2 = advisoryData(ai, ci);
+        const sel2 = skillSelections(d2, skill);
+        const ent = sel2.find(s => s.label === label && s.subcat === subcat);
+        if (!ent) toggleAdvisorySkillEntry(ai, ci, skill, label, subcat, 'strength');
+        else if (ent.type === 'strength') toggleAdvisorySkillEntry(ai, ci, skill, label, subcat, 'growth');
+        else toggleAdvisorySkillEntry(ai, ci, skill, label, subcat, 'growth');
+      };
+
+      pair.appendChild(sBox);
+      pair.appendChild(gBox);
+      row.appendChild(pair);
+      row.appendChild(labelEl);
+      body.appendChild(row);
+    });
+  });
+
+  const hr = document.createElement('hr');
+  hr.className = 'popup-divider';
+  hr.style.margin = '0.5rem 0';
+  body.appendChild(hr);
+
+  const customHeader = document.createElement('div');
+  customHeader.className = 'subcategory-label';
+  customHeader.textContent = 'Custom Comments';
+  body.appendChild(customHeader);
+
+  const quickForm = document.createElement('form');
+  quickForm.autocomplete = 'on';
+  quickForm.onsubmit = e => { e.preventDefault(); addAdvisoryQuickComment(ai, ci, skill); };
+  const quickRow = document.createElement('div');
+  quickRow.className = 'panel-custom-input-row';
+  quickRow.style.cssText = 'display:flex;gap:0.4rem;padding:0.4rem 0.75rem;border-bottom:1px solid #f1f5f9';
+  const quickInput = document.createElement('input');
+  quickInput.type = 'text';
+  quickInput.id = 'quickCustomInput';
+  quickInput.name = 'comment-' + skill.toLowerCase().replace(/\s+/g, '-');
+  quickInput.autocomplete = 'on';
+  quickInput.placeholder = 'Add comment for this student…';
+  quickInput.style.cssText = 'flex:1;font-size:0.8rem;padding:0.25rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;outline:none;min-width:0';
+  const quickBtn = document.createElement('button');
+  quickBtn.type = 'submit';
+  quickBtn.className = 'btn btn-primary btn-sm';
+  quickBtn.textContent = 'Add';
+  quickRow.appendChild(quickInput);
+  quickRow.appendChild(quickBtn);
+  quickForm.appendChild(quickRow);
+  body.appendChild(quickForm);
+
+  const bankComments = state.custom[skill] || [];
+  const custom = skillCustom(d, skill);
+  custom.filter(c => !bankComments.includes(c)).forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'popup-item';
+    item.style.cursor = 'default';
+    const txt = document.createElement('span');
+    txt.style.flex = '1';
+    txt.textContent = c;
+    const del = document.createElement('button');
+    del.className = 'custom-del';
+    del.title = 'Remove';
+    del.textContent = '−';
+    del.style.color = '#64748b';
+    del.onclick = e2 => { e2.stopPropagation(); removeAdvisoryOneTimeComment(ai, ci, skill, c); };
+    item.appendChild(txt);
+    item.appendChild(del);
+    body.appendChild(item);
+  });
+
+  const custOpt = document.createElement('div');
+  custOpt.className = 'popup-item customize-opt';
+  custOpt.innerHTML = '✎ &nbsp;Edit comment bank…';
+  custOpt.onclick = () => openCustomize(skill);
+  body.appendChild(custOpt);
+
+  const customs = state.custom[skill] || [];
+  if (customs.length > 0) {
+    const bankLbl = document.createElement('div');
+    bankLbl.className = 'popup-section-label';
+    bankLbl.textContent = 'Saved Comments';
+    body.appendChild(bankLbl);
+    customs.forEach(c => appendItem(body, c, custom.includes(c), () => toggleAdvisoryComment(ai, ci, skill, c), null, 'bank-comment'));
+  } else {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'padding:0.5rem 0.75rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
+    empty.textContent = 'No saved comments yet. Click "Edit comment bank…" to add reusable ones.';
+    body.appendChild(empty);
+  }
+}
+
+function toggleAdvisorySkillEntry(ai, ci, skill, label, subcat, type) {
+  const d = advisoryData(ai, ci);
+  const sel = skillSelections(d, skill);
+  const idx = sel.findIndex(s => s.label === label && s.subcat === subcat);
+  if (idx >= 0) {
+    if (sel[idx].type === type) sel.splice(idx, 1);
+    else sel[idx].type = type;
+  } else {
+    sel.push({ label, subcat, type });
+  }
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildAdvisoryPanelBody(body, ai, ci, skill);
+  refreshAdvisorySkillComments(skill);
+  renderAdvisoryRoster();
+  showSaved();
+}
+
+function toggleAdvisoryComment(ai, ci, skill, comment) {
+  const d = advisoryData(ai, ci);
+  const custom = skillCustom(d, skill);
+  const idx = custom.indexOf(comment);
+  if (idx >= 0) custom.splice(idx, 1);
+  else custom.push(comment);
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildAdvisoryPanelBody(body, ai, ci, skill);
+  refreshAdvisorySkillComments(skill);
+  renderAdvisoryRoster();
+  showSaved();
+}
+
+function addAdvisoryQuickComment(ai, ci, skill) {
+  const input = document.getElementById('quickCustomInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const d = advisoryData(ai, ci);
+  const custom = skillCustom(d, skill);
+  if (!custom.includes(text)) custom.push(text);
+  input.value = '';
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildAdvisoryPanelBody(body, ai, ci, skill);
+  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  refreshAdvisorySkillComments(skill);
+  renderAdvisoryRoster();
+  showSaved();
+}
+
+function removeAdvisoryOneTimeComment(ai, ci, skill, comment) {
+  const d = advisoryData(ai, ci);
+  const custom = skillCustom(d, skill);
+  const idx = custom.indexOf(comment);
+  if (idx >= 0) custom.splice(idx, 1);
+  persist();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+  buildAdvisoryPanelBody(body, ai, ci, skill);
+  refreshAdvisorySkillComments(skill);
+  renderAdvisoryRoster();
+  showSaved();
+}
+
+function refreshAdvisorySkillComments(skill) {
+  if (activeAdviseeIdx === null) return;
+  const d = advisoryData(activeAdviseeIdx, activeAdvisoryCourseIdx);
+  const sid = skillId(skill);
+  const el = document.querySelector(`#advisorySkillsContainer .adv-sc-${sid}`);
+  if (el) el.innerHTML = skillCommentsHtml(d, skill);
+}
+
+function onAdvisoryNarrativeInput() {
+  if (activeAdviseeIdx === null) return;
+  const d = advisoryData(activeAdviseeIdx, activeAdvisoryCourseIdx);
+  d.narrative = document.getElementById('advisoryNarrativeInput').value;
+  persist();
+  renderAdvisoryRoster();
+  showSaved();
 }
 
 // ─────────────────────────────────────────────────────────────────
