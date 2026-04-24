@@ -1001,14 +1001,14 @@
 </div>
 
 <!-- Preview modal -->
-<div class="modal-overlay" id="previewModal">
+<div class="modal-overlay" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewModalTitle">
   <div class="modal modal-lg">
     <div class="modal-header">
       <div>
-        <div class="modal-title">Report Card Preview</div>
+        <div class="modal-title" id="previewModalTitle">Report Card Preview</div>
         <div class="modal-subtitle" id="previewSubtitle"></div>
       </div>
-      <button class="modal-close" onclick="closePreview()">✕</button>
+      <button class="modal-close" onclick="closePreview()" aria-label="Close preview">✕</button>
     </div>
     <div class="preview-content" id="previewContent"></div>
     <div class="modal-footer">
@@ -2729,8 +2729,33 @@ function navigate(dir) {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// FOCUS TRAP UTILITY
+// ─────────────────────────────────────────────────────────────────
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function getFocusable(container) {
+  return [...container.querySelectorAll(FOCUSABLE)];
+}
+
+function makeFocusTrap(container) {
+  return function(e) {
+    if (e.key !== 'Tab') return;
+    const els = getFocusable(container);
+    if (!els.length) return;
+    const first = els[0], last = els[els.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────
 // PREVIEW
 // ─────────────────────────────────────────────────────────────────
+let focusBeforePreview = null;
+
 function openPreview() {
   if (activeCI === null) return;
   const ci = activeCI, si = activeSI;
@@ -2769,11 +2794,17 @@ function openPreview() {
     ${skillsHtml ? `<div class="preview-section-title">Transferable Skills</div>${skillsHtml}` : ''}
     ${narrativeHtml}`;
 
+  focusBeforePreview = document.activeElement;
   document.getElementById('previewModal').classList.add('open');
+  setTimeout(() => {
+    const first = getFocusable(document.getElementById('previewModal'))[0];
+    if (first) first.focus();
+  }, 30);
 }
 
 function closePreview() {
   document.getElementById('previewModal').classList.remove('open');
+  if (focusBeforePreview) { focusBeforePreview.focus(); focusBeforePreview = null; }
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -3053,6 +3084,13 @@ function showSaved() {
 // Escape closes the comment panel
 document.getElementById('commentPanel').addEventListener('keydown', function(e) {
   if (e.key === 'Escape') { e.stopPropagation(); closePanel(); }
+});
+
+// Preview modal: focus trap + Escape
+const previewModal = document.getElementById('previewModal');
+previewModal.addEventListener('keydown', makeFocusTrap(previewModal));
+previewModal.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePreview();
 });
 
 // Close comment panel on outside click
