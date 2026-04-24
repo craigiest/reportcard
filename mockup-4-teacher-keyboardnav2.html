@@ -2095,6 +2095,9 @@ function buildPanelBody(body, ci, si, skill) {
 
       const row = document.createElement('div');
       row.className = 'skill-checkbox-row';
+      row.dataset.navType = 'skill-row';
+      row.dataset.navLabel = label;
+      row.dataset.navSubcat = subcat;
       const pair = document.createElement('div');
       pair.className = 'skill-checkbox-pair';
 
@@ -2147,6 +2150,8 @@ function buildPanelBody(body, ci, si, skill) {
   quickForm.autocomplete = 'on';
   quickForm.onsubmit = e => { e.preventDefault(); addQuickComment(ci, si, skill); };
   const quickRow = document.createElement('div');
+  quickRow.className = 'panel-custom-input-row';
+  quickRow.dataset.navType = 'custom-input';
   quickRow.style.cssText = 'display:flex;gap:0.4rem;padding:0.4rem 0.75rem;border-bottom:1px solid #f1f5f9';
   const quickInput = document.createElement('input');
   quickInput.type = 'text';
@@ -2170,6 +2175,8 @@ function buildPanelBody(body, ci, si, skill) {
   custom.filter(c => !bankComments.includes(c)).forEach(c => {
     const item = document.createElement('div');
     item.className = 'popup-item';
+    item.dataset.navType = 'one-time-comment';
+    item.dataset.navLabel = c;
     item.style.cursor = 'default';
     const txt = document.createElement('span');
     txt.style.flex = '1';
@@ -2188,6 +2195,7 @@ function buildPanelBody(body, ci, si, skill) {
   // Edit bank link
   const custOpt = document.createElement('div');
   custOpt.className = 'popup-item customize-opt';
+  custOpt.dataset.navType = 'edit-bank';
   custOpt.innerHTML = '✎ &nbsp;Edit comment bank…';
   custOpt.onclick = () => openCustomize(skill);
   body.appendChild(custOpt);
@@ -2199,7 +2207,7 @@ function buildPanelBody(body, ci, si, skill) {
     bankLbl.className = 'popup-section-label';
     bankLbl.textContent = 'Saved Comments';
     body.appendChild(bankLbl);
-    customs.forEach(c => appendItem(body, c, custom.includes(c), () => toggleComment(ci, si, skill, c)));
+    customs.forEach(c => appendItem(body, c, custom.includes(c), () => toggleComment(ci, si, skill, c), null, 'bank-comment'));
   } else {
     const empty = document.createElement('div');
     empty.style.cssText = 'padding:0.5rem 0.75rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
@@ -2250,6 +2258,7 @@ function toggleSkillEntry(ci, si, skill, label, subcat, type) {
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
+  rebuildPanelNav();
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
@@ -2266,11 +2275,15 @@ function appendSection(container, label, comments, htmlComments, selected, ci, s
   });
 }
 
-function appendItem(container, comment, checked, onClick, displayHtml) {
+function appendItem(container, comment, checked, onClick, displayHtml, navType) {
   const item = document.createElement('div');
   item.className = 'popup-item' + (checked ? ' checked' : '');
   item.innerHTML = `<span class="popup-checkbox">${checked ? '✓' : ''}</span><span>${displayHtml || esc(comment)}</span>`;
   item.onclick = () => onClick();
+  if (navType) {
+    item.dataset.navType = navType;
+    item.dataset.navLabel = comment;
+  }
   container.appendChild(item);
 }
 
@@ -2325,7 +2338,14 @@ function addQuickComment(ci, si, skill) {
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
-  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  // Rebuild nav and keep focus on the custom-input row
+  if (navLayer === 3) {
+    buildPanelNavItems();
+    const customIdx = panelNavItems.findIndex(it => it.type === 'custom-input');
+    rebuildPanelNav(customIdx >= 0 ? customIdx : navPanelIdx);
+  } else {
+    setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  }
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
@@ -2341,7 +2361,7 @@ function removeOneTimeComment(ci, si, skill, comment) {
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
-  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  rebuildPanelNav();
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
@@ -2451,6 +2471,12 @@ function closeCustomize() {
     const body = document.getElementById('panelBody');
     body.innerHTML = '';
     buildPanelBody(body, popupCtx.ci, popupCtx.si, popupCtx.skill);
+    if (navLayer === 3) {
+      // Build fresh nav list from rebuilt DOM, then focus the edit-bank entry
+      buildPanelNavItems();
+      const editBankIdx = panelNavItems.findIndex(it => it.type === 'edit-bank');
+      rebuildPanelNav(editBankIdx >= 0 ? editBankIdx : navPanelIdx);
+    }
   }
   customizeCtx = null;
 }
@@ -3338,10 +3364,131 @@ function enterLayer2(fromSkillIdx) {
   layer2SetFocus(idx);
 }
 
-// ── Layer 3 — stub (filled in Step 4) ───────────────────────────
+// ── Layer 3 helpers ──────────────────────────────────────────────
+
+function buildPanelNavItems() {
+  const body = document.getElementById('panelBody');
+  panelNavItems = [];
+  if (!body) return;
+  body.querySelectorAll('[data-nav-type]').forEach(el => {
+    panelNavItems.push({ type: el.dataset.navType, el });
+  });
+}
+
 function enterLayer3() {
   navLayer = 3;
+  buildPanelNavItems();
+  navPanelIdx = -1;
   updateNavHint(3);
+}
+
+function layer3SetFocus(idx) {
+  if (panelNavItems.length === 0) return;
+  if (idx < 0) idx = panelNavItems.length - 1;
+  if (idx >= panelNavItems.length) idx = 0;
+  navPanelIdx = idx;
+
+  document.querySelectorAll('#panelBody [data-nav-type]').forEach(el => el.classList.remove('kb-focus'));
+
+  const item = panelNavItems[idx];
+  if (!item) return;
+  item.el.classList.add('kb-focus');
+  item.el.scrollIntoView({ block: 'nearest' });
+
+  if (item.type === 'custom-input') {
+    updateNavHint('3c');
+    setTimeout(() => document.getElementById('quickCustomInput')?.focus(), 0);
+  } else {
+    updateNavHint(3);
+    // Blur the input if we navigated away
+    const inp = document.getElementById('quickCustomInput');
+    if (inp && document.activeElement === inp) inp.blur();
+  }
+}
+
+// After any panel rebuild, restore the nav item list and keep focus position
+function rebuildPanelNav(keepIdx) {
+  if (navLayer !== 3) return;
+  const prevIdx = (keepIdx !== undefined) ? keepIdx : navPanelIdx;
+  buildPanelNavItems();
+  if (panelNavItems.length === 0) return;
+  const safeIdx = Math.min(prevIdx, panelNavItems.length - 1);
+  navPanelIdx = safeIdx;
+  document.querySelectorAll('#panelBody [data-nav-type]').forEach(el => el.classList.remove('kb-focus'));
+  const item = panelNavItems[safeIdx];
+  if (item) {
+    item.el.classList.add('kb-focus');
+    if (item.type === 'custom-input') {
+      updateNavHint('3c');
+      setTimeout(() => document.getElementById('quickCustomInput')?.focus(), 0);
+    } else {
+      updateNavHint(3);
+    }
+  }
+}
+
+function cycleSkillRowEntry(item) {
+  if (!popupCtx) return;
+  const { ci, si, skill } = popupCtx;
+  const { navLabel: label, navSubcat: subcat } = item.el.dataset;
+  const d = studentData(ci, si);
+  const sel = skillSelections(d, skill);
+  const entry = sel.find(s => s.label === label && s.subcat === subcat);
+  if (!entry) {
+    toggleSkillEntry(ci, si, skill, label, subcat, 'strength');
+  } else if (entry.type === 'strength') {
+    toggleSkillEntry(ci, si, skill, label, subcat, 'growth');
+  } else {
+    // growth → remove (calling with same type removes it)
+    toggleSkillEntry(ci, si, skill, label, subcat, 'growth');
+  }
+}
+
+function activatePanelItem(item) {
+  if (!item || !popupCtx) return;
+  const { ci, si, skill } = popupCtx;
+  switch (item.type) {
+    case 'skill-row':
+      cycleSkillRowEntry(item);
+      break;
+    case 'custom-input':
+      // Already focused when navigated to; Enter handled in keydown
+      break;
+    case 'one-time-comment': {
+      const c = item.el.dataset.navLabel;
+      removeOneTimeComment(ci, si, skill, c);
+      break;
+    }
+    case 'edit-bank':
+      openCustomize(skill);
+      break;
+    case 'bank-comment': {
+      const c = item.el.dataset.navLabel;
+      toggleComment(ci, si, skill, c);
+      break;
+    }
+  }
+}
+
+// Letter type-ahead: find next skill-row whose label starts with typed buffer
+function handleLayer3TypeAhead(char) {
+  clearTimeout(kbTypeTimer);
+  kbTypeBuffer += char.toLowerCase();
+  kbTypeTimer = setTimeout(() => { kbTypeBuffer = ''; }, 600);
+
+  // Search forward from current position (wrapping)
+  const rows = panelNavItems.filter(it => it.type === 'skill-row');
+  if (rows.length === 0) return;
+  const curRow = panelNavItems[navPanelIdx];
+  const curRowPos = rows.indexOf(curRow);
+  for (let i = 1; i <= rows.length; i++) {
+    const candidate = rows[(curRowPos + i) % rows.length];
+    if (candidate.el.dataset.navLabel?.toLowerCase().startsWith(kbTypeBuffer)) {
+      const idx = panelNavItems.indexOf(candidate);
+      layer3SetFocus(idx);
+      return;
+    }
+  }
 }
 
 // ── Main keydown handler ─────────────────────────────────────────
@@ -3437,7 +3584,63 @@ document.addEventListener('keydown', function(e) {
   }
 
   // ── Layer 3: comment panel ──────────────────────────────────────
-  // (implemented in Step 4)
+  if (navLayer === 3) {
+    if (!document.getElementById('commentPanel').classList.contains('open')) {
+      navLayer = 2; return;
+    }
+
+    // Escape from customize modal → return to Layer 3
+    if (document.getElementById('customizeModal').classList.contains('open')) {
+      if (e.key === 'Escape') { e.preventDefault(); closeCustomize(); }
+      return;
+    }
+
+    const item = panelNavItems[navPanelIdx];
+    const inputHasFocus = document.activeElement?.id === 'quickCustomInput';
+
+    if (inputHasFocus) {
+      // Custom input text-entry mode
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        document.getElementById('quickCustomInput').blur();
+        layer3SetFocus(navPanelIdx - 1);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        document.getElementById('quickCustomInput').blur();
+        layer3SetFocus(navPanelIdx + 1);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (popupCtx) addQuickComment(popupCtx.ci, popupCtx.si, popupCtx.skill);
+        // addQuickComment refocuses the input via rebuildPanelNav
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        document.getElementById('quickCustomInput').blur();
+        layer3SetFocus(navPanelIdx);  // stay on row, no longer typing
+      }
+      // Left/right/printable chars belong to the input
+      return;
+    }
+
+    if (inTextInput) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      layer3SetFocus(navPanelIdx < 0 ? 0 : navPanelIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      layer3SetFocus(navPanelIdx <= 0 ? panelNavItems.length - 1 : navPanelIdx - 1);
+    } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+      e.preventDefault();
+      if (navPanelIdx < 0) { layer3SetFocus(0); return; }
+      activatePanelItem(item);
+    } else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+      e.preventDefault();
+      closePanel();  // closePanel sets navLayer=2 and highlights the skill
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      handleLayer3TypeAhead(e.key);
+    }
+    return;
+  }
 });
 
 </script>
