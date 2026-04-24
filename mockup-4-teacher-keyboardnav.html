@@ -2064,14 +2064,26 @@ function buildPanelBody(body, ci, si, skill) {
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
       labelEl.style.cursor = 'pointer';
-      labelEl.onclick = e => {
+      labelEl.tabIndex = 0;
+      labelEl.setAttribute('role', 'button');
+      labelEl.dataset.skillLabel = 'true';
+      labelEl.dataset.label = label;
+      labelEl.dataset.subcat = subcat;
+      const stateDesc = inS ? 'strength selected' : (inG ? 'growth selected' : 'not selected');
+      labelEl.setAttribute('aria-label', `${label}: ${stateDesc}. Press Enter or Space to cycle: none → strength → growth → none`);
+
+      const cycleLabel = (e) => {
         e.stopPropagation();
         const d2 = studentData(ci, si);
         const sel2 = skillSelections(d2, skill);
         const ent = sel2.find(s => s.label === label && s.subcat === subcat);
         if (!ent) toggleSkillEntry(ci, si, skill, label, subcat, 'strength');
         else if (ent.type === 'strength') toggleSkillEntry(ci, si, skill, label, subcat, 'growth');
-        else toggleSkillEntry(ci, si, skill, label, subcat, 'growth'); // growth→remove
+        else toggleSkillEntry(ci, si, skill, label, subcat, 'growth'); // growth → remove
+      };
+      labelEl.onclick = cycleLabel;
+      labelEl.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLabel(e); }
       };
 
       pair.appendChild(sBox);
@@ -2186,6 +2198,11 @@ function openPanel(btn) {
 }
 
 function toggleSkillEntry(ci, si, skill, label, subcat, type) {
+  // Remember focused label so we can restore focus after panel rebuild
+  const prevActive = document.activeElement;
+  const focusLbl = prevActive?.dataset?.skillLabel === 'true' ? prevActive.dataset.label : null;
+  const focusSubcat = prevActive?.dataset?.skillLabel === 'true' ? prevActive.dataset.subcat : null;
+
   const d = studentData(ci, si);
   const sel = skillSelections(d, skill);
   const idx = sel.findIndex(s => s.label === label && s.subcat === subcat);
@@ -2199,6 +2216,17 @@ function toggleSkillEntry(ci, si, skill, label, subcat, type) {
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
+
+  // Restore focus to the label element that was active before rebuild
+  if (focusLbl) {
+    for (const el of body.querySelectorAll('[data-skill-label]')) {
+      if (el.dataset.label === focusLbl && el.dataset.subcat === focusSubcat) {
+        el.focus();
+        break;
+      }
+    }
+  }
+
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
