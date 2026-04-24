@@ -896,7 +896,21 @@
 
   <!-- ── RIGHT PANEL ── -->
   <div class="right-panel" id="rightPanel">
-    <div class="empty-state" id="emptyState">← Select a student to begin</div>
+    <div class="empty-state" id="emptyState">
+      <div style="text-align:center;max-width:360px">
+        <div style="font-size:0.95rem;color:#94a3b8;margin-bottom:1.1rem">← Select a student to begin</div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:1rem 1.1rem;text-align:left">
+          <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;margin-bottom:0.6rem">Keyboard Navigation</div>
+          <table style="border-collapse:collapse;width:100%;font-size:0.8rem;color:#475569">
+            <tr><td style="padding:0.2rem 0.6rem 0.2rem 0;white-space:nowrap"><kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">Tab</kbd> / <kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">Shift+Tab</kbd></td><td style="color:#64748b">Navigate sidebar</td></tr>
+            <tr><td style="padding:0.2rem 0.6rem 0.2rem 0;white-space:nowrap"><kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">↑</kbd> <kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">↓</kbd></td><td style="color:#64748b">Move between students</td></tr>
+            <tr><td style="padding:0.2rem 0.6rem 0.2rem 0;white-space:nowrap"><kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">Enter</kbd> / <kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">Space</kbd></td><td style="color:#64748b">Select student or toggle class</td></tr>
+            <tr><td style="padding:0.2rem 0.6rem 0.2rem 0;white-space:nowrap"><kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">Alt+↑</kbd> / <kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">Alt+↓</kbd></td><td style="color:#64748b">Prev / next student from anywhere</td></tr>
+            <tr><td style="padding:0.2rem 0.6rem 0.2rem 0;white-space:nowrap"><kbd style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;font-family:inherit">Esc</kbd></td><td style="color:#64748b">Close panels and modals</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
 
     <div class="editing-area" id="editingArea" style="display:none">
 
@@ -3392,6 +3406,28 @@ function onAdvisoryReviewChange() {
   // Re-render advisory panel to update badge color
   activateAdvisory(activeAdviseeIdx, activeAdvisoryCourseIdx);
 }
+
+// ─────────────────────────────────────────────────────────────────
+// DEACTIVATE (click empty roster area to return to instructions)
+// ─────────────────────────────────────────────────────────────────
+function deactivate() {
+  activeCI = null;
+  activeSI = null;
+  state.activeCI = null;
+  state.activeSI = null;
+  closePanel();
+  document.getElementById('navLabel').textContent = 'No student selected';
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('editingArea').style.display = 'none';
+  document.getElementById('advisoryArea').style.display = 'none';
+  renderRoster();
+  persist();
+}
+
+document.getElementById('rosterArea').addEventListener('click', function(e) {
+  // Only fire when clicking the bare roster div itself (not a child element)
+  if (e.target === this) deactivate();
+});
 
 // ─────────────────────────────────────────────────────────────────
 // GLOBAL ALT+ARROW PREV/NEXT STUDENT
