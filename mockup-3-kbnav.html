@@ -1588,7 +1588,31 @@ let openClassIdx = state.openClassIdx ?? 0;
 let activeCI = state.activeCI ?? null;
 let activeSI = state.activeSI ?? null;
 let popupCtx = null;    // { ci, si, skill, type }
+let navLayer = 1;          // 1=students, 2=skills, 3=panel
+let navStudentIdx = -1;    // index into buildFlat() array (-1 = none)
+let navSkillIdx = -1;      // 0-5 = skill items, 6 = narrative
+let navPanelIdx = -1;      // index into panelNavItems[]
+let panelNavItems = [];    // ordered navigable elements in comment panel
+let kbTypeBuffer = '';     // for letter-jump in Layer 3
+let kbTypeTimer = null;
 let customizeCtx = null; // { skill }
+
+function k(key) { return `<kbd>${key}</kbd>`; }
+const NAV_HINTS = {
+  1: `${k('↑')}${k('↓')} students &nbsp; ${k('→')} select`,
+  2: `${k('↑')}${k('↓')} skills &nbsp; ${k('→')} open &nbsp; ${k('←')} back`,
+  '2n': `${k('↑')}${k('↓')} skills &nbsp; ${k('←')} back &nbsp; ${k('Tab')} exit narrative`,
+  3: `${k('↑')}${k('↓')} move &nbsp; ${k('→')}${k('↵')} toggle &nbsp; ${k('←')} back &nbsp; A–Z jump`,
+  '3c': `${k('↵')} add &nbsp; ${k('↑')}${k('↓')} exit field &nbsp; ${k('Esc')} back`,
+};
+function updateNavHint(variant) {
+  const row = document.getElementById('navHintRow');
+  if (!row) return;
+  row.innerHTML = NAV_HINTS[variant] ?? NAV_HINTS[navLayer] ?? '';
+}
+function getSkillItems() {
+  return Array.from(document.querySelectorAll('#skillsContainer .skill-item'));
+}
 
 function loadState() {
   try {
