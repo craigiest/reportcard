@@ -1820,6 +1820,9 @@ function buildPanelBody(body, ci, si, skill) {
 
       const row = document.createElement('div');
       row.className = 'skill-checkbox-row';
+      row.dataset.navType = 'skill-row';
+      row.dataset.navLabel = label;
+      row.dataset.navSubcat = subcat;
       const pair = document.createElement('div');
       pair.className = 'skill-checkbox-pair';
 
@@ -1872,6 +1875,8 @@ function buildPanelBody(body, ci, si, skill) {
   quickForm.autocomplete = 'on';
   quickForm.onsubmit = e => { e.preventDefault(); addQuickComment(ci, si, skill); };
   const quickRow = document.createElement('div');
+  quickRow.className = 'panel-custom-input-row';
+  quickRow.dataset.navType = 'custom-input';
   quickRow.style.cssText = 'display:flex;gap:0.4rem;padding:0.4rem 0.75rem;border-bottom:1px solid #f1f5f9';
   const quickInput = document.createElement('input');
   quickInput.type = 'text';
@@ -1895,6 +1900,8 @@ function buildPanelBody(body, ci, si, skill) {
   custom.filter(c => !bankComments.includes(c)).forEach(c => {
     const item = document.createElement('div');
     item.className = 'popup-item';
+    item.dataset.navType = 'one-time-comment';
+    item.dataset.navLabel = c;
     item.style.cursor = 'default';
     const txt = document.createElement('span');
     txt.style.flex = '1';
@@ -1913,6 +1920,7 @@ function buildPanelBody(body, ci, si, skill) {
   // Edit bank link
   const custOpt = document.createElement('div');
   custOpt.className = 'popup-item customize-opt';
+  custOpt.dataset.navType = 'edit-bank';
   custOpt.innerHTML = '✎ &nbsp;Edit comment bank…';
   custOpt.onclick = () => openCustomize(skill);
   body.appendChild(custOpt);
@@ -1924,7 +1932,7 @@ function buildPanelBody(body, ci, si, skill) {
     bankLbl.className = 'popup-section-label';
     bankLbl.textContent = 'Saved Comments';
     body.appendChild(bankLbl);
-    customs.forEach(c => appendItem(body, c, custom.includes(c), () => toggleComment(ci, si, skill, c)));
+    customs.forEach(c => appendItem(body, c, custom.includes(c), () => toggleComment(ci, si, skill, c), null, 'bank-comment'));
   } else {
     const empty = document.createElement('div');
     empty.style.cssText = 'padding:0.5rem 0.75rem;font-size:0.81rem;color:#94a3b8;font-style:italic';
@@ -1991,11 +1999,15 @@ function appendSection(container, label, comments, htmlComments, selected, ci, s
   });
 }
 
-function appendItem(container, comment, checked, onClick, displayHtml) {
+function appendItem(container, comment, checked, onClick, displayHtml, navType) {
   const item = document.createElement('div');
   item.className = 'popup-item' + (checked ? ' checked' : '');
   item.innerHTML = `<span class="popup-checkbox">${checked ? '✓' : ''}</span><span>${displayHtml || esc(comment)}</span>`;
   item.onclick = () => onClick();
+  if (navType) {
+    item.dataset.navType = navType;
+    item.dataset.navLabel = comment;
+  }
   container.appendChild(item);
 }
 
