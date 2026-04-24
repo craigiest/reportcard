@@ -1975,6 +1975,11 @@ function activate(ci, si) {
   activeSI = si;
   openClassIdx = ci;
 
+  // Sync keyboard nav state
+  const flat = buildFlat();
+  navStudentIdx = flat.findIndex(([c, s]) => c === ci && s === si);
+  navLayer = 1;
+
   renderRoster();
 
   document.getElementById('emptyState').style.display = 'none';
@@ -3224,6 +3229,195 @@ if (state.activeCI !== null && state.activeSI !== null) {
   activate(state.activeCI, state.activeSI);
 }
 updateNavHint(1);
+
+// ─────────────────────────────────────────────────────────────────
+// KEYBOARD NAVIGATION
+// ─────────────────────────────────────────────────────────────────
+
+function clearKbFocus() {
+  document.querySelectorAll(
+    '.student-row.kb-focus, .skill-item.kb-focus, .card.kb-focus-narrative, ' +
+    '.skill-checkbox-row.kb-focus, .popup-item.kb-focus, ' +
+    '.customize-opt.kb-focus, .panel-custom-input-row.kb-focus'
+  ).forEach(el => {
+    el.classList.remove('kb-focus', 'kb-focus-narrative');
+  });
+}
+
+// ── Layer 1 helpers ──────────────────────────────────────────────
+
+function layer1SetFocus(flatIdx) {
+  const flat = buildFlat();
+  if (flat.length === 0) return;
+  if (flatIdx < 0) flatIdx = flat.length - 1;
+  if (flatIdx >= flat.length) flatIdx = 0;
+  // activate() rebuilds the roster DOM, so apply kb-focus after it returns
+  const [ci, si] = flat[flatIdx];
+  clearKbFocus();
+  activate(ci, si);  // sets navStudentIdx, navLayer=1, re-renders roster
+  const row = document.getElementById(`sr-${ci}-${si}`);
+  if (row) {
+    row.classList.add('kb-focus');
+    row.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function enterLayer1() {
+  if (document.getElementById('commentPanel').classList.contains('open')) closePanel();
+  clearKbFocus();
+  navLayer = 1;
+  // Re-apply kb-focus to current student (roster DOM intact, no rebuild needed)
+  if (navStudentIdx >= 0) {
+    const flat = buildFlat();
+    if (navStudentIdx < flat.length) {
+      const [ci, si] = flat[navStudentIdx];
+      const row = document.getElementById(`sr-${ci}-${si}`);
+      if (row) {
+        row.classList.add('kb-focus');
+        row.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }
+  updateNavHint(1);
+}
+
+// ── Layer 2 helpers ──────────────────────────────────────────────
+
+function getSkillItems() {
+  // Returns the 6 .skill-item elements in document order
+  return Array.from(document.querySelectorAll('#skillsContainer .skill-item'));
+}
+
+function layer2SetFocus(idx) {
+  clearKbFocus();
+  navSkillIdx = idx;
+  const items = getSkillItems();
+  if (idx >= 0 && idx < items.length) {
+    items[idx].classList.add('kb-focus');
+    items[idx].scrollIntoView({ block: 'nearest' });
+    updateNavHint(2);
+  } else if (idx === items.length) {
+    // Narrative
+    const narrativeCard = document.querySelector('#editingArea .card:last-of-type');
+    if (narrativeCard) {
+      narrativeCard.classList.add('kb-focus-narrative');
+      narrativeCard.scrollIntoView({ block: 'nearest' });
+    }
+    updateNavHint('2n');
+  }
+}
+
+function enterLayer2(fromSkillIdx) {
+  if (viewMode !== 'classes') return;
+  if (activeCI === null) return;
+  navLayer = 2;
+  if (document.getElementById('commentPanel').classList.contains('open')) closePanel();
+  const idx = (fromSkillIdx !== undefined) ? fromSkillIdx : Math.max(0, navSkillIdx >= 0 ? navSkillIdx : 0);
+  layer2SetFocus(idx);
+}
+
+// ── Layer 3 — stub (filled in Step 4) ───────────────────────────
+function enterLayer3() {
+  navLayer = 3;
+  updateNavHint(3);
+}
+
+// ── Main keydown handler ─────────────────────────────────────────
+
+document.addEventListener('keydown', function(e) {
+  // Never intercept when a modal is open
+  if (document.querySelector('.modal-overlay.open')) return;
+
+  // Never intercept when the customize modal is open (it has its own input)
+  if (document.getElementById('customizeModal').classList.contains('open')) return;
+
+  // Advisory mode — no keyboard nav
+  if (viewMode !== 'classes') return;
+
+  const tag = document.activeElement?.tagName;
+  const inTextInput = (tag === 'INPUT' || tag === 'SELECT');
+
+  // ── Layer 1: student selection ──────────────────────────────────
+  if (navLayer === 1) {
+    if (inTextInput) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const flat = buildFlat();
+      if (flat.length === 0) return;
+      layer1SetFocus(navStudentIdx < 0 ? 0 : navStudentIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const flat = buildFlat();
+      if (flat.length === 0) return;
+      layer1SetFocus(navStudentIdx <= 0 ? flat.length - 1 : navStudentIdx - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (activeCI === null) {
+        // No student yet — activate first
+        layer1SetFocus(0);
+      }
+      enterLayer2(0);
+    }
+    return;
+  }
+
+  // ── Layer 2: skill list ─────────────────────────────────────────
+  if (navLayer === 2) {
+    const items = getSkillItems();
+    const narrativeActive = (navSkillIdx === items.length);
+
+    if (narrativeActive) {
+      // Narrative textarea is focused for editing — only handle Tab
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        document.getElementById('narrativeInput').blur();
+        layer2SetFocus(items.length - 1);
+      }
+      // All other keys (including arrows) belong to the textarea
+      return;
+    }
+
+    if (inTextInput) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = navSkillIdx + 1;
+      if (next > items.length) return;
+      if (next === items.length) {
+        // Enter narrative
+        navLayer = 2;
+        layer2SetFocus(items.length);
+        setTimeout(() => {
+          const ta = document.getElementById('narrativeInput');
+          if (ta && !ta.disabled) ta.focus();
+        }, 0);
+      } else {
+        layer2SetFocus(next);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (navSkillIdx <= 0) return;
+      layer2SetFocus(navSkillIdx - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (navSkillIdx >= 0 && navSkillIdx < items.length) {
+        const btn = items[navSkillIdx].querySelector('.skill-btn');
+        if (btn && !btn.disabled) {
+          openPanel(btn);
+          enterLayer3();
+        }
+      }
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      enterLayer1();
+    }
+    return;
+  }
+
+  // ── Layer 3: comment panel ──────────────────────────────────────
+  // (implemented in Step 4)
+});
+
 </script>
 </body>
 </html>
