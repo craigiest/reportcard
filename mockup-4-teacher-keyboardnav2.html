@@ -934,7 +934,7 @@
       </div>
 
       <!-- Section 3: Narrative -->
-      <div class="card">
+      <div class="card" id="narrativeCard">
         <div class="card-header">Narrative Comment</div>
         <div class="card-body">
           <textarea class="narrative-textarea" id="narrativeInput"
@@ -3289,12 +3289,12 @@ updateNavHint(1);
 
 function clearKbFocus() {
   document.querySelectorAll(
-    '.student-row.kb-focus, .skill-item.kb-focus, .card.kb-focus-narrative, ' +
+    '.student-row.kb-focus, .skill-item.kb-focus, ' +
     '.skill-checkbox-row.kb-focus, .popup-item.kb-focus, ' +
     '.customize-opt.kb-focus, .panel-custom-input-row.kb-focus'
-  ).forEach(el => {
-    el.classList.remove('kb-focus', 'kb-focus-narrative');
-  });
+  ).forEach(el => el.classList.remove('kb-focus'));
+  const nc = document.getElementById('narrativeCard');
+  if (nc) nc.classList.remove('kb-focus-narrative');
 }
 
 // ── Layer 1 helpers ──────────────────────────────────────────────
@@ -3346,7 +3346,7 @@ function layer2SetFocus(idx) {
     updateNavHint(2);
   } else if (idx === items.length) {
     // Narrative
-    const narrativeCard = document.querySelector('#editingArea .card:last-of-type');
+    const narrativeCard = document.getElementById('narrativeCard');
     if (narrativeCard) {
       narrativeCard.classList.add('kb-focus-narrative');
       narrativeCard.scrollIntoView({ block: 'nearest' });
@@ -3536,13 +3536,13 @@ document.addEventListener('keydown', function(e) {
     const narrativeActive = (navSkillIdx === items.length);
 
     if (narrativeActive) {
-      // Narrative textarea is focused for editing — only handle Tab
-      if (e.key === 'Tab') {
+      // Tab or Esc → leave narrative, return to last skill
+      if (e.key === 'Tab' || e.key === 'Escape') {
         e.preventDefault();
         document.getElementById('narrativeInput').blur();
         layer2SetFocus(items.length - 1);
       }
-      // All other keys (including arrows) belong to the textarea
+      // All other keys (including arrows, Enter) belong to the textarea
       return;
     }
 
