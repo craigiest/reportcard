@@ -3404,6 +3404,8 @@ function enterLayer3() {
   buildPanelNavItems();
   navPanelIdx = -1;
   updateNavHint(3);
+  // Auto-position on the first item so the panel is immediately actionable
+  if (panelNavItems.length > 0) layer3SetFocus(0);
 }
 
 function layer3SetFocus(idx) {
@@ -3436,7 +3438,7 @@ function rebuildPanelNav(keepIdx) {
   const prevIdx = (keepIdx !== undefined) ? keepIdx : navPanelIdx;
   buildPanelNavItems();
   if (panelNavItems.length === 0) return;
-  const safeIdx = Math.min(prevIdx, panelNavItems.length - 1);
+  const safeIdx = Math.max(0, Math.min(prevIdx >= 0 ? prevIdx : 0, panelNavItems.length - 1));
   navPanelIdx = safeIdx;
   document.querySelectorAll('#panelBody [data-nav-type]').forEach(el => el.classList.remove('kb-focus'));
   const item = panelNavItems[safeIdx];
@@ -3518,11 +3520,10 @@ function handleLayer3TypeAhead(char) {
 // ── Main keydown handler ─────────────────────────────────────────
 
 document.addEventListener('keydown', function(e) {
-  // Never intercept when a modal is open
-  if (document.querySelector('.modal-overlay.open')) return;
-
-  // Never intercept when the customize modal is open (it has its own input)
-  if (document.getElementById('customizeModal').classList.contains('open')) return;
+  // Never intercept when a blocking modal is open (preview, reset, etc.)
+  // The customize modal is handled within Layer 3 below, so exclude it here
+  const openModal = document.querySelector('.modal-overlay.open');
+  if (openModal && openModal.id !== 'customizeModal') return;
 
   // Advisory mode — no keyboard nav
   if (viewMode !== 'classes') return;
@@ -3597,7 +3598,7 @@ document.addEventListener('keydown', function(e) {
         const btn = items[navSkillIdx].querySelector('.skill-btn');
         if (btn && !btn.disabled) {
           openPanel(btn);
-          enterLayer3();
+          // openPanel() already calls enterLayer3() which builds items + focuses first
         }
       }
     } else if (e.key === 'ArrowLeft') {
