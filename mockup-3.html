@@ -3354,12 +3354,12 @@ function handleLayer3TypeAhead(char) {
   kbTypeBuffer += char.toLowerCase();
   kbTypeTimer = setTimeout(() => { kbTypeBuffer = ''; }, 600);
 
-  const rows = panelNavItems.filter(it => it.type === 'skill-row');
-  if (rows.length === 0) return;
-  const curRow = panelNavItems[navPanelIdx];
-  const curRowPos = rows.indexOf(curRow);
-  for (let i = 1; i <= rows.length; i++) {
-    const candidate = rows[(curRowPos + i) % rows.length];
+  const jumpable = panelNavItems.filter(it => it.type === 'skill-row' || it.type === 'bank-comment');
+  if (jumpable.length === 0) return;
+  const curItem = panelNavItems[navPanelIdx];
+  const curItemPos = jumpable.indexOf(curItem);
+  for (let i = 1; i <= jumpable.length; i++) {
+    const candidate = jumpable[(curItemPos + i) % jumpable.length];
     if (candidate.el.dataset.navLabel?.toLowerCase().startsWith(kbTypeBuffer)) {
       const idx = panelNavItems.indexOf(candidate);
       layer3SetFocus(idx);
