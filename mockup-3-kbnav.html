@@ -1983,6 +1983,7 @@ function toggleSkillEntry(ci, si, skill, label, subcat, type) {
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
+  rebuildPanelNav();
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
@@ -2062,7 +2063,14 @@ function addQuickComment(ci, si, skill) {
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
-  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  // Rebuild nav and keep focus on the custom-input row
+  if (navLayer === 3) {
+    buildPanelNavItems();
+    const customIdx = panelNavItems.findIndex(it => it.type === 'custom-input');
+    rebuildPanelNav(customIdx >= 0 ? customIdx : navPanelIdx);
+  } else {
+    setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  }
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
@@ -2078,7 +2086,7 @@ function removeOneTimeComment(ci, si, skill, comment) {
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
-  setTimeout(() => { const inp = document.getElementById('quickCustomInput'); if (inp) inp.focus(); }, 10);
+  rebuildPanelNav();
   refreshSkillComments(skill);
   renderRoster();
   showSaved();
