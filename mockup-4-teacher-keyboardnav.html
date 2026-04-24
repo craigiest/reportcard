@@ -862,9 +862,11 @@
       </div>
     </div>
 
-    <div class="mode-tabs">
-      <button class="mode-tab active" id="tabClasses" onclick="switchMode('classes')">My Classes</button>
-      <button class="mode-tab" id="tabAdvisory" onclick="switchMode('advisory')">My Advisory</button>
+    <div class="mode-tabs" role="tablist" aria-label="View mode">
+      <button class="mode-tab active" id="tabClasses" role="tab" aria-selected="true"
+        tabindex="0" onclick="switchMode('classes')">My Classes</button>
+      <button class="mode-tab" id="tabAdvisory" role="tab" aria-selected="false"
+        tabindex="-1" onclick="switchMode('advisory')">My Advisory</button>
     </div>
 
     <div class="roster-area" id="rosterArea"></div>
@@ -2999,10 +3001,33 @@ function advisoryStatus(ai, ci) {
   return 'in-progress';
 }
 
+// ─────────────────────────────────────────────────────────────────
+// MODE TABS — arrow-key navigation
+// ─────────────────────────────────────────────────────────────────
+document.querySelector('.mode-tabs').addEventListener('keydown', function(e) {
+  const tabs = ['tabClasses', 'tabAdvisory'];
+  const focused = tabs.indexOf(document.activeElement.id);
+  if (focused === -1) return;
+  let next = -1;
+  if (e.key === 'ArrowRight') next = (focused + 1) % tabs.length;
+  if (e.key === 'ArrowLeft')  next = (focused - 1 + tabs.length) % tabs.length;
+  if (next === -1) return;
+  e.preventDefault();
+  document.getElementById(tabs[next]).focus();
+  document.getElementById(tabs[next]).click();
+});
+
 function switchMode(mode) {
   viewMode = mode;
-  document.getElementById('tabClasses').classList.toggle('active', mode === 'classes');
-  document.getElementById('tabAdvisory').classList.toggle('active', mode === 'advisory');
+  // Update classes + ARIA tab state
+  const tabClasses = document.getElementById('tabClasses');
+  const tabAdvisory = document.getElementById('tabAdvisory');
+  tabClasses.classList.toggle('active', mode === 'classes');
+  tabAdvisory.classList.toggle('active', mode === 'advisory');
+  tabClasses.setAttribute('aria-selected', mode === 'classes' ? 'true' : 'false');
+  tabAdvisory.setAttribute('aria-selected', mode === 'advisory' ? 'true' : 'false');
+  tabClasses.tabIndex = mode === 'classes' ? 0 : -1;
+  tabAdvisory.tabIndex = mode === 'advisory' ? 0 : -1;
   document.getElementById('emptyState').style.display = '';
   document.getElementById('editingArea').style.display = 'none';
   document.getElementById('advisoryArea').style.display = 'none';
