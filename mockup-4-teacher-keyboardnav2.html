@@ -2708,6 +2708,10 @@ function onTermChange() {
 
   activeCI = null; activeSI = null; openClassIdx = 0;
   state.activeCI = null; state.activeSI = null; state.openClassIdx = 0;
+  clearKbFocus();
+  navLayer = 1; navStudentIdx = -1; navSkillIdx = -1; navPanelIdx = -1;
+  panelNavItems = [];
+  updateNavHint(1);
   closePanel();
   persist();
 
@@ -3032,6 +3036,10 @@ function doReset() {
   openClassIdx = 0;
   activeCI = null;
   activeSI = null;
+  clearKbFocus();
+  navLayer = 1; navStudentIdx = -1; navSkillIdx = -1; navPanelIdx = -1;
+  panelNavItems = [];
+  updateNavHint(1);
   document.getElementById('teacherNameDisplay').textContent = teacherName;
   state.term = '25-26 S2 Final';
   renderTermSelect();
@@ -3079,6 +3087,16 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// When mouse clicks in right panel (not on a skill button), clear Layer 2 highlights
+document.getElementById('rightPanel').addEventListener('click', function(e) {
+  if (navLayer === 2 && !e.target.closest('.skill-btn')) {
+    clearKbFocus();
+    navLayer = 1;
+    navSkillIdx = -1;
+    updateNavHint(1);
+  }
+});
+
 // ─────────────────────────────────────────────────────────────────
 // ADVISORY
 // ─────────────────────────────────────────────────────────────────
@@ -3115,6 +3133,12 @@ function advisoryStatus(ai, ci) {
 
 function switchMode(mode) {
   viewMode = mode;
+  // Reset keyboard nav when switching modes
+  clearKbFocus();
+  navLayer = 1; navStudentIdx = -1; navSkillIdx = -1; navPanelIdx = -1;
+  panelNavItems = [];
+  updateNavHint(1);
+
   document.getElementById('tabClasses').classList.toggle('active', mode === 'classes');
   document.getElementById('tabAdvisory').classList.toggle('active', mode === 'advisory');
   document.getElementById('emptyState').style.display = '';
