@@ -948,7 +948,7 @@
       <div class="panel-title" id="panelTitle"></div>
       <div class="panel-subtitle" id="panelSubtitle"></div>
     </div>
-    <button class="panel-close" onclick="closePanel()">✕</button>
+    <button class="panel-close" onclick="closePanel()" aria-label="Close panel">✕</button>
   </div>
   <div class="panel-body" id="panelBody"></div>
   <div class="panel-footer">
@@ -1593,7 +1593,7 @@ if (!state.terms.includes(state.term)) state.term = state.terms[0];
 let openClassIdx = state.openClassIdx ?? 0;
 let activeCI = state.activeCI ?? null;
 let activeSI = state.activeSI ?? null;
-let popupCtx = null;    // { ci, si, skill, type }
+let popupCtx = null;    // { ci, si, skill, triggerBtn }
 let customizeCtx = null; // { skill }
 
 function loadState() {
@@ -1992,7 +1992,8 @@ function renderSkills(ci, si) {
         <span class="skill-name">${esc(skill)}</span>
         <div class="skill-btns">
           <button class="skill-btn std" id="btn-std-${sid}"
-            data-ci="${ci}" data-si="${si}" data-skill="${esc(skill)}">Skill Selection</button>
+            data-ci="${ci}" data-si="${si}" data-skill="${esc(skill)}"
+            aria-expanded="false" aria-haspopup="true">Skill Selection</button>
         </div>
       </div>
       <div class="skill-comments" id="sc-${sid}">${skillCommentsHtml(d, skill)}</div>`;
@@ -2163,15 +2164,25 @@ function openPanel(btn) {
   const ci = parseInt(btn.dataset.ci);
   const si = parseInt(btn.dataset.si);
   const skill = btn.dataset.skill;
-  popupCtx = { ci, si, skill };
+  popupCtx = { ci, si, skill, triggerBtn: btn };
   document.getElementById('panelTitle').textContent = 'Skill Selection';
   document.getElementById('panelSubtitle').textContent = skill;
   const body = document.getElementById('panelBody');
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
-  document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.skill-btn.active').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-expanded', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-expanded', 'true');
   document.getElementById('commentPanel').classList.add('open');
+  // Move focus to first focusable element in the panel
+  setTimeout(() => {
+    const panel = document.getElementById('commentPanel');
+    const first = panel.querySelector('button, [tabindex="0"], input, select, textarea');
+    if (first) first.focus();
+  }, 30);
 }
 
 function toggleSkillEntry(ci, si, skill, label, subcat, type) {
@@ -2234,9 +2245,14 @@ function toggleComment(ci, si, skill, comment) {
 }
 
 function closePanel() {
+  const triggerBtn = popupCtx?.triggerBtn || null;
   document.getElementById('commentPanel').classList.remove('open');
-  document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.skill-btn.active').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-expanded', 'false');
+  });
   popupCtx = null;
+  if (triggerBtn) triggerBtn.focus();
 }
 
 function addQuickComment(ci, si, skill) {
@@ -2969,6 +2985,11 @@ function showSaved() {
   document.getElementById(id).addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('open');
   });
+});
+
+// Escape closes the comment panel
+document.getElementById('commentPanel').addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { e.stopPropagation(); closePanel(); }
 });
 
 // Close comment panel on outside click
