@@ -606,6 +606,11 @@
       cursor: pointer; flex-shrink: 0;
       transition: background 0.1s, border-color 0.1s;
       user-select: none;
+      /* button-element reset — keeps visual identical when tag is <button> */
+      background: none;
+      font-family: inherit;
+      padding: 0;
+      line-height: 1;
     }
     .skill-chk:hover { border-color: #94a3b8; }
     .skill-chk.strength { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
@@ -2049,16 +2054,38 @@ function buildPanelBody(body, ci, si, skill) {
       const pair = document.createElement('div');
       pair.className = 'skill-checkbox-pair';
 
-      const sBox = document.createElement('div');
+      // Hidden tooltip text for screen readers (aria-describedby)
+      const sTipId = `stip-${skillId(label)}-s`;
+      const gTipId = `stip-${skillId(label)}-g`;
+      const sTipEl = document.createElement('span');
+      sTipEl.id = sTipId; sTipEl.className = 'sr-only'; sTipEl.textContent = sTip;
+      const gTipEl = document.createElement('span');
+      gTipEl.id = gTipId; gTipEl.className = 'sr-only'; gTipEl.textContent = gTip;
+      row.appendChild(sTipEl);
+      row.appendChild(gTipEl);
+
+      const sBox = document.createElement('button');
+      sBox.type = 'button';
       sBox.className = 'skill-chk' + (inS ? ' strength' : '');
-      sBox.title = sTip;
       sBox.textContent = inS ? 'S' : '';
+      sBox.setAttribute('aria-label', inS ? `${label}: strength — click to deselect` : `${label}: mark as strength`);
+      sBox.setAttribute('aria-describedby', sTipId);
+      sBox.setAttribute('aria-pressed', String(inS));
+      sBox.dataset.skillBtn = 'strength';
+      sBox.dataset.label = label;
+      sBox.dataset.subcat = subcat;
       sBox.onclick = e => { e.stopPropagation(); toggleSkillEntry(ci, si, skill, label, subcat, 'strength'); };
 
-      const gBox = document.createElement('div');
+      const gBox = document.createElement('button');
+      gBox.type = 'button';
       gBox.className = 'skill-chk' + (inG ? ' growth' : '');
-      gBox.title = gTip;
       gBox.textContent = inG ? 'G' : '';
+      gBox.setAttribute('aria-label', inG ? `${label}: growth — click to deselect` : `${label}: mark as growth area`);
+      gBox.setAttribute('aria-describedby', gTipId);
+      gBox.setAttribute('aria-pressed', String(inG));
+      gBox.dataset.skillBtn = 'growth';
+      gBox.dataset.label = label;
+      gBox.dataset.subcat = subcat;
       gBox.onclick = e => { e.stopPropagation(); toggleSkillEntry(ci, si, skill, label, subcat, 'growth'); };
 
       const labelEl = document.createElement('span');
@@ -2198,10 +2225,13 @@ function openPanel(btn) {
 }
 
 function toggleSkillEntry(ci, si, skill, label, subcat, type) {
-  // Remember focused label so we can restore focus after panel rebuild
+  // Remember focused element so we can restore focus after panel rebuild
   const prevActive = document.activeElement;
   const focusLbl = prevActive?.dataset?.skillLabel === 'true' ? prevActive.dataset.label : null;
   const focusSubcat = prevActive?.dataset?.skillLabel === 'true' ? prevActive.dataset.subcat : null;
+  const focusBtnType = prevActive?.dataset?.skillBtn || null;
+  const focusBtnLabel = prevActive?.dataset?.label || null;
+  const focusBtnSubcat = prevActive?.dataset?.subcat || null;
 
   const d = studentData(ci, si);
   const sel = skillSelections(d, skill);
@@ -2217,12 +2247,17 @@ function toggleSkillEntry(ci, si, skill, label, subcat, type) {
   body.innerHTML = '';
   buildPanelBody(body, ci, si, skill);
 
-  // Restore focus to the label element that was active before rebuild
+  // Restore focus to the element that was active before rebuild
   if (focusLbl) {
     for (const el of body.querySelectorAll('[data-skill-label]')) {
       if (el.dataset.label === focusLbl && el.dataset.subcat === focusSubcat) {
-        el.focus();
-        break;
+        el.focus(); break;
+      }
+    }
+  } else if (focusBtnType && focusBtnLabel) {
+    for (const el of body.querySelectorAll('[data-skill-btn]')) {
+      if (el.dataset.skillBtn === focusBtnType && el.dataset.label === focusBtnLabel && el.dataset.subcat === focusBtnSubcat) {
+        el.focus(); break;
       }
     }
   }
