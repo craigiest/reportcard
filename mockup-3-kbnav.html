@@ -3170,6 +3170,338 @@ document.addEventListener('click', function(e) {
 });
 
 // ─────────────────────────────────────────────────────────────────
+// KEYBOARD NAVIGATION
+// ─────────────────────────────────────────────────────────────────
+
+function clearKbFocus() {
+  document.querySelectorAll(
+    '.student-row.kb-focus, .skill-item.kb-focus, ' +
+    '.skill-checkbox-row.kb-focus, .popup-item.kb-focus, ' +
+    '.customize-opt.kb-focus, .panel-custom-input-row.kb-focus'
+  ).forEach(el => el.classList.remove('kb-focus'));
+  const nc = document.getElementById('narrativeCard');
+  if (nc) nc.classList.remove('kb-focus-narrative');
+}
+
+// ── Layer 1 helpers ──────────────────────────────────────────────
+
+function layer1SetFocus(flatIdx) {
+  const flat = buildFlat();
+  if (flat.length === 0) return;
+  if (flatIdx < 0) flatIdx = flat.length - 1;
+  if (flatIdx >= flat.length) flatIdx = 0;
+  const [ci, si] = flat[flatIdx];
+  clearKbFocus();
+  activate(ci, si);  // sets navStudentIdx, navLayer=1, re-renders roster
+  const row = document.getElementById(`sr-${ci}-${si}`);
+  if (row) {
+    row.classList.add('kb-focus');
+    row.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function enterLayer1() {
+  if (document.getElementById('commentPanel').classList.contains('open')) closePanel();
+  clearKbFocus();
+  navLayer = 1;
+  if (navStudentIdx >= 0) {
+    const flat = buildFlat();
+    if (navStudentIdx < flat.length) {
+      const [ci, si] = flat[navStudentIdx];
+      const row = document.getElementById(`sr-${ci}-${si}`);
+      if (row) {
+        row.classList.add('kb-focus');
+        row.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }
+  updateNavHint(1);
+}
+
+// ── Layer 2 helpers ──────────────────────────────────────────────
+
+function layer2SetFocus(idx) {
+  clearKbFocus();
+  navSkillIdx = idx;
+  const items = getSkillItems();
+  if (idx >= 0 && idx < items.length) {
+    items[idx].classList.add('kb-focus');
+    items[idx].scrollIntoView({ block: 'nearest' });
+    updateNavHint(2);
+  } else if (idx === items.length) {
+    const narrativeCard = document.getElementById('narrativeCard');
+    if (narrativeCard) {
+      narrativeCard.classList.add('kb-focus-narrative');
+      narrativeCard.scrollIntoView({ block: 'nearest' });
+    }
+    updateNavHint('2n');
+  }
+}
+
+function enterLayer2(fromSkillIdx) {
+  if (activeCI === null) return;
+  navLayer = 2;
+  if (document.getElementById('commentPanel').classList.contains('open')) closePanel();
+  const idx = (fromSkillIdx !== undefined) ? fromSkillIdx : Math.max(0, navSkillIdx >= 0 ? navSkillIdx : 0);
+  layer2SetFocus(idx);
+}
+
+// ── Layer 3 helpers ──────────────────────────────────────────────
+
+function buildPanelNavItems() {
+  const body = document.getElementById('panelBody');
+  panelNavItems = [];
+  if (!body) return;
+  body.querySelectorAll('[data-nav-type]').forEach(el => {
+    panelNavItems.push({ type: el.dataset.navType, el });
+  });
+}
+
+function enterLayer3() {
+  navLayer = 3;
+  buildPanelNavItems();
+  navPanelIdx = -1;
+  updateNavHint(3);
+  if (panelNavItems.length > 0) layer3SetFocus(0);
+}
+
+function layer3SetFocus(idx) {
+  if (panelNavItems.length === 0) return;
+  if (idx < 0) idx = panelNavItems.length - 1;
+  if (idx >= panelNavItems.length) idx = 0;
+  navPanelIdx = idx;
+
+  document.querySelectorAll('#panelBody [data-nav-type]').forEach(el => el.classList.remove('kb-focus'));
+
+  const item = panelNavItems[idx];
+  if (!item) return;
+  item.el.classList.add('kb-focus');
+  item.el.scrollIntoView({ block: 'nearest' });
+
+  if (item.type === 'custom-input') {
+    updateNavHint('3c');
+    setTimeout(() => document.getElementById('quickCustomInput')?.focus(), 0);
+  } else {
+    updateNavHint(3);
+    const inp = document.getElementById('quickCustomInput');
+    if (inp && document.activeElement === inp) inp.blur();
+  }
+}
+
+function rebuildPanelNav(keepIdx) {
+  if (navLayer !== 3) return;
+  const prevIdx = (keepIdx !== undefined) ? keepIdx : navPanelIdx;
+  buildPanelNavItems();
+  if (panelNavItems.length === 0) return;
+  const safeIdx = Math.max(0, Math.min(prevIdx >= 0 ? prevIdx : 0, panelNavItems.length - 1));
+  navPanelIdx = safeIdx;
+  document.querySelectorAll('#panelBody [data-nav-type]').forEach(el => el.classList.remove('kb-focus'));
+  const item = panelNavItems[safeIdx];
+  if (item) {
+    item.el.classList.add('kb-focus');
+    if (item.type === 'custom-input') {
+      updateNavHint('3c');
+      setTimeout(() => document.getElementById('quickCustomInput')?.focus(), 0);
+    } else {
+      updateNavHint(3);
+    }
+  }
+}
+
+function cycleSkillRowEntry(item) {
+  if (!popupCtx) return;
+  const { ci, si, skill } = popupCtx;
+  const { navLabel: label, navSubcat: subcat } = item.el.dataset;
+  const d = studentData(ci, si);
+  const sel = skillSelections(d, skill);
+  const entry = sel.find(s => s.label === label && s.subcat === subcat);
+  if (!entry) {
+    toggleSkillEntry(ci, si, skill, label, subcat, 'strength');
+  } else if (entry.type === 'strength') {
+    toggleSkillEntry(ci, si, skill, label, subcat, 'growth');
+  } else {
+    toggleSkillEntry(ci, si, skill, label, subcat, 'growth'); // growth → remove
+  }
+}
+
+function activatePanelItem(item) {
+  if (!item || !popupCtx) return;
+  const { ci, si, skill } = popupCtx;
+  switch (item.type) {
+    case 'skill-row':
+      cycleSkillRowEntry(item);
+      break;
+    case 'custom-input':
+      break;
+    case 'one-time-comment': {
+      const c = item.el.dataset.navLabel;
+      removeOneTimeComment(ci, si, skill, c);
+      break;
+    }
+    case 'edit-bank':
+      openCustomize(skill);
+      break;
+    case 'bank-comment': {
+      const c = item.el.dataset.navLabel;
+      toggleComment(ci, si, skill, c);
+      break;
+    }
+  }
+}
+
+function handleLayer3TypeAhead(char) {
+  clearTimeout(kbTypeTimer);
+  kbTypeBuffer += char.toLowerCase();
+  kbTypeTimer = setTimeout(() => { kbTypeBuffer = ''; }, 600);
+
+  const rows = panelNavItems.filter(it => it.type === 'skill-row');
+  if (rows.length === 0) return;
+  const curRow = panelNavItems[navPanelIdx];
+  const curRowPos = rows.indexOf(curRow);
+  for (let i = 1; i <= rows.length; i++) {
+    const candidate = rows[(curRowPos + i) % rows.length];
+    if (candidate.el.dataset.navLabel?.toLowerCase().startsWith(kbTypeBuffer)) {
+      const idx = panelNavItems.indexOf(candidate);
+      layer3SetFocus(idx);
+      return;
+    }
+  }
+}
+
+// ── Main keydown handler ─────────────────────────────────────────
+
+document.addEventListener('keydown', function(e) {
+  const openModal = document.querySelector('.modal-overlay.open');
+  if (openModal && openModal.id !== 'customizeModal') return;
+
+  const tag = document.activeElement?.tagName;
+  const inTextInput = (tag === 'INPUT' || tag === 'SELECT');
+
+  // ── Layer 1: student selection ──────────────────────────────────
+  if (navLayer === 1) {
+    if (inTextInput) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const flat = buildFlat();
+      if (flat.length === 0) return;
+      layer1SetFocus(navStudentIdx < 0 ? 0 : navStudentIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const flat = buildFlat();
+      if (flat.length === 0) return;
+      layer1SetFocus(navStudentIdx <= 0 ? flat.length - 1 : navStudentIdx - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (activeCI === null) layer1SetFocus(0);
+      enterLayer2(0);
+    }
+    return;
+  }
+
+  // ── Layer 2: skill list ─────────────────────────────────────────
+  if (navLayer === 2) {
+    const items = getSkillItems();
+    const narrativeActive = (navSkillIdx === items.length);
+
+    if (narrativeActive) {
+      if (e.key === 'Tab' || e.key === 'Escape') {
+        e.preventDefault();
+        document.getElementById('narrativeInput').blur();
+        layer2SetFocus(items.length - 1);
+      }
+      return;
+    }
+
+    if (inTextInput) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = navSkillIdx + 1;
+      if (next > items.length) return;
+      if (next === items.length) {
+        navLayer = 2;
+        layer2SetFocus(items.length);
+        setTimeout(() => {
+          const ta = document.getElementById('narrativeInput');
+          if (ta && !ta.disabled) ta.focus();
+        }, 0);
+      } else {
+        layer2SetFocus(next);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (navSkillIdx <= 0) return;
+      layer2SetFocus(navSkillIdx - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (navSkillIdx >= 0 && navSkillIdx < items.length) {
+        const btn = items[navSkillIdx].querySelector('.skill-btn');
+        if (btn && !btn.disabled) openPanel(btn);
+      }
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      enterLayer1();
+    }
+    return;
+  }
+
+  // ── Layer 3: comment panel ──────────────────────────────────────
+  if (navLayer === 3) {
+    if (!document.getElementById('commentPanel').classList.contains('open')) {
+      navLayer = 2; return;
+    }
+
+    if (document.getElementById('customizeModal').classList.contains('open')) {
+      if (e.key === 'Escape') { e.preventDefault(); closeCustomize(); }
+      return;
+    }
+
+    const item = panelNavItems[navPanelIdx];
+    const inputHasFocus = document.activeElement?.id === 'quickCustomInput';
+
+    if (inputHasFocus) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        document.getElementById('quickCustomInput').blur();
+        layer3SetFocus(navPanelIdx - 1);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        document.getElementById('quickCustomInput').blur();
+        layer3SetFocus(navPanelIdx + 1);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (popupCtx) addQuickComment(popupCtx.ci, popupCtx.si, popupCtx.skill);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        document.getElementById('quickCustomInput').blur();
+        layer3SetFocus(navPanelIdx);
+      }
+      return;
+    }
+
+    if (inTextInput) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      layer3SetFocus(navPanelIdx < 0 ? 0 : navPanelIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      layer3SetFocus(navPanelIdx <= 0 ? panelNavItems.length - 1 : navPanelIdx - 1);
+    } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+      e.preventDefault();
+      if (navPanelIdx < 0) { layer3SetFocus(0); return; }
+      activatePanelItem(item);
+    } else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+      e.preventDefault();
+      closePanel();
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      handleLayer3TypeAhead(e.key);
+    }
+    return;
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────
 // Ensure reflections object exists (for states loaded from older storage)
@@ -3188,6 +3520,7 @@ renderRoster();
 if (state.activeCI !== null && state.activeSI !== null) {
   activate(state.activeCI, state.activeSI);
 }
+updateNavHint(1);
 </script>
 </body>
 </html>
