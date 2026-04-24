@@ -1110,7 +1110,7 @@ The panel contains a single navigable list in top-to-bottom order:
 | ↑ | Move to the previous item in the list |
 | → or Enter | Activate the focused item (see per-item behavior below) |
 | ← or Esc | Close the panel and return to Layer 2; restore cursor to the skill that was open |
-| A–Z (1–3 chars, within 600 ms) | Jump forward to the next **standard skill row** whose label starts with the typed prefix |
+| A–Z (1–3 chars, within 600 ms) | Jump forward to the next **standard skill row or saved bank comment** whose label starts with the typed prefix |
 
 **Per-item behavior for → / Enter:**
 
@@ -1161,6 +1161,9 @@ A compact key-hint strip is displayed just above the status-dot legend in the le
 ### 12.4 Student, advisor, and admin interfaces
 
 These interfaces use standard browser Tab-based navigation — no 3-layer system.
+
+**Advisor interface (My Advisory mode):**
+The 3-layer arrow-key system is active only in **My Classes** mode. Switching to **My Advisory** mode disables it entirely; all navigation in advisory mode uses standard Tab-based keyboard navigation. Switching back to My Classes mode restores Layer 1 focus.
 
 **Student interface:**
 - Tab/Shift+Tab moves through all interactive elements in reading order.
