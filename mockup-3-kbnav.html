@@ -1947,6 +1947,18 @@ function openPanel(btn) {
   document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('commentPanel').classList.add('open');
+
+  // Sync keyboard nav — find which skill index this button belongs to
+  const items = getSkillItems();
+  const skillItem = btn.closest('.skill-item');
+  const idx = items.indexOf(skillItem);
+  if (idx >= 0) {
+    clearKbFocus();
+    navSkillIdx = idx;
+    skillItem.classList.add('kb-focus');
+  }
+  // Always enter Layer 3 when panel opens
+  enterLayer3();
 }
 
 function toggleSkillEntry(ci, si, skill, label, subcat, type) {
@@ -2012,6 +2024,17 @@ function closePanel() {
   document.getElementById('commentPanel').classList.remove('open');
   document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
   popupCtx = null;
+  // Return to Layer 2 if we were in Layer 3
+  if (navLayer === 3 && activeCI !== null) {
+    clearKbFocus();
+    navLayer = 2;
+    // Re-highlight the skill that was open
+    const items = getSkillItems();
+    if (navSkillIdx >= 0 && navSkillIdx < items.length) {
+      items[navSkillIdx].classList.add('kb-focus');
+    }
+    updateNavHint(2);
+  }
 }
 
 function addQuickComment(ci, si, skill) {
