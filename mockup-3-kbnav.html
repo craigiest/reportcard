@@ -2047,6 +2047,16 @@ function closePanel() {
   document.getElementById('commentPanel').classList.remove('open');
   document.querySelectorAll('.skill-btn.active').forEach(b => b.classList.remove('active'));
   popupCtx = null;
+  // Return to Layer 2 if we were in Layer 3
+  if (navLayer === 3 && activeCI !== null) {
+    clearKbFocus();
+    navLayer = 2;
+    const items = getSkillItems();
+    if (navSkillIdx >= 0 && navSkillIdx < items.length) {
+      items[navSkillIdx].classList.add('kb-focus');
+    }
+    updateNavHint(2);
+  }
 }
 
 function addQuickComment(ci, si, skill) {
