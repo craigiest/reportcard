@@ -1054,98 +1054,138 @@ This is the **default landing view** when admin logs in.
 
 ## 12. Keyboard Navigation & Accessibility
 
-The system must be fully operable without a mouse. Every action available by clicking must also be reachable and triggerable by keyboard alone. The goal is efficient use for teachers who enter many report cards sequentially — mouse use should be optional, not required.
+The teacher interface uses a **3-layer arrow-key menu system** optimized for sequential report card entry. The goal is to let a teacher move through every student and fill in every field without touching the mouse. Mouse functionality is fully preserved alongside keyboard navigation — the two modes stay in sync at all times.
 
-### General rules
+The student, advisor, and admin interfaces use standard browser Tab-based keyboard navigation and are not subject to the 3-layer system described here.
 
-- All interactive elements are focusable via Tab (forward) and Shift+Tab (backward).
-- Focus order follows the visual reading order of the page.
-- The focused element always has a visible focus indicator (minimum 2px outline, high-contrast color).
-- No keyboard traps — Tab can always leave any component.
-- Escape closes any open modal, panel, or dropdown and returns focus to the element that triggered it.
-- Semantic HTML is used throughout (`<button>`, `<input>`, `<select>`, `<textarea>`, `<label for>`) so that browser and screen reader defaults work without custom ARIA where native semantics suffice.
+---
 
-### Teacher interface keyboard behavior
+### 12.1 Teacher interface — 3-layer navigation model
 
-**Grading period dropdown:** Standard `<select>` — arrow keys change selection; Enter/Space opens; Escape closes.
+Navigation is controlled entirely by the **arrow keys**. The interface is always in one of three layers, indicated by a context-sensitive key hint bar displayed just above the status-dot legend in the left sidebar.
 
-**Class roster (left sidebar):**
-- Tab moves focus through class headers and student rows.
-- Enter or Space on a class header toggles its expand/collapse.
-- Enter or Space on a student row activates that student (same as clicking).
-- Arrow keys (↑/↓) can navigate between visible student rows without tabbing through class headers — treat the roster as a single composite widget with roving tabindex or `aria-activedescendant`.
+#### Layer 1 — Student selection (default)
 
-**Prev/Next student arrows (▲/▼):**
-- Tab-focusable buttons; Enter/Space activates.
-- A suggested keyboard shortcut: `Alt+↑` / `Alt+↓` to trigger these from anywhere on the page without having to Tab to the sidebar.
+This is the default layer. The cursor is positioned on a student row in the class roster.
 
-**Mode tabs (My Classes / My Advisory):**
-- Tab focuses the tab strip; arrow keys move between tabs; Enter/Space activates the focused tab.
+| Key | Action |
+|-----|--------|
+| ↓ | Move to the next student (wraps across class boundaries, bottom to top of next class) |
+| ↑ | Move to the previous student (wraps across class boundaries) |
+| → | Move focus to Layer 2 (skill list for the active student) |
 
-**Skill Selection button:**
-- Tab-focusable; Enter or Space opens the right comment panel for that skill.
+- Pressing ↑ or ↓ **immediately activates** the student (loads the report card in the right panel), identical to clicking the row.
+- The keyboard-focused student row shows a distinct highlight (lighter blue left border) that differs from the selected-student highlight (solid blue background).
+- Switching between the **My Classes** and **My Advisory** tabs, or changing the **Grading Period** dropdown, must be done with the mouse. Either action resets keyboard focus to Layer 1.
 
-**Right comment panel:**
-- When the panel opens, focus moves to the panel's first focusable element (typically the first subskill label or the close button).
-- Tab navigates through all interactive elements in the panel (close button, subskill labels, S buttons, G buttons, one-time input, Edit comment bank link, saved custom comment checkboxes, Done button).
-- Escape closes the panel and returns focus to the "Skill Selection" button that opened it.
+#### Layer 2 — Skill selection
 
-**Subskill label (cycling):**
-- Enter or Space on the subskill label cycles through: none → Strength → Growth → none.
-- This is the primary keyboard mechanism for comment selection, replacing the need to Tab to the small S/G buttons.
+Entered by pressing → from Layer 1. The cursor moves to the first transferable skill item in the right panel.
 
-**S and G buttons:**
-- Tab-focusable individually; Enter or Space selects/deselects that comment type.
-- Hovering (`:hover`) and focusing (`:focus`) both trigger the tooltip showing the full comment text. The tooltip must also be accessible to screen readers — use `aria-describedby` pointing to a visually hidden element containing the comment text, or use a `<details>` pattern.
+| Key | Action |
+|-----|--------|
+| ↓ | Move to the next skill item |
+| ↑ | Move to the previous skill item |
+| → | Open the comment panel for the highlighted skill → enter Layer 3 |
+| ↓ (past last skill) | Move to the narrative textarea and focus it for text entry |
+| ← | Return to Layer 1; restore cursor to the active student row |
 
-**Narrative textarea:** Standard textarea keyboard behavior; Tab exits the textarea (does not insert a tab character).
+- Each skill item shows a blue left-border highlight when keyboard-focused.
+- **Narrative textarea entry:** When the narrative card gains focus via ↓ from the last skill, the textarea is immediately focused for typing. Arrow keys move the text cursor; Enter inserts a line break. Pressing **Tab** or **Esc** blurs the textarea and returns keyboard focus to the last skill item in Layer 2.
 
-**Finalize checkbox:** Tab-focusable; Space toggles. When disabled, focus can still land on it but Space has no effect; the inline hint text is associated via `aria-describedby`.
+#### Layer 3 — Comment panel (skill detail)
 
-**Preview modal:**
-- When opened, focus moves to the modal.
-- Tab cycles through modal content (Print/Save PDF button, close button).
-- Escape closes the modal.
-- Focus returns to the Preview button when closed.
+Entered by pressing → from a skill item in Layer 2. The comment panel slides open and focus is placed on the first item in the panel's navigable list.
 
-**Custom Comment Bank modal:**
-- Same modal focus trapping and Escape behavior.
-- The draggable list items should be keyboard-reorderable (e.g., focus a handle button, then use arrow keys to move the item up/down).
+The panel contains a single navigable list in top-to-bottom order:
+1. Standard skill rows (one per subskill label, grouped by subcategory)
+2. "Add comment for this student" custom input row
+3. Any one-time comments already added for this student (not in the bank)
+4. "Edit comment bank…" link
+5. Saved bank comment items
 
-### Student interface keyboard behavior
+| Key | Action |
+|-----|--------|
+| ↓ | Move to the next item in the list |
+| ↑ | Move to the previous item in the list |
+| → or Enter | Activate the focused item (see per-item behavior below) |
+| ← or Esc | Close the panel and return to Layer 2; restore cursor to the skill that was open |
+| A–Z (1–3 chars, within 600 ms) | Jump forward to the next **standard skill row** whose label starts with the typed prefix |
 
-**Class list (left sidebar):**
-- Tab/arrow navigation through class rows; Enter activates the selected class.
+**Per-item behavior for → / Enter:**
 
-**Grading period dropdown:** Standard `<select>`.
+| Item type | → / Enter behavior |
+|-----------|-------------------|
+| Standard skill row | Cycle the selection: **none → Strength → Growth → none** |
+| Custom input row | Focus the text field for typing (see below) |
+| One-time comment | Remove the comment from this student's report card |
+| "Edit comment bank…" | Open the Custom Comment Bank modal with the add-comment field focused; Esc closes the modal and returns focus to the "Edit comment bank…" item |
+| Bank comment item | Toggle the comment on/off for this student |
 
-**Reflection textarea:** Standard textarea.
+**Custom input field behavior (while the text field has focus):**
 
-**Submit button:** Tab-focusable; Enter or Space triggers submit (opens confirmation modal).
+| Key | Action |
+|-----|--------|
+| Any printable key | Types into the field |
+| ← / → | Move text cursor within the field |
+| Enter | Submit the comment (adds it to the student's report card; field clears and stays focused for another entry) |
+| ↑ / ↓ | Blur the field and move to the adjacent item; text in the field is **discarded** (not submitted) |
+| Esc | Blur the field and stay on the custom input row; text is **discarded** |
 
-**Submission confirmation modal:** Focus trapped in modal; Tab moves between Cancel and Submit buttons; Escape = Cancel; Enter on Submit confirms.
+---
 
-### Admin interface keyboard behavior
+### 12.2 Nav hint bar
 
-**Left sidebar navigation:** Tab through menu items; Enter navigates to the section.
+A compact key-hint strip is displayed just above the status-dot legend in the left sidebar. It updates automatically to reflect the current layer and context:
 
-**Tables with action buttons:** Each row's action buttons are tab-focusable in order. For long tables, consider adding a "skip to content" link at the top.
+| Context | Hint shown |
+|---------|-----------|
+| Layer 1 | `↑` `↓` students &nbsp; `→` select |
+| Layer 2 (skill focused) | `↑` `↓` skills &nbsp; `→` open &nbsp; `←` back |
+| Layer 2 (narrative focused) | `↑` `↓` skills &nbsp; `←` back &nbsp; `Tab` exit narrative |
+| Layer 3 (panel item focused) | `↑` `↓` move &nbsp; `→` `↵` toggle &nbsp; `←` back &nbsp; A–Z jump |
+| Layer 3 (custom input focused) | `↵` add &nbsp; `↑` `↓` exit field &nbsp; `Esc` back |
 
-**Modals:** All admin modals follow the same focus-trap pattern — Tab cycles within the modal, Escape closes it, focus returns to the triggering element.
+---
 
-**User table filter dropdowns:** Standard `<select>` elements. Search input is a standard text field.
+### 12.3 Mouse and keyboard coexistence
 
-**Confirmation inputs (DELETE / RESTORE):** Standard text inputs; the confirm button enables reactively as the user types the required string.
+- Mouse clicks on a student row activate the student and reset keyboard state to Layer 1.
+- Mouse clicks on a "Skill Selection" button open the comment panel and reset keyboard state to Layer 3 (focused on the first panel item).
+- Mouse clicks anywhere in the right panel (other than a skill button) clear Layer 2 highlights and reset to Layer 1 state while keeping the student active.
+- Closing the comment panel by clicking the ✕ button or clicking outside it returns keyboard state to Layer 2.
+- Any action that changes the roster (term change, mode switch, reset) clears all keyboard highlights and returns to Layer 1.
 
-### Screen reader support
+---
 
-- All images and icons have `alt` text or `aria-label`.
-- Status dots in the sidebar (report card status, reflection submitted) have `aria-label` values that describe their meaning (e.g., `aria-label="Report card: finalized; Reflection: submitted"`).
-- Color is never the sole means of conveying information — status dots are also distinguishable by shape (round vs. square) and by label.
-- Live regions (`aria-live="polite"`) announce sync status changes ("Changes saved") and validation hint updates without interrupting the user's flow.
-- The right comment panel's open/close state is communicated via `aria-expanded` on the triggering button.
+### 12.4 Student, advisor, and admin interfaces
 
-### Responsive design targets
+These interfaces use standard browser Tab-based navigation — no 3-layer system.
+
+**Student interface:**
+- Tab/Shift+Tab moves through all interactive elements in reading order.
+- Reflection textarea: standard textarea behavior; Tab exits the field.
+- Submit button: Enter or Space triggers the confirmation modal.
+- Confirmation modal: Tab cycles between Cancel and Submit; Escape = Cancel; Enter on Submit confirms.
+
+**Admin interface:**
+- Tab through all interactive elements in reading order.
+- Modals: Tab cycles within the modal; Escape closes it; focus returns to the triggering element.
+- Confirmation inputs (DELETE / RESTORE): standard text fields; confirm button enables as the user types.
+
+---
+
+### 12.5 Screen reader support
+
+- All icons and status dots have `aria-label` values describing their meaning (e.g., `aria-label="Report card: finalized; Reflection: submitted"`).
+- Color is never the sole means of conveying information — status dots are distinguished by both color and shape (round = report card, square = reflection).
+- Live regions (`aria-live="polite"`) announce sync status changes ("Saved") and validation hint updates.
+- The comment panel's open/close state is communicated via `aria-expanded` on the triggering "Skill Selection" button.
+- Visible focus indicators meet WCAG 2.1 AA contrast requirements (minimum 2px outline, high-contrast color against both light and dark backgrounds).
+
+---
+
+### 12.6 Responsive design targets
 
 - **Primary:** Laptop/desktop (1280px and up)
 - **Secondary:** Tablet (768px and up) — teacher and admin interfaces
