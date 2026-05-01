@@ -323,6 +323,301 @@ Ownership of Learning,Motivation,Curiosity-fueled motivation,"You're motivated b
 
 <p><code>skill_area</code> corresponds to a Skill Area name from the standard bank. The custom comment appears in the comment panel for that skill area alongside standard comments.</p>
 
+<!-- ─────────────────────────────────────────────────────── 4 -->
+<h2 id="s4">4. Database Schema</h2>
+
+<p class="note">All field types are suggestions; the backend engineer should adapt to the chosen database and ORM. Foreign keys are noted where relationships are critical to enforce.</p>
+
+<h3>users</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>email</td><td>text UNIQUE NOT NULL</td><td>School Google account; identity anchor; immutable after creation</td></tr>
+    <tr><td>name</td><td>text NOT NULL</td><td>Display name from Google OAuth</td></tr>
+    <tr><td>roles</td><td>text[]</td><td>Array; values: <code>teacher</code>, <code>advisor</code>, <code>admin</code>, <code>student</code></td></tr>
+    <tr><td>is_active</td><td>boolean DEFAULT true</td><td>False = archived; login denied but data preserved</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>last_login_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>terms</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>school_year</td><td>text NOT NULL</td><td>e.g., "2025-2026"</td></tr>
+    <tr><td>name</td><td>text NOT NULL</td><td>e.g., "S1", "T2"</td></tr>
+    <tr><td>sort_order</td><td>integer NOT NULL</td><td>Sequence within the school year</td></tr>
+    <tr><td>start_date</td><td>date</td><td></td></tr>
+    <tr><td>end_date</td><td>date</td><td></td></tr>
+    <tr><td>has_midterm</td><td>boolean DEFAULT false</td><td>Whether Midterm reporting period is active</td></tr>
+    <tr><td>has_final</td><td>boolean DEFAULT true</td><td>Whether Final reporting period is active</td></tr>
+    <tr><td>reflection_freeze_date</td><td>date NULLABLE</td><td>Students cannot edit reflections after this date</td></tr>
+    <tr><td>is_locked</td><td>boolean DEFAULT false</td><td>Read-only for teachers/advisors when true</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>classes</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>teacher_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>course_name</td><td>text NOT NULL</td><td></td></tr>
+    <tr><td>course_code</td><td>text NULLABLE</td><td></td></tr>
+    <tr><td>department</td><td>text NULLABLE</td><td>Used for comment bank and prompt assignment lookup</td></tr>
+    <tr><td>sort_order</td><td>integer</td><td>Display order within teacher's roster</td></tr>
+  </tbody>
+</table></div>
+
+<h3>enrollments</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NOT NULL</td><td></td></tr>
+    <tr><td>UNIQUE</td><td>(student_id, class_id)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>advisories</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>advisor_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td>Advisory assignments can change per term</td></tr>
+    <tr><td>UNIQUE</td><td>(advisor_id, student_id, term_id)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>comment_banks</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>name</td><td>text NOT NULL UNIQUE</td><td>Display name</td></tr>
+    <tr><td>is_school_default</td><td>boolean DEFAULT false</td><td>Only one row should have this true at a time</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>updated_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>comment_bank_entries</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>bank_id</td><td>uuid FK → comment_banks.id NOT NULL</td><td></td></tr>
+    <tr><td>transferable_skill</td><td>text NOT NULL</td><td>Top-level skill group label</td></tr>
+    <tr><td>skill_area</td><td>text NOT NULL</td><td>Second-level grouping</td></tr>
+    <tr><td>subskill</td><td>text NOT NULL</td><td>Third-level label shown in the comment panel</td></tr>
+    <tr><td>strength_text</td><td>text NOT NULL</td><td>Comment text shown when Strength is selected</td></tr>
+    <tr><td>growth_text</td><td>text NOT NULL</td><td>Comment text shown when Growth is selected</td></tr>
+    <tr><td>sort_order</td><td>integer</td><td>Display order within the bank</td></tr>
+  </tbody>
+</table></div>
+<p class="note">Indexes: <code>(bank_id)</code>, <code>(bank_id, transferable_skill)</code>, <code>(bank_id, skill_area)</code>.</p>
+
+<h3>bank_assignments</h3>
+<p>Stores comment bank overrides at department and course level. The school default is tracked on <code>comment_banks.is_school_default</code>.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td>Assignments are per-term</td></tr>
+    <tr><td>bank_id</td><td>uuid FK → comment_banks.id NOT NULL</td><td></td></tr>
+    <tr><td>scope</td><td>text NOT NULL</td><td><code>department</code> or <code>course</code></td></tr>
+    <tr><td>department</td><td>text NULLABLE</td><td>Required when scope = <code>department</code></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NULLABLE</td><td>Required when scope = <code>course</code></td></tr>
+  </tbody>
+</table></div>
+<p>Resolution at query time: for a given class in a given term, find the most specific assignment (course → department → school default).</p>
+
+<h3>teacher_custom_comments</h3>
+<p>Teachers' personal reusable comment banks. Not shared between teachers; exported as CSV for sharing.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>teacher_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>skill_area</td><td>text NOT NULL</td><td>Matches a Skill Area from the standard bank</td></tr>
+    <tr><td>comment_text</td><td>text NOT NULL</td><td></td></tr>
+    <tr><td>sort_order</td><td>integer</td><td></td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>reflection_prompts</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>name</td><td>text NOT NULL</td><td>Internal label for admin reference</td></tr>
+    <tr><td>prompt_text</td><td>text NOT NULL</td><td>Shown to students</td></tr>
+    <tr><td>min_chars</td><td>integer DEFAULT 0</td><td>0 = not enforced</td></tr>
+    <tr><td>max_chars</td><td>integer DEFAULT 0</td><td>0 = no limit</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>prompt_assignments</h3>
+<p>Stores which prompt applies to a given scope in a given term. School-wide default is a row with <code>scope = 'universal'</code>.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>prompt_id</td><td>uuid FK → reflection_prompts.id NOT NULL</td><td></td></tr>
+    <tr><td>scope</td><td>text NOT NULL</td><td><code>universal</code>, <code>department</code>, or <code>course</code></td></tr>
+    <tr><td>department</td><td>text NULLABLE</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NULLABLE</td><td></td></tr>
+  </tbody>
+</table></div>
+<p>Resolution: course → department → universal, same as bank assignments.</p>
+
+<h3>validation_configs</h3>
+<p>Two rows only — one for Midterm, one for Final. These are global and not per-term.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>period_type</td><td>text NOT NULL</td><td><code>midterm</code> or <code>final</code>; UNIQUE</td></tr>
+    <tr><td>reflection_min_chars</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>reflection_max_chars</td><td>integer DEFAULT 0</td><td>0 = no limit</td></tr>
+    <tr><td>skill_min_areas</td><td>integer DEFAULT 0</td><td>Minimum skill areas with ≥1 comment</td></tr>
+    <tr><td>skill_required_names</td><td>text[]</td><td>Skill names that must have ≥1 comment; empty = none required</td></tr>
+    <tr><td>skill_min_total_comments</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>skill_max_per_area</td><td>integer DEFAULT 0</td><td>0 = no limit</td></tr>
+    <tr><td>skill_custom_max_chars</td><td>integer DEFAULT 0</td><td>Max chars for teacher-typed custom comments</td></tr>
+    <tr><td>narrative_min_chars</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>narrative_max_chars</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>updated_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>report_cards</h3>
+<p>One record per student per class per reporting period.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NOT NULL</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>teacher_id</td><td>uuid FK → users.id NOT NULL</td><td>Snapshot — denormalized for query convenience</td></tr>
+    <tr><td>reporting_period</td><td>text NOT NULL</td><td><code>midterm</code> or <code>final</code></td></tr>
+    <tr><td>status</td><td>text NOT NULL DEFAULT 'draft'</td><td><code>draft</code> or <code>finalized</code></td></tr>
+    <tr><td>narrative</td><td>text DEFAULT ''</td><td></td></tr>
+    <tr><td>is_advisor_reviewed</td><td>boolean DEFAULT false</td><td></td></tr>
+    <tr><td>finalized_by</td><td>uuid FK → users.id NULLABLE</td><td></td></tr>
+    <tr><td>finalized_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>reviewed_by</td><td>uuid FK → users.id NULLABLE</td><td></td></tr>
+    <tr><td>reviewed_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>last_exported_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>admin_note</td><td>text NULLABLE</td><td>Internal admin annotation; not visible to teachers/advisors/students</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>updated_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>UNIQUE</td><td>(class_id, student_id, reporting_period)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>report_card_skill_comments</h3>
+<p>Stores comment selections for a report card. Comment text is stored as a snapshot at the time of selection — not as a foreign key to the bank entry.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>report_card_id</td><td>uuid FK → report_cards.id NOT NULL</td><td></td></tr>
+    <tr><td>transferable_skill</td><td>text NOT NULL</td><td>Snapshot label</td></tr>
+    <tr><td>skill_area</td><td>text NOT NULL</td><td>Snapshot label</td></tr>
+    <tr><td>subskill</td><td>text NULLABLE</td><td>Null for custom comments</td></tr>
+    <tr><td>comment_type</td><td>text NULLABLE</td><td><code>strength</code>, <code>growth</code>, or null for custom</td></tr>
+    <tr><td>comment_text</td><td>text NOT NULL</td><td>Snapshot of the text at time of selection</td></tr>
+    <tr><td>is_custom</td><td>boolean DEFAULT false</td><td>True for teacher-written custom or one-time comments</td></tr>
+    <tr><td>is_one_time</td><td>boolean DEFAULT false</td><td>True for comments added inline for this student only</td></tr>
+    <tr><td>sort_order</td><td>integer</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>student_reflections</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NOT NULL</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>reporting_period</td><td>text NOT NULL</td><td><code>midterm</code> or <code>final</code></td></tr>
+    <tr><td>prompt_id</td><td>uuid FK → reflection_prompts.id NULLABLE</td><td>Nullable if prompt was later deleted</td></tr>
+    <tr><td>prompt_text_snapshot</td><td>text NULLABLE</td><td>Snapshot of prompt text at time of submission</td></tr>
+    <tr><td>draft_text</td><td>text DEFAULT ''</td><td>Current draft; updated on each save</td></tr>
+    <tr><td>submitted_text</td><td>text NULLABLE</td><td>Locked copy at time of submission</td></tr>
+    <tr><td>status</td><td>text NOT NULL DEFAULT 'not_started'</td><td><code>not_started</code>, <code>draft</code>, or <code>submitted</code></td></tr>
+    <tr><td>submitted_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>UNIQUE</td><td>(student_id, class_id, reporting_period)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>export_records</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>exported_at</td><td>timestamptz NOT NULL</td><td></td></tr>
+    <tr><td>exported_by</td><td>uuid FK → users.id NOT NULL</td><td>Admin user</td></tr>
+    <tr><td>export_type</td><td>text NOT NULL</td><td><code>bulk</code> or <code>individual</code></td></tr>
+    <tr><td>report_card_ids</td><td>uuid[]</td><td>Array of included report card IDs</td></tr>
+    <tr><td>filter_description</td><td>text NULLABLE</td><td>Human-readable summary of filters applied</td></tr>
+  </tbody>
+</table></div>
+
+<h3>audit_log</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>occurred_at</td><td>timestamptz NOT NULL</td><td></td></tr>
+    <tr><td>actor_id</td><td>uuid FK → users.id NOT NULL</td><td>Admin who performed the action</td></tr>
+    <tr><td>spoofed_as_id</td><td>uuid FK → users.id NULLABLE</td><td>If action was taken while spoofing</td></tr>
+    <tr><td>action</td><td>text NOT NULL</td><td>Short action code, e.g., <code>user.archive</code>, <code>term.lock</code>, <code>spoof.start</code></td></tr>
+    <tr><td>description</td><td>text NOT NULL</td><td>Human-readable description</td></tr>
+    <tr><td>metadata</td><td>jsonb NULLABLE</td><td>Structured data relevant to the action</td></tr>
+  </tbody>
+</table></div>
+
+<h3>user_role_history</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>user_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>changed_by</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>old_roles</td><td>text[]</td><td></td></tr>
+    <tr><td>new_roles</td><td>text[]</td><td></td></tr>
+    <tr><td>changed_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>Key relationships</h3>
+<pre>users ──&lt; classes (as teacher)
+users ──&lt; enrollments &gt;── classes
+users ──&lt; advisories &gt;── users (advisor → student)
+terms ──&lt; classes ──&lt; enrollments
+terms ──&lt; report_cards
+classes ──&lt; report_cards ──&lt; report_card_skill_comments
+classes ──&lt; student_reflections
+report_cards &gt;── student_reflections (1:1 per period)
+comment_banks ──&lt; comment_bank_entries
+comment_banks ──&lt; bank_assignments
+reflection_prompts ──&lt; prompt_assignments</pre>
+
 </main>
 </body>
 </html>
