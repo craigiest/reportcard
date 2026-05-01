@@ -618,6 +618,149 @@ comment_banks ──&lt; comment_bank_entries
 comment_banks ──&lt; bank_assignments
 reflection_prompts ──&lt; prompt_assignments</pre>
 
+<!-- ─────────────────────────────────────────────────────── 5 -->
+<h2 id="s5">5. Teacher Interface</h2>
+
+<h3>Layout</h3>
+<p>Three regions:</p>
+<ul>
+  <li><strong>Left sidebar</strong> (~290px fixed width): grading period selector, mode tabs, class roster with students</li>
+  <li><strong>Main content area</strong> (flex-grow): student editing area or empty state</li>
+  <li><strong>Right comment panel</strong> (~455px fixed width, conditionally visible): skill comment selection UI</li>
+</ul>
+
+<h3 id="s5-sidebar">Left sidebar</h3>
+
+<p><strong>Header area:</strong></p>
+<ul>
+  <li>Teacher's display name</li>
+  <li>Grading period dropdown — lists all active reporting periods for terms assigned to this teacher (e.g., "25-26 S1 Midterm", "25-26 S1 Final", "25-26 S2 Final"), ordered by term sort order and period type (Midterm before Final within a term)</li>
+  <li>Prev/Next arrows (▲/▼) — step to the previous or next student in the entire visible roster, wrapping across class boundaries; arrows are disabled when the roster is empty</li>
+</ul>
+
+<p><strong>Mode tabs</strong> (shown only when the user has both teacher and advisor roles):</p>
+<ul>
+  <li>"My Classes" — default; shows the teacher's own class roster</li>
+  <li>"My Advisory" — switches to the advisor view (see Section 7)</li>
+</ul>
+
+<p><strong>Class roster (My Classes mode):</strong></p>
+<ul>
+  <li>One collapsible section per class assigned to the teacher for the selected period</li>
+  <li>Clicking the class header toggles expand/collapse for that class only; it does not navigate to a student</li>
+  <li>Each student row shows the student's name, a round status dot (report card status), and a square dot (reflection submitted)</li>
+  <li>Clicking a student row makes that student active in the main content area</li>
+</ul>
+
+<p><strong>Status legend</strong> (bottom of sidebar):</p>
+<ul>
+  <li>Round dot colors: gray = not started, orange = in progress, blue = complete (all requirements met but not finalized), green = finalized</li>
+  <li>Square dot: filled = reflection submitted, empty = not submitted</li>
+</ul>
+
+<p><strong>Grading period change behavior:</strong> When the teacher changes the grading period, the system tries to keep the same student active:</p>
+<ol>
+  <li>Look for the previously active student in the same class (by class name) in the new period — if found, activate them there.</li>
+  <li>If not found in the same class, search all classes in the new period for the student by name — if found, activate them.</li>
+  <li>If not found, show the empty state.</li>
+</ol>
+
+<h3 id="s5-main">Main content area</h3>
+
+<p><strong>Empty state:</strong> Shown when no student is selected — a centered message "← Select a student to begin".</p>
+
+<p><strong>Student editing area</strong> — shown when a student is active, contains these cards in order:</p>
+
+<h4>Student info card</h4>
+<p>Read-only display: student name, course name, teacher name, grading period. If the report card has been advisor-reviewed, shows a "Reviewed" badge. If the student has submitted a reflection, it is shown below the metadata in a read-only box labeled "Student Reflection". If no reflection has been submitted, this box is omitted.</p>
+
+<h4>Skills section</h4>
+<p>One block per Transferable Skill in the comment bank (in bank order). Each block contains:</p>
+<ul>
+  <li>The Transferable Skill name (heading)</li>
+  <li>A "Skill Selection" button — clicking opens the right comment panel for this skill</li>
+  <li>The selected comments for this skill displayed as a bulleted list</li>
+</ul>
+
+<h4>Narrative card</h4>
+<ul>
+  <li>A textarea labeled "Overall Comment" (or equivalent)</li>
+  <li>Minimum height ~110px; vertically resizable; auto-expands to fit content</li>
+  <li>A save hint below the textarea: shows "Changes saved automatically" in gray normally, turns green briefly after a successful sync, and shows a warning if sync fails</li>
+</ul>
+
+<h4>Finalize row</h4>
+<ul>
+  <li>Checkbox: "Mark as finalized"</li>
+  <li>The checkbox is <strong>disabled</strong> until all applicable validation rules are met</li>
+  <li>When disabled, an inline hint lists the specific unmet requirements, e.g.: "Need comments in 2 more skill areas · Narrative needs 20 more characters"</li>
+  <li>When enabled and the teacher checks it, a confirmation modal appears: warn that finalizing will lock the card and open it to the advisor; require a second click to confirm</li>
+  <li>Once finalized, the checkbox shows as checked and disabled; to unfinalize, admin must use the Report Cards admin panel</li>
+</ul>
+
+<h4>Advisor review row</h4>
+<p>Shown <strong>only</strong> when the report card is finalized. Displays either "✓ Reviewed by [Advisor Name]" (green) or "Pending advisor review" (gray). Read-only for the teacher.</p>
+
+<h4>Preview button</h4>
+<p>At the bottom of the editing area: "Preview Report Card" button. Opens the preview modal (see below).</p>
+
+<h3 id="s5-panel">Right comment panel</h3>
+
+<p>Opens when the teacher clicks "Skill Selection" for any Transferable Skill. Only one panel is open at a time; opening another closes the current one.</p>
+
+<p><strong>Panel header:</strong> Transferable Skill name + a close button (✕).</p>
+
+<p><strong>Standard comments section:</strong> Comments are grouped by Skill Area (a subheading), then by Subskill (each subskill is a row). Each Subskill row contains a <strong>Subskill label</strong> (clickable text), an <strong>S button</strong> (Strength), and a <strong>G button</strong> (Growth).</p>
+
+<p><strong>Selection behavior — this is non-obvious and must be implemented exactly:</strong></p>
+<ul>
+  <li>Exactly zero or one comment can be selected per subskill (never both S and G simultaneously).</li>
+  <li>Clicking the <strong>S button</strong> directly: if Strength is already selected, deselects it; otherwise selects Strength (and deselects Growth if it was selected).</li>
+  <li>Clicking the <strong>G button</strong> directly: same logic for Growth.</li>
+  <li>Clicking the <strong>Subskill label text</strong> cycles through states in order: <strong>none → Strength → Growth → none</strong>, repeating.</li>
+  <li>The selected S or G button appears highlighted/filled; the unselected button appears as an outline.</li>
+</ul>
+
+<p><strong>Hover behavior on S and G buttons:</strong> Hovering shows the full comment text as a tooltip. Use a <code>title</code> attribute or a custom tooltip — the text must be the full comment string with no truncation.</p>
+
+<p><strong>Custom comments section</strong> (below a divider) — three sub-areas:</p>
+<ol>
+  <li><strong>One-time comment input:</strong> A text input with an "Add" button. Text entered here is saved as a one-time comment for the current student only — it is NOT added to the teacher's reusable comment bank. The <code>is_one_time</code> flag on <code>report_card_skill_comments</code> distinguishes these.</li>
+  <li><strong>Edit comment bank link:</strong> A small link "Edit comment bank…" that opens the Custom Comment Bank modal.</li>
+  <li><strong>Saved custom comments checklist:</strong> The teacher's personal reusable comments for this skill area, displayed as checkboxes. Checking a box adds that comment to the current student's report card; unchecking removes it.</li>
+</ol>
+
+<p><strong>Panel footer:</strong> A "Done" button closes the panel.</p>
+
+<h3 id="s5-custom">Custom Comment Bank modal</h3>
+
+<p>Opened via "Edit comment bank…" in the comment panel. Displays the teacher's saved custom comments for the current skill.</p>
+<ul>
+  <li>A draggable list of existing custom comments, each with a delete button</li>
+  <li>An "Add" input field + button to add a new comment to the reusable bank</li>
+  <li><strong>Import/Export:</strong> "Export CSV" downloads the teacher's full custom comment bank as a two-column CSV (<code>skill_area, comment</code>). "Import CSV" shows a preview with the count of comments found and options to "Append to existing" or "Replace existing".</li>
+  <li>No Save button — changes (add, delete, reorder) save immediately</li>
+</ul>
+
+<h3 id="s5-preview">Preview modal</h3>
+
+<p>A full-size read-only preview of the report card for the active student. Contains:</p>
+<ul>
+  <li>Header: student name, course, teacher, term, and reporting period</li>
+  <li>Student Reflection section (if submitted)</li>
+  <li>Transferable Skills section — shows only skills with at least one comment selected; each skill is a heading followed by the selected comments as bullet points</li>
+  <li>Overall Comment section — the narrative text in a bordered box</li>
+  <li>"Print / Save PDF" button — generates a PDF using the school branding settings and downloads it locally</li>
+</ul>
+<p>The preview modal does not require the report card to be finalized. Teachers can preview at any time.</p>
+
+<h3 id="s5-sync">Sync behavior</h3>
+<ul>
+  <li>On every blur of an input (textarea, custom comment field), queue a sync to the server.</li>
+  <li>Also sync on a periodic timer (~5 seconds) if there are unsynced changes.</li>
+  <li>The save hint shows: default gray "Changes saved automatically"; briefly turns green with a checkmark after a successful sync; shows an amber warning if the last sync failed, with a retry indicator.</li>
+</ul>
+
 </main>
 </body>
 </html>
