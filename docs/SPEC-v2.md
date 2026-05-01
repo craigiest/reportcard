@@ -1084,14 +1084,14 @@ Entered by pressing → from Layer 1. The cursor moves to the first transferable
 
 | Key | Action |
 |-----|--------|
-| ↓ | Move to the next skill item |
-| ↑ | Move to the previous skill item |
-| → | Open the comment panel for the highlighted skill → enter Layer 3 |
-| ↓ (past last skill) | Move to the narrative textarea and focus it for text entry |
+| ↓ or Tab | Move to the next skill item |
+| ↑ or Shift+Tab | Move to the previous skill item |
+| → or Enter | Open the comment panel for the highlighted skill → enter Layer 3 |
+| ↓ / Tab (past last skill) | Move to the narrative textarea and focus it for text entry |
 | ← | Return to Layer 1; restore cursor to the active student row |
 
 - Each skill item shows a blue left-border highlight when keyboard-focused.
-- **Narrative textarea entry:** When the narrative card gains focus via ↓ from the last skill, the textarea is immediately focused for typing. Arrow keys move the text cursor; Enter inserts a line break. Pressing **Tab** or **Esc** blurs the textarea and returns keyboard focus to the last skill item in Layer 2.
+- **Narrative textarea entry:** The narrative textarea can be entered via ↓ / Tab from the last skill, or by clicking it with the mouse, or by tabbing to it with native browser Tab. In all cases, once the textarea has focus, **arrow keys move only the text cursor** — they do not navigate the skill list. Enter inserts a line break. Pressing **Shift+Tab** or **Esc** blurs the textarea and returns keyboard focus to the last skill item in Layer 2. Pressing **Tab** (forward) blurs the textarea and moves focus to the "Mark as finalized" checkbox (if the checkbox is currently enabled); if the checkbox is disabled, focus returns to the last skill item instead.
 
 #### Layer 3 — Comment panel (skill detail)
 
@@ -1141,8 +1141,8 @@ A compact key-hint strip is displayed just above the status-dot legend in the le
 | Context | Hint shown |
 |---------|-----------|
 | Layer 1 | `↑` `↓` students &nbsp; `→` select |
-| Layer 2 (skill focused) | `↑` `↓` skills &nbsp; `→` open &nbsp; `←` back |
-| Layer 2 (narrative focused) | `↑` `↓` skills &nbsp; `←` back &nbsp; `Tab` exit narrative |
+| Layer 2 (skill focused) | `↑` `↓` `Tab` skills &nbsp; `→` `↵` open &nbsp; `←` back |
+| Layer 2 (narrative focused) | `Tab` next &nbsp; `⇧Tab` back &nbsp; `Esc` exit narrative |
 | Layer 3 (panel item focused) | `↑` `↓` move &nbsp; `→` `↵` toggle &nbsp; `←` back &nbsp; A–Z jump |
 | Layer 3 (custom input focused) | `↵` add &nbsp; `↑` `↓` exit field &nbsp; `Esc` back |
 
@@ -1155,6 +1155,8 @@ A compact key-hint strip is displayed just above the status-dot legend in the le
 - Mouse clicks anywhere in the right panel (other than a skill button) clear Layer 2 highlights and reset to Layer 1 state while keeping the student active.
 - Closing the comment panel by clicking the ✕ button or clicking outside it returns keyboard state to Layer 2.
 - Any action that changes the roster (term change, mode switch, reset) clears all keyboard highlights and returns to Layer 1.
+- **Clicking or tabbing into the narrative textarea** correctly suspends skill-list navigation — arrow keys move the text cursor only, regardless of how the field gained focus.
+- **"Mark as finalized" checkbox:** When this checkbox has keyboard focus (e.g., reached via Tab from the narrative), pressing **Enter** toggles it, equivalent to Space or a mouse click.
 
 ---
 
