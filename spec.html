@@ -203,6 +203,67 @@
 
 <p><strong>Universal roles.</strong> Roles are not distinct user types — they are attributes of a user record. A person can be a teacher, advisor, and admin simultaneously. Role changes take effect on the user's next page load.</p>
 
+<!-- ─────────────────────────────────────────────────────── 2 -->
+<h2 id="s2">2. Authentication &amp; User Roles</h2>
+
+<h3>Authentication</h3>
+
+<p>All users authenticate via Google OAuth 2.0 using their school-issued Google account. There is no separate username/password system. On first login, a user record is created automatically from the OAuth profile (email address and display name). The email address is the identity anchor and cannot be changed after account creation.</p>
+
+<p>Session management, token storage, and refresh strategy are implementation decisions for the backend engineer. The frontend assumes a session cookie or bearer token is available after login and handles 401 responses by redirecting to the login page.</p>
+
+<h3>Spoofing</h3>
+
+<p>Admin users can assume the identity of any other user. During a spoof session:</p>
+<ul>
+  <li>A persistent banner is displayed at the top of every page indicating the admin is spoofing, with an "Exit" button to return to the admin view.</li>
+  <li>The spoofed user's full interface is shown with their data and permissions.</li>
+  <li>The spoof session is recorded in the Audit Log (see Section 11).</li>
+  <li>Spoof is intended for tasks like resetting a submitted reflection, adding a comment on behalf of a student, or debugging a user's view.</li>
+</ul>
+
+<h3>User roles</h3>
+
+<p>Roles are stored as a set on the user record. A user can hold multiple roles simultaneously.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Role</th><th>Can do</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Teacher</strong></td><td>Access classes they are assigned to teach; draft and finalize report cards for those students</td></tr>
+    <tr><td><strong>Advisor</strong></td><td>Access report cards for their assigned advisees across all classes; edit and mark as reviewed after teacher finalizes</td></tr>
+    <tr><td><strong>Student</strong></td><td>Submit reflections for enrolled classes</td></tr>
+    <tr><td><strong>Admin</strong></td><td>Full system access: user management, configuration, analytics, data management, spoofing</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Role assignment rules:</strong></p>
+<ul>
+  <li>A teacher with no advisory assignment sees only "My Classes" mode; the "My Advisory" tab is hidden.</li>
+  <li>An advisor with no teaching assignment sees only "My Advisory" mode; the class roster is empty.</li>
+  <li>A person with both roles sees both modes and switches between them via tabs in the left sidebar.</li>
+</ul>
+
+<h3>Permissions summary</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Action</th><th>Teacher</th><th>Advisor</th><th>Student</th><th>Admin</th></tr></thead>
+  <tbody>
+    <tr><td>View own class roster</td><td>✓</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td>Edit report card (unfinalized)</td><td>✓</td><td>—</td><td>—</td><td>via spoof</td></tr>
+    <tr><td>Finalize report card</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Edit report card (finalized)</td><td>—</td><td>✓</td><td>—</td><td>via spoof</td></tr>
+    <tr><td>Mark report card as reviewed</td><td>—</td><td>✓</td><td>—</td><td>—</td></tr>
+    <tr><td>Unfinalize report card</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td>Submit reflection</td><td>—</td><td>—</td><td>✓</td><td>via spoof</td></tr>
+    <tr><td>View submitted reflection</td><td>✓ (own class)</td><td>✓ (advisees)</td><td>✓ (own)</td><td>✓</td></tr>
+    <tr><td>Export PDFs (individual)</td><td>✓ (own/advisees)</td><td>✓ (advisees)</td><td>—</td><td>✓</td></tr>
+    <tr><td>Bulk export PDFs</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td>All admin functions</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+  </tbody>
+</table>
+</div>
+
 </main>
 </body>
 </html>
