@@ -996,6 +996,70 @@ reflection_prompts ──&lt; prompt_assignments</pre>
 
 <p class="note">Note: Individual teachers' custom comments are not managed here. Teachers manage their own via the comment panel.</p>
 
+<!-- ─────────────────────────────────────────────────────── 10 -->
+<h2 id="s10">10. Admin — Prompts, Assignments &amp; Report Cards</h2>
+
+<h3>Student Reflection Prompts section</h3>
+<p>Prompts are authored here. Assignments to specific departments and courses are managed in the Assignments section.</p>
+
+<p><strong>Prompt list:</strong> Displayed as cards, filterable by term and scope. Each card shows: prompt name and scope tag, terms the prompt is active in, a preview of the prompt text (truncated), min and max character requirements, and Edit / Delete action buttons.</p>
+
+<p><strong>Create / Edit Prompt modal:</strong></p>
+<ul>
+  <li><strong>Prompt Name</strong> (internal label for admin reference)</li>
+  <li><strong>Default For</strong> (radio buttons): "All classes (Universal)" or "A specific department"</li>
+  <li><strong>Terms</strong> (checkboxes for available terms)</li>
+  <li><strong>Prompt Text</strong> (textarea — shown to students)</li>
+  <li><strong>Min Characters</strong> and <strong>Max Characters</strong> (0 = not enforced)</li>
+</ul>
+
+<p><strong>Delete Prompt:</strong> If the prompt is currently the active assignment for any class, department, or universal scope, those assignments revert to the next broader default automatically.</p>
+
+<h3>Assignments section</h3>
+<p>A unified view for managing which comment bank and which reflection prompt applies to each department and course. All assignments are per-term; changing one term does not affect another.</p>
+
+<p><strong>Term selector</strong> (top): changing the term reloads the assignment table. When a new term is created, it inherits all assignments from the most recent preceding term automatically.</p>
+
+<p><strong>Assignment table:</strong> Three columns — Scope, Comment Bank, Student Prompt — plus an action column. Rows are organized in a three-level hierarchy:</p>
+
+<p><strong>School Default row</strong> (always first): dropdowns select the school-wide default bank and prompt. An "Apply to all depts &amp; courses" button resets all department and course overrides for this term.</p>
+
+<p><strong>Department rows</strong>: each shows its current bank and prompt in one of two states:</p>
+<ul>
+  <li><strong>Inherited:</strong> selector is grayed out with the inherited value and a badge identifying the source; an "Override" link activates the selector.</li>
+  <li><strong>Overridden:</strong> selector is active with the chosen value; a "× Reset" link reverts to inherited.</li>
+</ul>
+<p>An "Apply to all courses" button within each department row clears course-level overrides for that department. Clicking a department row header toggles its course rows visible/hidden.</p>
+
+<p><strong>Course rows</strong> (indented under each department): same inherited/overridden pattern, inheriting from the department.</p>
+
+<p>Individual cell changes save immediately. The effective value resolution for any course is: course override → department override → school default.</p>
+
+<h3>Report Cards section</h3>
+<p>Two sub-tabs: <strong>Status &amp; Export</strong> and <strong>PDF Settings</strong>.</p>
+
+<h4>Status &amp; Export sub-tab</h4>
+<p><strong>Filters:</strong> Term, Reporting Period (All / Midterm / Final), Teacher, Status (All / Draft / Finalized / Reviewed), Export Status (Any / Not Exported / Exported / Newly Reviewed).</p>
+<p><strong>Stat strip</strong> below filters: counts for current filter set — Total, Draft, Finalized, Reviewed, Exported.</p>
+<p><strong>Table columns:</strong> Student, Class, Teacher, Period, Status (color-coded pill badge), Advisor Reviewed (checkmark), Exported (checkmark), Actions.</p>
+<p><strong>Actions per row:</strong></p>
+<ul>
+  <li><strong>Unfinalize</strong> (only on finalized cards): reverts to Draft status; teacher regains edit access; advisor edits are preserved and the teacher will see the standard conflict notification.</li>
+  <li><strong>Note</strong>: Opens a modal for the admin to write or edit an internal admin note not visible to teachers/advisors/students.</li>
+</ul>
+
+<p><strong>Bulk Export button</strong> (top-right): opens a modal with: Term + Reporting Period selector, include filter (Reviewed only / Newly reviewed since last export / All finalized), optional Teacher and Class filters, a live count preview, and an "Export N PDFs" button that generates a ZIP download. After export, all included cards are marked with <code>last_exported_at</code>.</p>
+
+<h4>PDF Settings sub-tab</h4>
+<p>Controls branding applied to all generated PDFs.</p>
+<ul>
+  <li><strong>Branding &amp; Logo:</strong> Upload school logo (PNG or SVG; recommended 200×60px; max 1MB), School Name, District / Subtitle (optional)</li>
+  <li><strong>Footer:</strong> Footer text (appears at the bottom of every page)</li>
+  <li><strong>Boilerplate Text:</strong> Introductory paragraph (shown at the top of each report card body, before skills) and Competency / grading scale note</li>
+  <li><strong>Preview:</strong> Thumbnail preview of the header/footer layout; "Open Preview" button opens a full-size layout preview</li>
+</ul>
+<p>A single "Save PDF Settings" button persists all fields.</p>
+
 </main>
 </body>
 </html>
