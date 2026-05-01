@@ -4,33 +4,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Report Card Generator — Mockups</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      margin: 0;
+      padding: 2.5rem 2rem;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 1.5rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    li.group {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-top: 1.25rem;
+    }
+    li.group:first-child {
+      margin-top: 0;
+    }
+    li a {
+      display: inline-block;
+      font-size: 0.875rem;
+      color: #1e293b;
+      text-decoration: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+    }
+    li a:hover {
+      background: #e2e8f0;
+      color: #1d4ed8;
+    }
+  </style>
 </head>
 <body>
   <h1>Report Card Generator — Mockups</h1>
   <ul>
-    <li>System mockup</li>
-    <ul>
-      <li><a href="mockup-4-teacher.html">Mockup 4 — Teacher/Advisor Interface</a></li>
-      <li><a href="mockup-4-student.html">Mockup 4 — Student Reflection Interface</a></li>
-      <li><a href="mockup-4-admin.html">Mockup 4 — Admin Interface</a></li>
-    </ul>
-    <li>Functional testing prototype</li>
-    <ul>
-      <li><a href="mockup-3.html">Mockup 3: Standalone  version: allows teacher roster import for real-world testing</a></li>
-    </ul>
-    <li>Comment banks</li>
-    <ul>
-          <li><a href="comment-bank-r1.html">Comment Bank — Default</a></li>
-          <li><a href="comment-bank-project-skills.html">Comment Bank — Project arc skills</a></li>
-    </ul>
+    <li class="group">System mockup</li>
+    <li><a href="mockup-4-teacher.html">Mockup 4 — Teacher/Advisor Interface</a></li>
+    <li><a href="mockup-4-student.html">Mockup 4 — Student Reflection Interface</a></li>
+    <li><a href="mockup-4-admin.html">Mockup 4 — Admin Interface</a></li>
 
-      <li>Initial variations for feedback</li>
-    
-    <ul>
-      <li><a href="mockup-1.html">Mockup 1: existing comment bank with complete sentences</a></li>
-      <li><a href="mockup-2.html">Mockup 2: transferable skills based strengths and growth areas</a></li>
-    </ul>
-    
+    <li class="group">Functional testing prototype</li>
+    <li><a href="mockup-3.html">Mockup 3 — Standalone version with teacher roster import</a></li>
+
+    <li class="group">Comment banks</li>
+    <li><a href="comment-bank-r1.html">Comment Bank — Default</a></li>
+    <li><a href="comment-bank-project-skills.html">Comment Bank — Project arc skills</a></li>
+
+    <li class="group">Initial variations for feedback</li>
+    <li><a href="mockup-1.html">Mockup 1 — Existing comment bank with complete sentences</a></li>
+    <li><a href="mockup-2.html">Mockup 2 — Transferable skills based strengths and growth areas</a></li>
+
+    <li class="group">Reference</li>
+    <li><a href="spec.html">Technical Specification v2</a></li>
   </ul>
 </body>
 </html>
