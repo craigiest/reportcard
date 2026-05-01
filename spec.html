@@ -175,6 +175,34 @@
   <span><strong>Reference:</strong> mockup-4-teacher.html, mockup-4-student.html, mockup-4-admin.html</span>
 </div>
 
+<!-- ─────────────────────────────────────────────────────── 1 -->
+<h2 id="s1">1. System Overview &amp; Principles</h2>
+
+<p>The Report Card System is a school-wide web application for drafting, reviewing, and distributing student report cards. It coordinates four user types — teachers, advisors, students, and admins — through a structured workflow that ends in bulk PDF export.</p>
+
+<h3>Core workflow</h3>
+<ol>
+  <li>Admin configures terms, rosters, comment banks, and validation rules before a reporting period opens.</li>
+  <li>Students submit self-reflections for each enrolled class.</li>
+  <li>Teachers select skill comments from a standard bank, add custom comments, write a narrative, and finalize each report card.</li>
+  <li>Advisors review finalized report cards for their assigned advisees, make edits if needed, and mark each as reviewed.</li>
+  <li>Admin bulk-exports reviewed report cards as PDFs for distribution.</li>
+</ol>
+
+<h3>Key design principles</h3>
+
+<p><strong>Local-first.</strong> All user-facing writes (comment selections, narrative edits, reflection text) are persisted locally and reflected in the UI immediately. Background sync to the server happens on blur or on a periodic timer (every few seconds). If the connection is lost, changes queue locally and sync when the connection is restored. The UI shows a "saved" indicator that reflects sync status.</p>
+
+<p><strong>Configurable validation.</strong> Minimum/maximum requirements (character counts, comment counts, required skills) are defined globally by admin — one configuration for Midterm reporting periods and one for Final reporting periods. These apply automatically to every term of that type. Admin does not need to reconfigure rules per term.</p>
+
+<p><strong>Finalization as access control.</strong> A teacher finalizing a report card is the mechanism that transfers edit access to the advisor. An unfinalized card is editable only by the teacher; a finalized card is editable only by the advisor. Neither can edit simultaneously.</p>
+
+<p><strong>Immutable reflections.</strong> Once a student submits a reflection, it becomes read-only. Only admin (via spoofing) can reset a submitted reflection.</p>
+
+<p><strong>Text snapshots on finalization.</strong> At finalization, all selected comment text is copied into the report card record. The stored report card does not reference the comment bank by foreign key — it stores the comment text directly. This ensures report cards remain stable even if the comment bank is later replaced or edited.</p>
+
+<p><strong>Universal roles.</strong> Roles are not distinct user types — they are attributes of a user record. A person can be a teacher, advisor, and admin simultaneously. Role changes take effect on the user's next page load.</p>
+
 </main>
 </body>
 </html>
