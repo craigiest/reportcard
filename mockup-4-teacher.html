@@ -2915,6 +2915,7 @@ function generateStudentPDF(ci, si) {
         ...sel.map(({label, subcat, type}) => getSentence(label, subcat, type)),
         ...custom
       ];
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
       const commentLines = sentences.map(s => doc.splitTextToSize('\u2022 ' + s, TW - 4));
       let blockH = 5.5;
       commentLines.forEach(lines => { blockH += lines.length * 4.8 + 1; });
