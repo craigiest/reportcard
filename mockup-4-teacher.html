@@ -2549,19 +2549,32 @@ function exportCustomCSV() {
   URL.revokeObjectURL(a.href);
 }
 
+function readFileAsText(file, callback) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const bytes = new Uint8Array(e.target.result);
+    let text;
+    try {
+      text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (_) {
+      text = new TextDecoder('windows-1252').decode(bytes);
+    }
+    callback(text);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 function handleCSVImport(input) {
   const file = input.files[0];
   if (!file) return;
   input.value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = parseCSV(e.target.result);
+  readFileAsText(file, text => {
+    const rows = parseCSV(text);
     if (!rows.length) { alert('No valid rows found in the CSV.'); return; }
     pendingImportRows = rows;
     document.getElementById('importConfirmCount').textContent = rows.length;
     document.getElementById('importConfirm').style.display = 'block';
-  };
-  reader.readAsText(file);
+  });
 }
 
 function applyImport(mode) {

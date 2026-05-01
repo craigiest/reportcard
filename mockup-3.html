@@ -2276,19 +2276,32 @@ function exportCustomCSV() {
   URL.revokeObjectURL(a.href);
 }
 
+function readFileAsText(file, callback) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const bytes = new Uint8Array(e.target.result);
+    let text;
+    try {
+      text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (_) {
+      text = new TextDecoder('windows-1252').decode(bytes);
+    }
+    callback(text);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 function handleCSVImport(input) {
   const file = input.files[0];
   if (!file) return;
   input.value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = parseCSV(e.target.result);
+  readFileAsText(file, text => {
+    const rows = parseCSV(text);
     if (!rows.length) { alert('No valid rows found in the CSV.'); return; }
     pendingImportRows = rows;
     document.getElementById('importConfirmCount').textContent = rows.length;
     document.getElementById('importConfirm').style.display = 'block';
-  };
-  reader.readAsText(file);
+  });
 }
 
 function applyImport(mode) {
@@ -2379,9 +2392,8 @@ function handleCommentBankImport(input) {
   const file = input.files[0];
   if (!file) return;
   input.value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    const { skillsData, sentences } = parseCommentBankCSV(e.target.result);
+  readFileAsText(file, text => {
+    const { skillsData, sentences } = parseCommentBankCSV(text);
     const skillCount = Object.keys(skillsData).length;
     let subskillCount = 0;
     Object.values(skillsData).forEach(areas => Object.values(areas).forEach(labels => subskillCount += labels.length));
@@ -2390,8 +2402,7 @@ function handleCommentBankImport(input) {
     document.getElementById('commentBankImportDetails').textContent =
       `${skillCount} transferable skill${skillCount !== 1 ? 's' : ''}, ${subskillCount} subskill${subskillCount !== 1 ? 's' : ''}`;
     document.getElementById('commentBankImportConfirm').style.display = '';
-  };
-  reader.readAsText(file);
+  });
 }
 
 function applyCommentBankImport() {
@@ -2572,9 +2583,8 @@ function handleRosterUpload(input) {
   const file = input.files[0];
   if (!file) return;
   input.value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = parseRosterCSV(e.target.result);
+  readFileAsText(file, text => {
+    const rows = parseRosterCSV(text);
     if (!rows.length) { alert('No valid rows found. The CSV must have Teacher, Course, Student columns.'); return; }
     const teacher = rows[0].teacher;
     const classMap = new Map();
@@ -2611,8 +2621,7 @@ function handleRosterUpload(input) {
     document.getElementById('rosterImportModeLabel').style.display = modeVisible;
     document.getElementById('rosterImportModeSection').style.display = modeVisible;
     document.getElementById('rosterUploadPreview').style.display = '';
-  };
-  reader.readAsText(file);
+  });
 }
 
 function applyRoster() {
