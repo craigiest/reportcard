@@ -264,6 +264,65 @@
 </table>
 </div>
 
+<!-- ─────────────────────────────────────────────────────── 3 -->
+<h2 id="s3">3. Data Organization</h2>
+
+<h3>Hierarchy</h3>
+<pre>School Year  (e.g., "2025-2026")
+└── Term  (e.g., "S1", "S2", "I1" — flexible naming and ordering)
+    ├── Reporting Period: Midterm  (optional)
+    └── Reporting Period: Final  (optional)</pre>
+
+<p>A <strong>Term</strong> has one roster of students and classes. Within that term, admin configures which reporting periods are active (Midterm, Final, or both). Both reporting periods within a term share the same roster — there is no separate enrollment per period.</p>
+
+<p>In the grading period dropdown (seen by teachers and advisors), each active period appears as a distinct selectable entry, e.g., "25-26 S1 Midterm" and "25-26 S1 Final". A report card record is created per student per class per reporting period — so a student in a term with both Midterm and Final has two separate report card records per class.</p>
+
+<h3>Terms</h3>
+
+<p>Admin creates and manages terms. Each term has:</p>
+<ul>
+  <li>A school year label (text, e.g., "2025-2026")</li>
+  <li>A term name (text, e.g., "S1")</li>
+  <li>An order integer (sequence position within the school year)</li>
+  <li>Start and end dates</li>
+  <li>Which reporting periods are enabled (Midterm, Final, or both)</li>
+  <li>An optional student reflection freeze date — after this date, students cannot edit or submit reflections for this term</li>
+  <li>A locked flag — when locked, the term is read-only for all teachers and advisors (admin can still view and export)</li>
+</ul>
+
+<p>Locking is a one-way operation from the admin interface — there is no unlock button in the UI. Locking is intended for use once report cards have been distributed.</p>
+
+<h3>Comment bank assignment</h3>
+
+<p>By default, the entire school uses a single school-wide standard comment bank. Admin can override this at the department level or individual course level. The hierarchy is:</p>
+<pre>School default
+└── Department override (if set)
+    └── Course override (if set)</pre>
+
+<p>Each course resolves to exactly one comment bank — the most specific override in the chain. See Section 9 for bank management and Section 10 for assignment.</p>
+
+<h3>Validation rules</h3>
+
+<p>Admin maintains two global validation rule sets — one for Midterm reporting periods and one for Final reporting periods. Each rule set specifies minimum/maximum requirements for student reflections, skill comments, and narratives. Rules with a value of 0 are disabled and not enforced. These rule sets apply automatically to every term of the matching type — no per-term configuration is needed.</p>
+
+<h3>Comment bank CSV format</h3>
+
+<p>The standard comment bank is imported as a five-column CSV:</p>
+<pre>Transferable Skill, Skill Area, Subskill, Strength, Growth</pre>
+
+<p>Each row defines one subskill and its two comment options. Example:</p>
+<pre><code>Transferable Skill,Skill Area,Subskill,Strength,Growth
+Ownership of Learning,Motivation,Curiosity-fueled motivation,"You're motivated by curiosity, asking ""why?"" and digging for understanding.","Work on asking ""why"" more consistently—push yourself to dig into the reasoning, not just the steps."</code></pre>
+
+<p>The four-level hierarchy (Transferable Skill → Skill Area → Subskill → Strength/Growth) is derived entirely from the CSV rows. There is no separate entity for each level — the hierarchy is implicit in the data.</p>
+
+<h3>Custom comment CSV format</h3>
+
+<p>Teachers can export and import their personal custom comment banks as a two-column CSV:</p>
+<pre>skill_area, comment</pre>
+
+<p><code>skill_area</code> corresponds to a Skill Area name from the standard bank. The custom comment appears in the comment panel for that skill area alongside standard comments.</p>
+
 </main>
 </body>
 </html>
