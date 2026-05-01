@@ -2284,7 +2284,7 @@ function readFileAsText(file, callback) {
     try {
       text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
     } catch (_) {
-      text = new TextDecoder('windows-1252').decode(bytes);
+      text = new TextDecoder('macintosh').decode(bytes);
     }
     callback(text);
   };
