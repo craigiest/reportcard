@@ -1060,6 +1060,69 @@ reflection_prompts ──&lt; prompt_assignments</pre>
 </ul>
 <p>A single "Save PDF Settings" button persists all fields.</p>
 
+<!-- ─────────────────────────────────────────────────────── 11 -->
+<h2 id="s11">11. Admin — Analytics &amp; Data Management</h2>
+
+<h3>Analytics section</h3>
+<p>This is the <strong>default landing view</strong> when admin logs in.</p>
+
+<p><strong>Term + Period selector</strong> (top right): selects the term and reporting period governing all data on this page.</p>
+
+<p><strong>KPI cards</strong> (three across the top):</p>
+<ol>
+  <li><strong>Report Cards Completed:</strong> count and percentage that are finalized or reviewed out of the total</li>
+  <li><strong>Report Cards Reviewed:</strong> count and percentage marked as advisor-reviewed</li>
+  <li><strong>Student Reflections Submitted:</strong> count and percentage of enrolled students who have submitted</li>
+</ol>
+
+<p><strong>Summary cards</strong> (two side by side):</p>
+<ul>
+  <li><em>Report Card Completion by Class:</em> a one-sentence summary, a progress bar, and a "View Breakdown →" button opening the Completion Breakdown modal</li>
+  <li><em>Student Reflection Submission by Class:</em> same structure for reflections</li>
+</ul>
+
+<p><strong>Completion Breakdown modal:</strong> A sortable table — Class, Teacher, Students (enrolled count), Completed, Reviewed, % Done. Clicking a class row expands it to show individual students. Clicking a student name opens the Spoof Confirmation dialog. Modal footer has an "⬇ Export Table" button (CSV).</p>
+
+<p><strong>Reports panel</strong> (below the summary cards):</p>
+<ul>
+  <li><strong>Comment usage report (CSV):</strong> which standard comments were used, by how many teachers and in how many classes</li>
+  <li><strong>Completion status report (CSV):</strong> report card and reflection status for all students in the selected term</li>
+  <li><strong>Teacher custom comment banks:</strong> a teacher selector dropdown + "Download CSV" button</li>
+  <li><strong>Custom Report button:</strong> opens a modal with term selector and column checkboxes (Student name, Class, Teacher, Report card status, Reflection status, Advisor reviewed, Finalized date, Reviewed date, Last exported, Comment count, Narrative character count, Reflection character count) + "Generate CSV" button</li>
+</ul>
+
+<h3>Data Management section</h3>
+
+<h4>Export Data by Year</h4>
+<ul>
+  <li>School year dropdown</li>
+  <li>Records in scope preview: counts for the selected year (terms, classes, report cards, student reflections, export records)</li>
+  <li>Format selector: CSV files (one per data type) or ZIP archive of all</li>
+  <li>"⬇ Export Year Data" button — opens a confirmation modal summarizing the record counts; data remains in the live system after download</li>
+</ul>
+
+<p><em>Delete Year Records</em> (danger zone):</p>
+<ul>
+  <li>Permanently removes all records for the selected year</li>
+  <li>Admin must type "DELETE" in a confirmation input to enable the delete button</li>
+  <li>Cannot be undone; intended for data hygiene once records are no longer needed in the live system</li>
+</ul>
+
+<h4>Restore from Backup</h4>
+<ul>
+  <li>Uploads a previously exported archive (ZIP or CSV) to restore data for a selected school year</li>
+  <li>Admin must type "RESTORE" in a confirmation input to enable the restore button</li>
+  <li>Restoring replaces all current records for the selected year with the backup contents</li>
+</ul>
+
+<h4>Data Integrity</h4>
+<p>"Run Check" button scans for orphaned records, broken foreign-key relationships, and data inconsistencies. Results appear inline with pass / warn / fail indicators per check category.</p>
+
+<h4>Audit Log</h4>
+<p>A persistent, automatically maintained log of significant admin actions.</p>
+<p><strong>Events captured:</strong> user role changes, user archiving/reactivation, spoof sessions (start and end), term locks, bulk PDF exports, comment bank uploads/replacements, term creation, data exports, data deletions.</p>
+<p><strong>Displayed as</strong> a scrollable table: Date, Admin, Action (descriptive text). "⬇ Export Full Audit Log" button downloads the complete log as CSV.</p>
+
 </main>
 </body>
 </html>
