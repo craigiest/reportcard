@@ -933,6 +933,69 @@ reflection_prompts ──&lt; prompt_assignments</pre>
 
 <p>Each card saves independently. A success indicator confirms when saved.</p>
 
+<!-- ─────────────────────────────────────────────────────── 9 -->
+<h2 id="s9">9. Admin — Terms, Rosters &amp; Comment Banks</h2>
+
+<h3>Terms &amp; Rosters section</h3>
+<p>Three sub-tabs: <strong>Terms</strong>, <strong>Class Sections</strong>, <strong>Import</strong>.</p>
+
+<h4>Terms sub-tab</h4>
+<p>Displays all school years with their terms grouped by year. Each term row shows: term name, date range, which reporting periods are enabled (Midterm / Final badges), locked status, and action buttons. Locked terms show a "Locked" badge; their Edit button is grayed out.</p>
+
+<p><strong>Create / Edit Term modal:</strong></p>
+<ul>
+  <li>School Year (text, e.g., "2025-2026")</li>
+  <li>Term Name (text, e.g., "S1")</li>
+  <li>Order (integer — determines dropdown sort order in teacher view)</li>
+  <li>Start Date, End Date</li>
+  <li>Reporting Periods: checkboxes for Midterm and Final (both enabled by default)</li>
+  <li>Student Reflection Freeze Date (optional)</li>
+</ul>
+
+<p><strong>Lock Term:</strong> Sets <code>is_locked = true</code>. Once locked, there is no unlock button — this is intentional. Admin can still view and export from locked terms.</p>
+
+<h4>Class Sections sub-tab</h4>
+<p>Displays class sections for a selected term, filterable by department. Table columns: Course Name, Section/Period, Teacher, Department, Students (enrollment count).</p>
+<ul>
+  <li>Clicking a course name row opens a <strong>Students modal</strong>: a searchable list of enrolled students with an "+ Add Student" button and a remove button per row.</li>
+  <li>Each class row has Edit and Remove buttons.</li>
+</ul>
+
+<p><strong>Add Class modal:</strong> Term selector, Course Name, Department, Teacher (dropdown of users with teacher role).</p>
+
+<h4>Import sub-tab</h4>
+<p>Two panels side by side:</p>
+
+<p><strong>Import from CSV:</strong></p>
+<ul>
+  <li>File drop zone (or click to browse)</li>
+  <li>Expected CSV columns: <code>teacher_email, course_name, student_email</code></li>
+  <li>After file selection: row count preview, first few rows, and an import mode radio: "Merge with existing roster" (additive) or "Replace existing roster for this term" (overwrites)</li>
+  <li>Cancel and "Apply Import" buttons</li>
+</ul>
+
+<p><strong>Export Roster:</strong> Term selector, format selector (class roster or student list only), "Download CSV" button.</p>
+
+<p><strong>Blackbaud / Canvas integration:</strong> The Import sub-tab also surfaces integration options for syncing roster data from Blackbaud and/or Canvas. Specific API details are backend implementation decisions; the UI must provide at minimum: connect/authenticate, trigger a sync, and view sync history.</p>
+
+<h3>Comment Banks section</h3>
+<p>Manages standard comment bank files. Assignment of banks to departments and courses is in the Assignments section.</p>
+
+<p><strong>School-wide default bar</strong> (above the bank list): a dropdown to select which bank is the school-wide default, with a "Set Default" button.</p>
+
+<p><strong>Bank list table:</strong> Bank Name (with "School Default" badge on the current default), Subskills (count), Last Modified, Applied To.</p>
+
+<p><strong>Actions per bank:</strong></p>
+<ul>
+  <li><strong>Replace (⬆):</strong> Opens Upload modal with bank name pre-filled and locked; uploading a new CSV replaces all entries in that bank entirely.</li>
+  <li><strong>Download (⬇ CSV):</strong> Downloads the bank in the standard five-column format.</li>
+  <li><strong>Delete:</strong> Removes the bank. Cannot delete if the bank is currently assigned anywhere or is the school-wide default. The UI shows which assignments must be changed first.</li>
+</ul>
+
+<p><strong>Upload New Bank button:</strong> Opens a modal with: Bank Name (required), file drop zone (CSV), a format reference showing the expected column headers and one example row. Submit reads "Upload &amp; Preview" — after parsing, shows a preview (row count, first few entries, any parse errors) before creating the bank. Admin can cancel from the preview or confirm to create.</p>
+
+<p class="note">Note: Individual teachers' custom comments are not managed here. Teachers manage their own via the comment panel.</p>
+
 </main>
 </body>
 </html>
