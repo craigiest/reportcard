@@ -823,6 +823,49 @@ reflection_prompts ──&lt; prompt_assignments</pre>
   <li>On confirming: status transitions to Submitted, textarea becomes read-only, sync fires immediately</li>
 </ul>
 
+<!-- ─────────────────────────────────────────────────────── 7 -->
+<h2 id="s7">7. Advisor Interface</h2>
+
+<h3>Overview</h3>
+<p>The advisor interface is not a separate application — it is the "My Advisory" mode of the same teacher/advisor interface. A user with the advisor role sees a "My Advisory" tab in the left sidebar alongside (or instead of) "My Classes".</p>
+
+<h3>Left sidebar — My Advisory mode</h3>
+<ul>
+  <li>Grading period dropdown (same behavior as teacher mode)</li>
+  <li>Prev/Next arrows (▲/▼) — step through advisees; pressing an arrow loads the next or previous advisee's first class in the current period</li>
+  <li>Advisee list: one row per assigned advisee for the current term, with a summary status dot. Clicking an advisee expands it and loads their first class in the main content area.</li>
+  <li>Within an expanded advisee, individual class rows can be clicked to load a specific report card.</li>
+</ul>
+
+<h3>Main content area — advisor view</h3>
+<p>Largely identical to the teacher editing area, with these differences:</p>
+
+<p><strong>Skills and narrative:</strong> Editable only when the report card is finalized. If not yet finalized, all inputs are read-only and a callout reads: "Awaiting teacher finalization — this report card is not yet available for review."</p>
+
+<p><strong>Finalize row:</strong> The "Mark as finalized" checkbox is <strong>visible but disabled</strong> for advisors. Advisors cannot finalize or unfinalize.</p>
+
+<p><strong>Advisor review row:</strong> The "✓ Reviewed by Advisor" checkbox is <strong>active</strong> for the advisor. The advisor can check or uncheck this box at any time while the report card is finalized. The checkbox is only interactable when the report card is finalized.</p>
+
+<h3>Conflict handling</h3>
+<p>If a teacher unfinalizes a report card that the advisor has edited since finalization:</p>
+<ul>
+  <li>The <strong>next time the teacher opens that report card</strong>, they see a callout: "This report card has been edited by [Advisor Name] since you finalized it. Unfinalize again to edit, or reload to see their changes."</li>
+  <li>The page does not automatically reload.</li>
+  <li>If the teacher clicks "Reload," they see the advisor's edits in a read-only view and can decide to finalize again or make further changes.</li>
+  <li>If the teacher unfinalizes again (from the reload view), they regain edit access; any advisor edits are preserved in the draft.</li>
+  <li>If the advisor is actively viewing the report card when the teacher unfinalizes it: the advisor's edit access is revoked on their next sync event. They see a notification: "This report card has been unfinalized by the teacher and is no longer editable."</li>
+</ul>
+
+<h3>Navigating between advisees</h3>
+<ul>
+  <li>Prev/Next arrows move through the advisee list in order.</li>
+  <li>When the advisor switches to a different advisee, the system opens that advisee's first class in the current period.</li>
+  <li>When the advisor returns to a previously viewed advisee, the system reopens the last class the advisor was viewing for that advisee (remembered in session state, not persisted across page loads).</li>
+</ul>
+
+<h3>Historical context</h3>
+<p>The advisor can switch to any past term while staying on the same advisee. The grading period dropdown lists all periods across all terms. Switching to a past period loads that advisee's report cards in read-only mode. Only the current term's finalized cards are editable.</p>
+
 </main>
 </body>
 </html>
