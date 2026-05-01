@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Report Card System — Technical Specification v2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+    --accent: #2563eb;
+    --code-bg: #f1f5f9;
+    --sidebar-w: 260px;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: #fff;
+  }
+
+  /* ── Layout ── */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0 2rem;
+    font-size: 0.82rem;
+  }
+  #sidebar .sidebar-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0 1.25rem 0.5rem;
+  }
+  #sidebar a {
+    display: block;
+    padding: 0.25rem 1.25rem;
+    color: var(--muted);
+    text-decoration: none;
+    line-height: 1.45;
+  }
+  #sidebar a:hover { color: var(--accent); }
+  #sidebar a.top { font-weight: 600; color: var(--text); margin-top: 0.2rem; }
+  #sidebar a.sub { padding-left: 2rem; font-size: 0.78rem; }
+
+  main {
+    margin-left: var(--sidebar-w);
+    max-width: 860px;
+    padding: 3rem 3rem 5rem;
+  }
+
+  /* ── Typography ── */
+  h1 { font-size: 1.8rem; margin: 0 0 0.25rem; }
+  h2 { font-size: 1.3rem; margin: 2.5rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; }
+  h4 { font-size: 0.95rem; margin: 1.4rem 0 0.4rem; }
+  h1, h2, h3, h4 { font-weight: 700; line-height: 1.3; }
+  p { margin: 0.6rem 0; }
+  strong { font-weight: 600; }
+
+  .meta {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+  }
+
+  /* ── Lists ── */
+  ul, ol { margin: 0.5rem 0; padding-left: 1.6rem; }
+  li { margin: 0.2rem 0; }
+  li > ul, li > ol { margin: 0.2rem 0; }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+  th {
+    background: var(--bg);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  /* ── Code ── */
+  code {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 0.83em;
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    font-size: 0.83rem;
+    line-height: 1.55;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  /* ── Misc ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .note { font-size: 0.82rem; color: var(--muted); font-style: italic; }
+
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    main { margin-left: 0; padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="sidebar-title">Specification v2</div>
+  <a class="top" href="#s1">1. Overview &amp; Principles</a>
+  <a class="top" href="#s2">2. Auth &amp; User Roles</a>
+  <a class="top" href="#s3">3. Data Organization</a>
+  <a class="top" href="#s4">4. Database Schema</a>
+  <a class="top" href="#s5">5. Teacher Interface</a>
+    <a class="sub" href="#s5-sidebar">Left Sidebar</a>
+    <a class="sub" href="#s5-main">Main Content Area</a>
+    <a class="sub" href="#s5-panel">Comment Panel</a>
+    <a class="sub" href="#s5-custom">Custom Comment Bank</a>
+    <a class="sub" href="#s5-preview">Preview Modal</a>
+    <a class="sub" href="#s5-sync">Sync Behavior</a>
+  <a class="top" href="#s6">6. Student Interface</a>
+  <a class="top" href="#s7">7. Advisor Interface</a>
+  <a class="top" href="#s8">8. Admin — Users &amp; Settings</a>
+  <a class="top" href="#s9">9. Admin — Terms, Rosters &amp; Comment Banks</a>
+  <a class="top" href="#s10">10. Admin — Prompts, Assignments &amp; Report Cards</a>
+  <a class="top" href="#s11">11. Admin — Analytics &amp; Data Management</a>
+  <a class="top" href="#s12">12. Keyboard Nav &amp; Accessibility</a>
+    <a class="sub" href="#s12-1">3-Layer Navigation</a>
+    <a class="sub" href="#s12-2">Nav Hint Bar</a>
+    <a class="sub" href="#s12-3">Mouse &amp; Keyboard Coexistence</a>
+    <a class="sub" href="#s12-4">Other Interfaces</a>
+    <a class="sub" href="#s12-5">Screen Reader Support</a>
+    <a class="sub" href="#s12-6">Responsive Design</a>
+</nav>
+
+<main>
+
+<h1>Report Card System — Technical Specification v2</h1>
+<div class="meta">
+  <span><strong>Version:</strong> 2.0</span>
+  <span><strong>Date:</strong> April 24, 2026</span>
+  <span><strong>Status:</strong> Draft</span>
+  <span><strong>Reference:</strong> mockup-4-teacher.html, mockup-4-student.html, mockup-4-admin.html</span>
+</div>
+
+</main>
+</body>
+</html>
