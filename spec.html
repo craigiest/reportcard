@@ -761,6 +761,68 @@ reflection_prompts ──&lt; prompt_assignments</pre>
   <li>The save hint shows: default gray "Changes saved automatically"; briefly turns green with a checkmark after a successful sync; shows an amber warning if the last sync failed, with a retry indicator.</li>
 </ul>
 
+<!-- ─────────────────────────────────────────────────────── 6 -->
+<h2 id="s6">6. Student Interface</h2>
+
+<h3>Layout</h3>
+<p>Two regions:</p>
+<ul>
+  <li><strong>Left sidebar:</strong> grading period selector, class list with status indicators</li>
+  <li><strong>Main content area:</strong> reflection editing area or empty state</li>
+</ul>
+<p>On mobile (narrow viewport), the sidebar becomes a drawer. A "← Classes" back button appears in the main area when a class is active.</p>
+
+<h3>Left sidebar</h3>
+<p><strong>Top:</strong> School name / "My Reflections" heading.</p>
+<p><strong>Grading period selector:</strong> Dropdown listing all active reporting periods the student is enrolled in. Students see only periods for which they have at least one class enrollment.</p>
+<p><strong>Class list:</strong> One row per enrolled class for the selected period. Each row shows:</p>
+<ul>
+  <li>Course name</li>
+  <li>Teacher name</li>
+  <li>A status indicator dot: empty = not started, orange = draft in progress, blue = submitted</li>
+</ul>
+
+<h3>Main content area</h3>
+
+<p><strong>Empty state:</strong> "← Select a class to begin" shown when no class is selected.</p>
+
+<p><strong>Reflection editing area</strong> — shown when a class is active:</p>
+
+<h4>Class info card</h4>
+<p>Read-only: course name, teacher name, grading period.</p>
+
+<h4>Prompt box</h4>
+<p>The admin-configured prompt text for this class/department/universal context, displayed in a visually distinct box (e.g., blue background). Read-only.</p>
+
+<h4>Reflection textarea</h4>
+<ul>
+  <li>Large textarea for the student's reflection text</li>
+  <li>Minimum height ~180px; auto-expands to fit content</li>
+  <li>When reflection is submitted, the textarea is read-only</li>
+</ul>
+
+<h4>Character count indicator</h4>
+<p>Shown below the textarea. Color-coded: gray = empty; orange = below the configured minimum (characters remaining shown); green = at or above the minimum. The minimum threshold comes from the active prompt assignment for this class.</p>
+
+<h4>Save hint</h4>
+<p>"Changes saved automatically" — same sync indicator behavior as the teacher interface. Drafts sync periodically and on blur.</p>
+
+<h4>Status badge and submit area</h4>
+<ul>
+  <li>Status badge: "Not started" / "Draft" / "Submitted"</li>
+  <li>Submit button: disabled until the character minimum is met</li>
+  <li>When submitted: button is replaced by a notice showing the submission timestamp and "Your reflection has been submitted. Contact your teacher if you need to make changes."</li>
+</ul>
+
+<h4>Submission confirmation modal</h4>
+<p>When the student clicks Submit:</p>
+<ul>
+  <li>Modal title: "Submit your reflection?"</li>
+  <li>Body: explanation that the reflection cannot be edited after submission</li>
+  <li>Buttons: "Cancel" and "Submit"</li>
+  <li>On confirming: status transitions to Submitted, textarea becomes read-only, sync fires immediately</li>
+</ul>
+
 </main>
 </body>
 </html>
