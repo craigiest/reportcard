@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Report Card System — Technical Specification v2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+    --accent: #2563eb;
+    --code-bg: #f1f5f9;
+    --sidebar-w: 260px;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: #fff;
+  }
+
+  /* ── Layout ── */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0 2rem;
+    font-size: 0.82rem;
+  }
+  #sidebar .sidebar-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0 1.25rem 0.5rem;
+  }
+  #sidebar a {
+    display: block;
+    padding: 0.25rem 1.25rem;
+    color: var(--muted);
+    text-decoration: none;
+    line-height: 1.45;
+  }
+  #sidebar a:hover { color: var(--accent); }
+  #sidebar a.top { font-weight: 600; color: var(--text); margin-top: 0.2rem; }
+  #sidebar a.sub { padding-left: 2rem; font-size: 0.78rem; }
+
+  main {
+    margin-left: var(--sidebar-w);
+    max-width: 860px;
+    padding: 3rem 3rem 5rem;
+  }
+
+  /* ── Typography ── */
+  h1 { font-size: 1.8rem; margin: 0 0 0.25rem; }
+  h2 { font-size: 1.3rem; margin: 2.5rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; }
+  h4 { font-size: 0.95rem; margin: 1.4rem 0 0.4rem; }
+  h1, h2, h3, h4 { font-weight: 700; line-height: 1.3; }
+  p { margin: 0.6rem 0; }
+  strong { font-weight: 600; }
+
+  .meta {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+  }
+
+  /* ── Lists ── */
+  ul, ol { margin: 0.5rem 0; padding-left: 1.6rem; }
+  li { margin: 0.2rem 0; }
+  li > ul, li > ol { margin: 0.2rem 0; }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+  th {
+    background: var(--bg);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  /* ── Code ── */
+  code {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 0.83em;
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    font-size: 0.83rem;
+    line-height: 1.55;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  /* ── Misc ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .note { font-size: 0.82rem; color: var(--muted); font-style: italic; }
+
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    main { margin-left: 0; padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="sidebar-title">Specification v2</div>
+  <a class="top" href="#s1">1. Overview &amp; Principles</a>
+  <a class="top" href="#s2">2. Auth &amp; User Roles</a>
+  <a class="top" href="#s3">3. Data Organization</a>
+  <a class="top" href="#s4">4. Database Schema</a>
+  <a class="top" href="#s5">5. Teacher Interface</a>
+    <a class="sub" href="#s5-sidebar">Left Sidebar</a>
+    <a class="sub" href="#s5-main">Main Content Area</a>
+    <a class="sub" href="#s5-panel">Comment Panel</a>
+    <a class="sub" href="#s5-custom">Custom Comment Bank</a>
+    <a class="sub" href="#s5-preview">Preview Modal</a>
+    <a class="sub" href="#s5-sync">Sync Behavior</a>
+  <a class="top" href="#s6">6. Student Interface</a>
+  <a class="top" href="#s7">7. Advisor Interface</a>
+  <a class="top" href="#s8">8. Admin — Users &amp; Settings</a>
+  <a class="top" href="#s9">9. Admin — Terms, Rosters &amp; Comment Banks</a>
+  <a class="top" href="#s10">10. Admin — Prompts, Assignments &amp; Report Cards</a>
+  <a class="top" href="#s11">11. Admin — Analytics &amp; Data Management</a>
+  <a class="top" href="#s12">12. Keyboard Nav &amp; Accessibility</a>
+    <a class="sub" href="#s12-1">3-Layer Navigation</a>
+    <a class="sub" href="#s12-2">Nav Hint Bar</a>
+    <a class="sub" href="#s12-3">Mouse &amp; Keyboard Coexistence</a>
+    <a class="sub" href="#s12-4">Other Interfaces</a>
+    <a class="sub" href="#s12-5">Screen Reader Support</a>
+    <a class="sub" href="#s12-6">Responsive Design</a>
+</nav>
+
+<main>
+
+<h1>Report Card System — Technical Specification v2</h1>
+<div class="meta">
+  <span><strong>Version:</strong> 2.0</span>
+  <span><strong>Date:</strong> April 24, 2026</span>
+  <span><strong>Status:</strong> Draft</span>
+  <span><strong>Reference:</strong> mockup-4-teacher.html, mockup-4-student.html, mockup-4-admin.html</span>
+</div>
+
+<!-- ─────────────────────────────────────────────────────── 1 -->
+<h2 id="s1">1. System Overview &amp; Principles</h2>
+
+<p>The Report Card System is a school-wide web application for drafting, reviewing, and distributing student report cards. It coordinates four user types — teachers, advisors, students, and admins — through a structured workflow that ends in bulk PDF export.</p>
+
+<h3>Core workflow</h3>
+<ol>
+  <li>Admin configures terms, rosters, comment banks, and validation rules before a reporting period opens.</li>
+  <li>Students submit self-reflections for each enrolled class.</li>
+  <li>Teachers select skill comments from a standard bank, add custom comments, write a narrative, and finalize each report card.</li>
+  <li>Advisors review finalized report cards for their assigned advisees, make edits if needed, and mark each as reviewed.</li>
+  <li>Admin bulk-exports reviewed report cards as PDFs for distribution.</li>
+</ol>
+
+<h3>Key design principles</h3>
+
+<p><strong>Local-first.</strong> All user-facing writes (comment selections, narrative edits, reflection text) are persisted locally and reflected in the UI immediately. Background sync to the server happens on blur or on a periodic timer (every few seconds). If the connection is lost, changes queue locally and sync when the connection is restored. The UI shows a "saved" indicator that reflects sync status.</p>
+
+<p><strong>Configurable validation.</strong> Minimum/maximum requirements (character counts, comment counts, required skills) are defined globally by admin — one configuration for Midterm reporting periods and one for Final reporting periods. These apply automatically to every term of that type. Admin does not need to reconfigure rules per term.</p>
+
+<p><strong>Finalization as access control.</strong> A teacher finalizing a report card is the mechanism that transfers edit access to the advisor. An unfinalized card is editable only by the teacher; a finalized card is editable only by the advisor. Neither can edit simultaneously.</p>
+
+<p><strong>Immutable reflections.</strong> Once a student submits a reflection, it becomes read-only. Only admin (via spoofing) can reset a submitted reflection.</p>
+
+<p><strong>Text snapshots on finalization.</strong> At finalization, all selected comment text is copied into the report card record. The stored report card does not reference the comment bank by foreign key — it stores the comment text directly. This ensures report cards remain stable even if the comment bank is later replaced or edited.</p>
+
+<p><strong>Universal roles.</strong> Roles are not distinct user types — they are attributes of a user record. A person can be a teacher, advisor, and admin simultaneously. Role changes take effect on the user's next page load.</p>
+
+<!-- ─────────────────────────────────────────────────────── 2 -->
+<h2 id="s2">2. Authentication &amp; User Roles</h2>
+
+<h3>Authentication</h3>
+
+<p>All users authenticate via Google OAuth 2.0 using their school-issued Google account. There is no separate username/password system. On first login, a user record is created automatically from the OAuth profile (email address and display name). The email address is the identity anchor and cannot be changed after account creation.</p>
+
+<p>Session management, token storage, and refresh strategy are implementation decisions for the backend engineer. The frontend assumes a session cookie or bearer token is available after login and handles 401 responses by redirecting to the login page.</p>
+
+<h3>Spoofing</h3>
+
+<p>Admin users can assume the identity of any other user. During a spoof session:</p>
+<ul>
+  <li>A persistent banner is displayed at the top of every page indicating the admin is spoofing, with an "Exit" button to return to the admin view.</li>
+  <li>The spoofed user's full interface is shown with their data and permissions.</li>
+  <li>The spoof session is recorded in the Audit Log (see Section 11).</li>
+  <li>Spoof is intended for tasks like resetting a submitted reflection, adding a comment on behalf of a student, or debugging a user's view.</li>
+</ul>
+
+<h3>User roles</h3>
+
+<p>Roles are stored as a set on the user record. A user can hold multiple roles simultaneously.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Role</th><th>Can do</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Teacher</strong></td><td>Access classes they are assigned to teach; draft and finalize report cards for those students</td></tr>
+    <tr><td><strong>Advisor</strong></td><td>Access report cards for their assigned advisees across all classes; edit and mark as reviewed after teacher finalizes</td></tr>
+    <tr><td><strong>Student</strong></td><td>Submit reflections for enrolled classes</td></tr>
+    <tr><td><strong>Admin</strong></td><td>Full system access: user management, configuration, analytics, data management, spoofing</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Role assignment rules:</strong></p>
+<ul>
+  <li>A teacher with no advisory assignment sees only "My Classes" mode; the "My Advisory" tab is hidden.</li>
+  <li>An advisor with no teaching assignment sees only "My Advisory" mode; the class roster is empty.</li>
+  <li>A person with both roles sees both modes and switches between them via tabs in the left sidebar.</li>
+</ul>
+
+<h3>Permissions summary</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Action</th><th>Teacher</th><th>Advisor</th><th>Student</th><th>Admin</th></tr></thead>
+  <tbody>
+    <tr><td>View own class roster</td><td>✓</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td>Edit report card (unfinalized)</td><td>✓</td><td>—</td><td>—</td><td>via spoof</td></tr>
+    <tr><td>Finalize report card</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Edit report card (finalized)</td><td>—</td><td>✓</td><td>—</td><td>via spoof</td></tr>
+    <tr><td>Mark report card as reviewed</td><td>—</td><td>✓</td><td>—</td><td>—</td></tr>
+    <tr><td>Unfinalize report card</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td>Submit reflection</td><td>—</td><td>—</td><td>✓</td><td>via spoof</td></tr>
+    <tr><td>View submitted reflection</td><td>✓ (own class)</td><td>✓ (advisees)</td><td>✓ (own)</td><td>✓</td></tr>
+    <tr><td>Export PDFs (individual)</td><td>✓ (own/advisees)</td><td>✓ (advisees)</td><td>—</td><td>✓</td></tr>
+    <tr><td>Bulk export PDFs</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td>All admin functions</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ─────────────────────────────────────────────────────── 3 -->
+<h2 id="s3">3. Data Organization</h2>
+
+<h3>Hierarchy</h3>
+<pre>School Year  (e.g., "2025-2026")
+└── Term  (e.g., "S1", "S2", "I1" — flexible naming and ordering)
+    ├── Reporting Period: Midterm  (optional)
+    └── Reporting Period: Final  (optional)</pre>
+
+<p>A <strong>Term</strong> has one roster of students and classes. Within that term, admin configures which reporting periods are active (Midterm, Final, or both). Both reporting periods within a term share the same roster — there is no separate enrollment per period.</p>
+
+<p>In the grading period dropdown (seen by teachers and advisors), each active period appears as a distinct selectable entry, e.g., "25-26 S1 Midterm" and "25-26 S1 Final". A report card record is created per student per class per reporting period — so a student in a term with both Midterm and Final has two separate report card records per class.</p>
+
+<h3>Terms</h3>
+
+<p>Admin creates and manages terms. Each term has:</p>
+<ul>
+  <li>A school year label (text, e.g., "2025-2026")</li>
+  <li>A term name (text, e.g., "S1")</li>
+  <li>An order integer (sequence position within the school year)</li>
+  <li>Start and end dates</li>
+  <li>Which reporting periods are enabled (Midterm, Final, or both)</li>
+  <li>An optional student reflection freeze date — after this date, students cannot edit or submit reflections for this term</li>
+  <li>A locked flag — when locked, the term is read-only for all teachers and advisors (admin can still view and export)</li>
+</ul>
+
+<p>Locking is a one-way operation from the admin interface — there is no unlock button in the UI. Locking is intended for use once report cards have been distributed.</p>
+
+<h3>Comment bank assignment</h3>
+
+<p>By default, the entire school uses a single school-wide standard comment bank. Admin can override this at the department level or individual course level. The hierarchy is:</p>
+<pre>School default
+└── Department override (if set)
+    └── Course override (if set)</pre>
+
+<p>Each course resolves to exactly one comment bank — the most specific override in the chain. See Section 9 for bank management and Section 10 for assignment.</p>
+
+<h3>Validation rules</h3>
+
+<p>Admin maintains two global validation rule sets — one for Midterm reporting periods and one for Final reporting periods. Each rule set specifies minimum/maximum requirements for student reflections, skill comments, and narratives. Rules with a value of 0 are disabled and not enforced. These rule sets apply automatically to every term of the matching type — no per-term configuration is needed.</p>
+
+<h3>Comment bank CSV format</h3>
+
+<p>The standard comment bank is imported as a five-column CSV:</p>
+<pre>Transferable Skill, Skill Area, Subskill, Strength, Growth</pre>
+
+<p>Each row defines one subskill and its two comment options. Example:</p>
+<pre><code>Transferable Skill,Skill Area,Subskill,Strength,Growth
+Ownership of Learning,Motivation,Curiosity-fueled motivation,"You're motivated by curiosity, asking ""why?"" and digging for understanding.","Work on asking ""why"" more consistently—push yourself to dig into the reasoning, not just the steps."</code></pre>
+
+<p>The four-level hierarchy (Transferable Skill → Skill Area → Subskill → Strength/Growth) is derived entirely from the CSV rows. There is no separate entity for each level — the hierarchy is implicit in the data.</p>
+
+<h3>Custom comment CSV format</h3>
+
+<p>Teachers can export and import their personal custom comment banks as a two-column CSV:</p>
+<pre>skill_area, comment</pre>
+
+<p><code>skill_area</code> corresponds to a Skill Area name from the standard bank. The custom comment appears in the comment panel for that skill area alongside standard comments.</p>
+
+<!-- ─────────────────────────────────────────────────────── 4 -->
+<h2 id="s4">4. Database Schema</h2>
+
+<p class="note">All field types are suggestions; the backend engineer should adapt to the chosen database and ORM. Foreign keys are noted where relationships are critical to enforce.</p>
+
+<h3>users</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>email</td><td>text UNIQUE NOT NULL</td><td>School Google account; identity anchor; immutable after creation</td></tr>
+    <tr><td>name</td><td>text NOT NULL</td><td>Display name from Google OAuth</td></tr>
+    <tr><td>roles</td><td>text[]</td><td>Array; values: <code>teacher</code>, <code>advisor</code>, <code>admin</code>, <code>student</code></td></tr>
+    <tr><td>is_active</td><td>boolean DEFAULT true</td><td>False = archived; login denied but data preserved</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>last_login_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>terms</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>school_year</td><td>text NOT NULL</td><td>e.g., "2025-2026"</td></tr>
+    <tr><td>name</td><td>text NOT NULL</td><td>e.g., "S1", "T2"</td></tr>
+    <tr><td>sort_order</td><td>integer NOT NULL</td><td>Sequence within the school year</td></tr>
+    <tr><td>start_date</td><td>date</td><td></td></tr>
+    <tr><td>end_date</td><td>date</td><td></td></tr>
+    <tr><td>has_midterm</td><td>boolean DEFAULT false</td><td>Whether Midterm reporting period is active</td></tr>
+    <tr><td>has_final</td><td>boolean DEFAULT true</td><td>Whether Final reporting period is active</td></tr>
+    <tr><td>reflection_freeze_date</td><td>date NULLABLE</td><td>Students cannot edit reflections after this date</td></tr>
+    <tr><td>is_locked</td><td>boolean DEFAULT false</td><td>Read-only for teachers/advisors when true</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>classes</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>teacher_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>course_name</td><td>text NOT NULL</td><td></td></tr>
+    <tr><td>course_code</td><td>text NULLABLE</td><td></td></tr>
+    <tr><td>department</td><td>text NULLABLE</td><td>Used for comment bank and prompt assignment lookup</td></tr>
+    <tr><td>sort_order</td><td>integer</td><td>Display order within teacher's roster</td></tr>
+  </tbody>
+</table></div>
+
+<h3>enrollments</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NOT NULL</td><td></td></tr>
+    <tr><td>UNIQUE</td><td>(student_id, class_id)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>advisories</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>advisor_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td>Advisory assignments can change per term</td></tr>
+    <tr><td>UNIQUE</td><td>(advisor_id, student_id, term_id)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>comment_banks</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>name</td><td>text NOT NULL UNIQUE</td><td>Display name</td></tr>
+    <tr><td>is_school_default</td><td>boolean DEFAULT false</td><td>Only one row should have this true at a time</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>updated_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>comment_bank_entries</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>bank_id</td><td>uuid FK → comment_banks.id NOT NULL</td><td></td></tr>
+    <tr><td>transferable_skill</td><td>text NOT NULL</td><td>Top-level skill group label</td></tr>
+    <tr><td>skill_area</td><td>text NOT NULL</td><td>Second-level grouping</td></tr>
+    <tr><td>subskill</td><td>text NOT NULL</td><td>Third-level label shown in the comment panel</td></tr>
+    <tr><td>strength_text</td><td>text NOT NULL</td><td>Comment text shown when Strength is selected</td></tr>
+    <tr><td>growth_text</td><td>text NOT NULL</td><td>Comment text shown when Growth is selected</td></tr>
+    <tr><td>sort_order</td><td>integer</td><td>Display order within the bank</td></tr>
+  </tbody>
+</table></div>
+<p class="note">Indexes: <code>(bank_id)</code>, <code>(bank_id, transferable_skill)</code>, <code>(bank_id, skill_area)</code>.</p>
+
+<h3>bank_assignments</h3>
+<p>Stores comment bank overrides at department and course level. The school default is tracked on <code>comment_banks.is_school_default</code>.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td>Assignments are per-term</td></tr>
+    <tr><td>bank_id</td><td>uuid FK → comment_banks.id NOT NULL</td><td></td></tr>
+    <tr><td>scope</td><td>text NOT NULL</td><td><code>department</code> or <code>course</code></td></tr>
+    <tr><td>department</td><td>text NULLABLE</td><td>Required when scope = <code>department</code></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NULLABLE</td><td>Required when scope = <code>course</code></td></tr>
+  </tbody>
+</table></div>
+<p>Resolution at query time: for a given class in a given term, find the most specific assignment (course → department → school default).</p>
+
+<h3>teacher_custom_comments</h3>
+<p>Teachers' personal reusable comment banks. Not shared between teachers; exported as CSV for sharing.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>teacher_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>skill_area</td><td>text NOT NULL</td><td>Matches a Skill Area from the standard bank</td></tr>
+    <tr><td>comment_text</td><td>text NOT NULL</td><td></td></tr>
+    <tr><td>sort_order</td><td>integer</td><td></td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>reflection_prompts</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>name</td><td>text NOT NULL</td><td>Internal label for admin reference</td></tr>
+    <tr><td>prompt_text</td><td>text NOT NULL</td><td>Shown to students</td></tr>
+    <tr><td>min_chars</td><td>integer DEFAULT 0</td><td>0 = not enforced</td></tr>
+    <tr><td>max_chars</td><td>integer DEFAULT 0</td><td>0 = no limit</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>prompt_assignments</h3>
+<p>Stores which prompt applies to a given scope in a given term. School-wide default is a row with <code>scope = 'universal'</code>.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>prompt_id</td><td>uuid FK → reflection_prompts.id NOT NULL</td><td></td></tr>
+    <tr><td>scope</td><td>text NOT NULL</td><td><code>universal</code>, <code>department</code>, or <code>course</code></td></tr>
+    <tr><td>department</td><td>text NULLABLE</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NULLABLE</td><td></td></tr>
+  </tbody>
+</table></div>
+<p>Resolution: course → department → universal, same as bank assignments.</p>
+
+<h3>validation_configs</h3>
+<p>Two rows only — one for Midterm, one for Final. These are global and not per-term.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>period_type</td><td>text NOT NULL</td><td><code>midterm</code> or <code>final</code>; UNIQUE</td></tr>
+    <tr><td>reflection_min_chars</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>reflection_max_chars</td><td>integer DEFAULT 0</td><td>0 = no limit</td></tr>
+    <tr><td>skill_min_areas</td><td>integer DEFAULT 0</td><td>Minimum skill areas with ≥1 comment</td></tr>
+    <tr><td>skill_required_names</td><td>text[]</td><td>Skill names that must have ≥1 comment; empty = none required</td></tr>
+    <tr><td>skill_min_total_comments</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>skill_max_per_area</td><td>integer DEFAULT 0</td><td>0 = no limit</td></tr>
+    <tr><td>skill_custom_max_chars</td><td>integer DEFAULT 0</td><td>Max chars for teacher-typed custom comments</td></tr>
+    <tr><td>narrative_min_chars</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>narrative_max_chars</td><td>integer DEFAULT 0</td><td></td></tr>
+    <tr><td>updated_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>report_cards</h3>
+<p>One record per student per class per reporting period.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NOT NULL</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>teacher_id</td><td>uuid FK → users.id NOT NULL</td><td>Snapshot — denormalized for query convenience</td></tr>
+    <tr><td>reporting_period</td><td>text NOT NULL</td><td><code>midterm</code> or <code>final</code></td></tr>
+    <tr><td>status</td><td>text NOT NULL DEFAULT 'draft'</td><td><code>draft</code> or <code>finalized</code></td></tr>
+    <tr><td>narrative</td><td>text DEFAULT ''</td><td></td></tr>
+    <tr><td>is_advisor_reviewed</td><td>boolean DEFAULT false</td><td></td></tr>
+    <tr><td>finalized_by</td><td>uuid FK → users.id NULLABLE</td><td></td></tr>
+    <tr><td>finalized_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>reviewed_by</td><td>uuid FK → users.id NULLABLE</td><td></td></tr>
+    <tr><td>reviewed_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>last_exported_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>admin_note</td><td>text NULLABLE</td><td>Internal admin annotation; not visible to teachers/advisors/students</td></tr>
+    <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>updated_at</td><td>timestamptz</td><td></td></tr>
+    <tr><td>UNIQUE</td><td>(class_id, student_id, reporting_period)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>report_card_skill_comments</h3>
+<p>Stores comment selections for a report card. Comment text is stored as a snapshot at the time of selection — not as a foreign key to the bank entry.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>report_card_id</td><td>uuid FK → report_cards.id NOT NULL</td><td></td></tr>
+    <tr><td>transferable_skill</td><td>text NOT NULL</td><td>Snapshot label</td></tr>
+    <tr><td>skill_area</td><td>text NOT NULL</td><td>Snapshot label</td></tr>
+    <tr><td>subskill</td><td>text NULLABLE</td><td>Null for custom comments</td></tr>
+    <tr><td>comment_type</td><td>text NULLABLE</td><td><code>strength</code>, <code>growth</code>, or null for custom</td></tr>
+    <tr><td>comment_text</td><td>text NOT NULL</td><td>Snapshot of the text at time of selection</td></tr>
+    <tr><td>is_custom</td><td>boolean DEFAULT false</td><td>True for teacher-written custom or one-time comments</td></tr>
+    <tr><td>is_one_time</td><td>boolean DEFAULT false</td><td>True for comments added inline for this student only</td></tr>
+    <tr><td>sort_order</td><td>integer</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>student_reflections</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>student_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>class_id</td><td>uuid FK → classes.id NOT NULL</td><td></td></tr>
+    <tr><td>term_id</td><td>uuid FK → terms.id NOT NULL</td><td></td></tr>
+    <tr><td>reporting_period</td><td>text NOT NULL</td><td><code>midterm</code> or <code>final</code></td></tr>
+    <tr><td>prompt_id</td><td>uuid FK → reflection_prompts.id NULLABLE</td><td>Nullable if prompt was later deleted</td></tr>
+    <tr><td>prompt_text_snapshot</td><td>text NULLABLE</td><td>Snapshot of prompt text at time of submission</td></tr>
+    <tr><td>draft_text</td><td>text DEFAULT ''</td><td>Current draft; updated on each save</td></tr>
+    <tr><td>submitted_text</td><td>text NULLABLE</td><td>Locked copy at time of submission</td></tr>
+    <tr><td>status</td><td>text NOT NULL DEFAULT 'not_started'</td><td><code>not_started</code>, <code>draft</code>, or <code>submitted</code></td></tr>
+    <tr><td>submitted_at</td><td>timestamptz NULLABLE</td><td></td></tr>
+    <tr><td>UNIQUE</td><td>(student_id, class_id, reporting_period)</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>export_records</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>exported_at</td><td>timestamptz NOT NULL</td><td></td></tr>
+    <tr><td>exported_by</td><td>uuid FK → users.id NOT NULL</td><td>Admin user</td></tr>
+    <tr><td>export_type</td><td>text NOT NULL</td><td><code>bulk</code> or <code>individual</code></td></tr>
+    <tr><td>report_card_ids</td><td>uuid[]</td><td>Array of included report card IDs</td></tr>
+    <tr><td>filter_description</td><td>text NULLABLE</td><td>Human-readable summary of filters applied</td></tr>
+  </tbody>
+</table></div>
+
+<h3>audit_log</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>occurred_at</td><td>timestamptz NOT NULL</td><td></td></tr>
+    <tr><td>actor_id</td><td>uuid FK → users.id NOT NULL</td><td>Admin who performed the action</td></tr>
+    <tr><td>spoofed_as_id</td><td>uuid FK → users.id NULLABLE</td><td>If action was taken while spoofing</td></tr>
+    <tr><td>action</td><td>text NOT NULL</td><td>Short action code, e.g., <code>user.archive</code>, <code>term.lock</code>, <code>spoof.start</code></td></tr>
+    <tr><td>description</td><td>text NOT NULL</td><td>Human-readable description</td></tr>
+    <tr><td>metadata</td><td>jsonb NULLABLE</td><td>Structured data relevant to the action</td></tr>
+  </tbody>
+</table></div>
+
+<h3>user_role_history</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>uuid PK</td><td></td></tr>
+    <tr><td>user_id</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>changed_by</td><td>uuid FK → users.id NOT NULL</td><td></td></tr>
+    <tr><td>old_roles</td><td>text[]</td><td></td></tr>
+    <tr><td>new_roles</td><td>text[]</td><td></td></tr>
+    <tr><td>changed_at</td><td>timestamptz</td><td></td></tr>
+  </tbody>
+</table></div>
+
+<h3>Key relationships</h3>
+<pre>users ──&lt; classes (as teacher)
+users ──&lt; enrollments &gt;── classes
+users ──&lt; advisories &gt;── users (advisor → student)
+terms ──&lt; classes ──&lt; enrollments
+terms ──&lt; report_cards
+classes ──&lt; report_cards ──&lt; report_card_skill_comments
+classes ──&lt; student_reflections
+report_cards &gt;── student_reflections (1:1 per period)
+comment_banks ──&lt; comment_bank_entries
+comment_banks ──&lt; bank_assignments
+reflection_prompts ──&lt; prompt_assignments</pre>
+
+<!-- ─────────────────────────────────────────────────────── 5 -->
+<h2 id="s5">5. Teacher Interface</h2>
+
+<h3>Layout</h3>
+<p>Three regions:</p>
+<ul>
+  <li><strong>Left sidebar</strong> (~290px fixed width): grading period selector, mode tabs, class roster with students</li>
+  <li><strong>Main content area</strong> (flex-grow): student editing area or empty state</li>
+  <li><strong>Right comment panel</strong> (~455px fixed width, conditionally visible): skill comment selection UI</li>
+</ul>
+
+<h3 id="s5-sidebar">Left sidebar</h3>
+
+<p><strong>Header area:</strong></p>
+<ul>
+  <li>Teacher's display name</li>
+  <li>Grading period dropdown — lists all active reporting periods for terms assigned to this teacher (e.g., "25-26 S1 Midterm", "25-26 S1 Final", "25-26 S2 Final"), ordered by term sort order and period type (Midterm before Final within a term)</li>
+  <li>Prev/Next arrows (▲/▼) — step to the previous or next student in the entire visible roster, wrapping across class boundaries; arrows are disabled when the roster is empty</li>
+</ul>
+
+<p><strong>Mode tabs</strong> (shown only when the user has both teacher and advisor roles):</p>
+<ul>
+  <li>"My Classes" — default; shows the teacher's own class roster</li>
+  <li>"My Advisory" — switches to the advisor view (see Section 7)</li>
+</ul>
+
+<p><strong>Class roster (My Classes mode):</strong></p>
+<ul>
+  <li>One collapsible section per class assigned to the teacher for the selected period</li>
+  <li>Clicking the class header toggles expand/collapse for that class only; it does not navigate to a student</li>
+  <li>Each student row shows the student's name, a round status dot (report card status), and a square dot (reflection submitted)</li>
+  <li>Clicking a student row makes that student active in the main content area</li>
+</ul>
+
+<p><strong>Status legend</strong> (bottom of sidebar):</p>
+<ul>
+  <li>Round dot colors: gray = not started, orange = in progress, blue = complete (all requirements met but not finalized), green = finalized</li>
+  <li>Square dot: filled = reflection submitted, empty = not submitted</li>
+</ul>
+
+<p><strong>Grading period change behavior:</strong> When the teacher changes the grading period, the system tries to keep the same student active:</p>
+<ol>
+  <li>Look for the previously active student in the same class (by class name) in the new period — if found, activate them there.</li>
+  <li>If not found in the same class, search all classes in the new period for the student by name — if found, activate them.</li>
+  <li>If not found, show the empty state.</li>
+</ol>
+
+<h3 id="s5-main">Main content area</h3>
+
+<p><strong>Empty state:</strong> Shown when no student is selected — a centered message "← Select a student to begin".</p>
+
+<p><strong>Student editing area</strong> — shown when a student is active, contains these cards in order:</p>
+
+<h4>Student info card</h4>
+<p>Read-only display: student name, course name, teacher name, grading period. If the report card has been advisor-reviewed, shows a "Reviewed" badge. If the student has submitted a reflection, it is shown below the metadata in a read-only box labeled "Student Reflection". If no reflection has been submitted, this box is omitted.</p>
+
+<h4>Skills section</h4>
+<p>One block per Transferable Skill in the comment bank (in bank order). Each block contains:</p>
+<ul>
+  <li>The Transferable Skill name (heading)</li>
+  <li>A "Skill Selection" button — clicking opens the right comment panel for this skill</li>
+  <li>The selected comments for this skill displayed as a bulleted list</li>
+</ul>
+
+<h4>Narrative card</h4>
+<ul>
+  <li>A textarea labeled "Overall Comment" (or equivalent)</li>
+  <li>Minimum height ~110px; vertically resizable; auto-expands to fit content</li>
+  <li>A save hint below the textarea: shows "Changes saved automatically" in gray normally, turns green briefly after a successful sync, and shows a warning if sync fails</li>
+</ul>
+
+<h4>Finalize row</h4>
+<ul>
+  <li>Checkbox: "Mark as finalized"</li>
+  <li>The checkbox is <strong>disabled</strong> until all applicable validation rules are met</li>
+  <li>When disabled, an inline hint lists the specific unmet requirements, e.g.: "Need comments in 2 more skill areas · Narrative needs 20 more characters"</li>
+  <li>When enabled and the teacher checks it, a confirmation modal appears: warn that finalizing will lock the card and open it to the advisor; require a second click to confirm</li>
+  <li>Once finalized, the checkbox shows as checked and disabled; to unfinalize, admin must use the Report Cards admin panel</li>
+</ul>
+
+<h4>Advisor review row</h4>
+<p>Shown <strong>only</strong> when the report card is finalized. Displays either "✓ Reviewed by [Advisor Name]" (green) or "Pending advisor review" (gray). Read-only for the teacher.</p>
+
+<h4>Preview button</h4>
+<p>At the bottom of the editing area: "Preview Report Card" button. Opens the preview modal (see below).</p>
+
+<h3 id="s5-panel">Right comment panel</h3>
+
+<p>Opens when the teacher clicks "Skill Selection" for any Transferable Skill. Only one panel is open at a time; opening another closes the current one.</p>
+
+<p><strong>Panel header:</strong> Transferable Skill name + a close button (✕).</p>
+
+<p><strong>Standard comments section:</strong> Comments are grouped by Skill Area (a subheading), then by Subskill (each subskill is a row). Each Subskill row contains a <strong>Subskill label</strong> (clickable text), an <strong>S button</strong> (Strength), and a <strong>G button</strong> (Growth).</p>
+
+<p><strong>Selection behavior — this is non-obvious and must be implemented exactly:</strong></p>
+<ul>
+  <li>Exactly zero or one comment can be selected per subskill (never both S and G simultaneously).</li>
+  <li>Clicking the <strong>S button</strong> directly: if Strength is already selected, deselects it; otherwise selects Strength (and deselects Growth if it was selected).</li>
+  <li>Clicking the <strong>G button</strong> directly: same logic for Growth.</li>
+  <li>Clicking the <strong>Subskill label text</strong> cycles through states in order: <strong>none → Strength → Growth → none</strong>, repeating.</li>
+  <li>The selected S or G button appears highlighted/filled; the unselected button appears as an outline.</li>
+</ul>
+
+<p><strong>Hover behavior on S and G buttons:</strong> Hovering shows the full comment text as a tooltip. Use a <code>title</code> attribute or a custom tooltip — the text must be the full comment string with no truncation.</p>
+
+<p><strong>Custom comments section</strong> (below a divider) — three sub-areas:</p>
+<ol>
+  <li><strong>One-time comment input:</strong> A text input with an "Add" button. Text entered here is saved as a one-time comment for the current student only — it is NOT added to the teacher's reusable comment bank. The <code>is_one_time</code> flag on <code>report_card_skill_comments</code> distinguishes these.</li>
+  <li><strong>Edit comment bank link:</strong> A small link "Edit comment bank…" that opens the Custom Comment Bank modal.</li>
+  <li><strong>Saved custom comments checklist:</strong> The teacher's personal reusable comments for this skill area, displayed as checkboxes. Checking a box adds that comment to the current student's report card; unchecking removes it.</li>
+</ol>
+
+<p><strong>Panel footer:</strong> A "Done" button closes the panel.</p>
+
+<h3 id="s5-custom">Custom Comment Bank modal</h3>
+
+<p>Opened via "Edit comment bank…" in the comment panel. Displays the teacher's saved custom comments for the current skill.</p>
+<ul>
+  <li>A draggable list of existing custom comments, each with a delete button</li>
+  <li>An "Add" input field + button to add a new comment to the reusable bank</li>
+  <li><strong>Import/Export:</strong> "Export CSV" downloads the teacher's full custom comment bank as a two-column CSV (<code>skill_area, comment</code>). "Import CSV" shows a preview with the count of comments found and options to "Append to existing" or "Replace existing".</li>
+  <li>No Save button — changes (add, delete, reorder) save immediately</li>
+</ul>
+
+<h3 id="s5-preview">Preview modal</h3>
+
+<p>A full-size read-only preview of the report card for the active student. Contains:</p>
+<ul>
+  <li>Header: student name, course, teacher, term, and reporting period</li>
+  <li>Student Reflection section (if submitted)</li>
+  <li>Transferable Skills section — shows only skills with at least one comment selected; each skill is a heading followed by the selected comments as bullet points</li>
+  <li>Overall Comment section — the narrative text in a bordered box</li>
+  <li>"Print / Save PDF" button — generates a PDF using the school branding settings and downloads it locally</li>
+</ul>
+<p>The preview modal does not require the report card to be finalized. Teachers can preview at any time.</p>
+
+<h3 id="s5-sync">Sync behavior</h3>
+<ul>
+  <li>On every blur of an input (textarea, custom comment field), queue a sync to the server.</li>
+  <li>Also sync on a periodic timer (~5 seconds) if there are unsynced changes.</li>
+  <li>The save hint shows: default gray "Changes saved automatically"; briefly turns green with a checkmark after a successful sync; shows an amber warning if the last sync failed, with a retry indicator.</li>
+</ul>
+
+<!-- ─────────────────────────────────────────────────────── 6 -->
+<h2 id="s6">6. Student Interface</h2>
+
+<h3>Layout</h3>
+<p>Two regions:</p>
+<ul>
+  <li><strong>Left sidebar:</strong> grading period selector, class list with status indicators</li>
+  <li><strong>Main content area:</strong> reflection editing area or empty state</li>
+</ul>
+<p>On mobile (narrow viewport), the sidebar becomes a drawer. A "← Classes" back button appears in the main area when a class is active.</p>
+
+<h3>Left sidebar</h3>
+<p><strong>Top:</strong> School name / "My Reflections" heading.</p>
+<p><strong>Grading period selector:</strong> Dropdown listing all active reporting periods the student is enrolled in. Students see only periods for which they have at least one class enrollment.</p>
+<p><strong>Class list:</strong> One row per enrolled class for the selected period. Each row shows:</p>
+<ul>
+  <li>Course name</li>
+  <li>Teacher name</li>
+  <li>A status indicator dot: empty = not started, orange = draft in progress, blue = submitted</li>
+</ul>
+
+<h3>Main content area</h3>
+
+<p><strong>Empty state:</strong> "← Select a class to begin" shown when no class is selected.</p>
+
+<p><strong>Reflection editing area</strong> — shown when a class is active:</p>
+
+<h4>Class info card</h4>
+<p>Read-only: course name, teacher name, grading period.</p>
+
+<h4>Prompt box</h4>
+<p>The admin-configured prompt text for this class/department/universal context, displayed in a visually distinct box (e.g., blue background). Read-only.</p>
+
+<h4>Reflection textarea</h4>
+<ul>
+  <li>Large textarea for the student's reflection text</li>
+  <li>Minimum height ~180px; auto-expands to fit content</li>
+  <li>When reflection is submitted, the textarea is read-only</li>
+</ul>
+
+<h4>Character count indicator</h4>
+<p>Shown below the textarea. Color-coded: gray = empty; orange = below the configured minimum (characters remaining shown); green = at or above the minimum. The minimum threshold comes from the active prompt assignment for this class.</p>
+
+<h4>Save hint</h4>
+<p>"Changes saved automatically" — same sync indicator behavior as the teacher interface. Drafts sync periodically and on blur.</p>
+
+<h4>Status badge and submit area</h4>
+<ul>
+  <li>Status badge: "Not started" / "Draft" / "Submitted"</li>
+  <li>Submit button: disabled until the character minimum is met</li>
+  <li>When submitted: button is replaced by a notice showing the submission timestamp and "Your reflection has been submitted. Contact your teacher if you need to make changes."</li>
+</ul>
+
+<h4>Submission confirmation modal</h4>
+<p>When the student clicks Submit:</p>
+<ul>
+  <li>Modal title: "Submit your reflection?"</li>
+  <li>Body: explanation that the reflection cannot be edited after submission</li>
+  <li>Buttons: "Cancel" and "Submit"</li>
+  <li>On confirming: status transitions to Submitted, textarea becomes read-only, sync fires immediately</li>
+</ul>
+
+<!-- ─────────────────────────────────────────────────────── 7 -->
+<h2 id="s7">7. Advisor Interface</h2>
+
+<h3>Overview</h3>
+<p>The advisor interface is not a separate application — it is the "My Advisory" mode of the same teacher/advisor interface. A user with the advisor role sees a "My Advisory" tab in the left sidebar alongside (or instead of) "My Classes".</p>
+
+<h3>Left sidebar — My Advisory mode</h3>
+<ul>
+  <li>Grading period dropdown (same behavior as teacher mode)</li>
+  <li>Prev/Next arrows (▲/▼) — step through advisees; pressing an arrow loads the next or previous advisee's first class in the current period</li>
+  <li>Advisee list: one row per assigned advisee for the current term, with a summary status dot. Clicking an advisee expands it and loads their first class in the main content area.</li>
+  <li>Within an expanded advisee, individual class rows can be clicked to load a specific report card.</li>
+</ul>
+
+<h3>Main content area — advisor view</h3>
+<p>Largely identical to the teacher editing area, with these differences:</p>
+
+<p><strong>Skills and narrative:</strong> Editable only when the report card is finalized. If not yet finalized, all inputs are read-only and a callout reads: "Awaiting teacher finalization — this report card is not yet available for review."</p>
+
+<p><strong>Finalize row:</strong> The "Mark as finalized" checkbox is <strong>visible but disabled</strong> for advisors. Advisors cannot finalize or unfinalize.</p>
+
+<p><strong>Advisor review row:</strong> The "✓ Reviewed by Advisor" checkbox is <strong>active</strong> for the advisor. The advisor can check or uncheck this box at any time while the report card is finalized. The checkbox is only interactable when the report card is finalized.</p>
+
+<h3>Conflict handling</h3>
+<p>If a teacher unfinalizes a report card that the advisor has edited since finalization:</p>
+<ul>
+  <li>The <strong>next time the teacher opens that report card</strong>, they see a callout: "This report card has been edited by [Advisor Name] since you finalized it. Unfinalize again to edit, or reload to see their changes."</li>
+  <li>The page does not automatically reload.</li>
+  <li>If the teacher clicks "Reload," they see the advisor's edits in a read-only view and can decide to finalize again or make further changes.</li>
+  <li>If the teacher unfinalizes again (from the reload view), they regain edit access; any advisor edits are preserved in the draft.</li>
+  <li>If the advisor is actively viewing the report card when the teacher unfinalizes it: the advisor's edit access is revoked on their next sync event. They see a notification: "This report card has been unfinalized by the teacher and is no longer editable."</li>
+</ul>
+
+<h3>Navigating between advisees</h3>
+<ul>
+  <li>Prev/Next arrows move through the advisee list in order.</li>
+  <li>When the advisor switches to a different advisee, the system opens that advisee's first class in the current period.</li>
+  <li>When the advisor returns to a previously viewed advisee, the system reopens the last class the advisor was viewing for that advisee (remembered in session state, not persisted across page loads).</li>
+</ul>
+
+<h3>Historical context</h3>
+<p>The advisor can switch to any past term while staying on the same advisee. The grading period dropdown lists all periods across all terms. Switching to a past period loads that advisee's report cards in read-only mode. Only the current term's finalized cards are editable.</p>
+
+<!-- ─────────────────────────────────────────────────────── 8 -->
+<h2 id="s8">8. Admin — Users &amp; Settings</h2>
+
+<h3>Admin interface layout</h3>
+<p>The admin interface is separate from the teacher/student interface. It has:</p>
+<ul>
+  <li><strong>Top nav:</strong> School name/logo, "Admin" badge, current user name, Logout button</li>
+  <li><strong>Left sidebar</strong> (~200px fixed): navigation menu</li>
+  <li><strong>Main content area:</strong> the active section's content</li>
+</ul>
+<p>Left sidebar menu items in order:</p>
+<ol>
+  <li>Terms &amp; Rosters</li>
+  <li>Report Cards</li>
+  <li>Analytics ← <strong>default landing view on login</strong></li>
+  <li>Users</li>
+  <li>Comment Banks</li>
+  <li>Student Reflection Prompts</li>
+  <li>Assignments</li>
+  <li>Settings</li>
+  <li>Data Management</li>
+</ol>
+
+<h3>Users section</h3>
+<p><strong>Toolbar:</strong> Search input (live filter by name or email) + Role filter dropdown + Status filter (Active Only / Active &amp; Archived / Archived Only) + "New User" button.</p>
+<p><strong>User table columns:</strong> Name, Email, Roles (colored tag chips), Status, Last Login, Actions.</p>
+<p><strong>Actions per row:</strong></p>
+<ul>
+  <li><strong>Edit</strong> — opens the User modal pre-filled</li>
+  <li><strong>Spoof</strong> — opens a Spoof Confirmation modal; on confirming, the admin's session switches to that user's interface with a persistent banner</li>
+  <li><strong>Archive</strong> — sets <code>is_active = false</code>, preventing login while preserving all data. Archived users can be reactivated via edit.</li>
+</ul>
+<p><strong>New/Edit User modal fields:</strong></p>
+<ul>
+  <li>Full Name (text, required)</li>
+  <li>School Email (text, required; read-only in edit mode — cannot be changed after account creation)</li>
+  <li>Roles (checkboxes): Teacher, Advisor, Admin, Student — any combination allowed</li>
+  <li>Active toggle (edit mode only)</li>
+</ul>
+<p>Role changes take effect on the user's next page load.</p>
+
+<h3>Settings section (Validation Rules)</h3>
+<p>Two side-by-side cards: <strong>Midterm</strong> and <strong>Final</strong>. Each card has its own Save button. Setting any numeric field to <strong>0</strong> disables that rule.</p>
+
+<p><strong>Student Reflection group:</strong></p>
+<ul>
+  <li>Minimum characters (before Submit button activates)</li>
+  <li>Maximum characters (0 = no limit)</li>
+</ul>
+
+<p><strong>Skill Comments group:</strong></p>
+<ul>
+  <li>Minimum skill areas with ≥1 comment selected</li>
+  <li>Required skills: comma-separated list of Transferable Skill names that must have at least one comment before finalization</li>
+  <li>Minimum total skill comments per report card</li>
+  <li>Maximum comments per skill area</li>
+  <li>Maximum characters for a custom skill comment</li>
+</ul>
+
+<p><strong>Narrative group:</strong></p>
+<ul>
+  <li>Minimum characters</li>
+  <li>Maximum characters (0 = no limit)</li>
+</ul>
+
+<p>Each card saves independently. A success indicator confirms when saved.</p>
+
+<!-- ─────────────────────────────────────────────────────── 9 -->
+<h2 id="s9">9. Admin — Terms, Rosters &amp; Comment Banks</h2>
+
+<h3>Terms &amp; Rosters section</h3>
+<p>Three sub-tabs: <strong>Terms</strong>, <strong>Class Sections</strong>, <strong>Import</strong>.</p>
+
+<h4>Terms sub-tab</h4>
+<p>Displays all school years with their terms grouped by year. Each term row shows: term name, date range, which reporting periods are enabled (Midterm / Final badges), locked status, and action buttons. Locked terms show a "Locked" badge; their Edit button is grayed out.</p>
+
+<p><strong>Create / Edit Term modal:</strong></p>
+<ul>
+  <li>School Year (text, e.g., "2025-2026")</li>
+  <li>Term Name (text, e.g., "S1")</li>
+  <li>Order (integer — determines dropdown sort order in teacher view)</li>
+  <li>Start Date, End Date</li>
+  <li>Reporting Periods: checkboxes for Midterm and Final (both enabled by default)</li>
+  <li>Student Reflection Freeze Date (optional)</li>
+</ul>
+
+<p><strong>Lock Term:</strong> Sets <code>is_locked = true</code>. Once locked, there is no unlock button — this is intentional. Admin can still view and export from locked terms.</p>
+
+<h4>Class Sections sub-tab</h4>
+<p>Displays class sections for a selected term, filterable by department. Table columns: Course Name, Section/Period, Teacher, Department, Students (enrollment count).</p>
+<ul>
+  <li>Clicking a course name row opens a <strong>Students modal</strong>: a searchable list of enrolled students with an "+ Add Student" button and a remove button per row.</li>
+  <li>Each class row has Edit and Remove buttons.</li>
+</ul>
+
+<p><strong>Add Class modal:</strong> Term selector, Course Name, Department, Teacher (dropdown of users with teacher role).</p>
+
+<h4>Import sub-tab</h4>
+<p>Two panels side by side:</p>
+
+<p><strong>Import from CSV:</strong></p>
+<ul>
+  <li>File drop zone (or click to browse)</li>
+  <li>Expected CSV columns: <code>teacher_email, course_name, student_email</code></li>
+  <li>After file selection: row count preview, first few rows, and an import mode radio: "Merge with existing roster" (additive) or "Replace existing roster for this term" (overwrites)</li>
+  <li>Cancel and "Apply Import" buttons</li>
+</ul>
+
+<p><strong>Export Roster:</strong> Term selector, format selector (class roster or student list only), "Download CSV" button.</p>
+
+<p><strong>Blackbaud / Canvas integration:</strong> The Import sub-tab also surfaces integration options for syncing roster data from Blackbaud and/or Canvas. Specific API details are backend implementation decisions; the UI must provide at minimum: connect/authenticate, trigger a sync, and view sync history.</p>
+
+<h3>Comment Banks section</h3>
+<p>Manages standard comment bank files. Assignment of banks to departments and courses is in the Assignments section.</p>
+
+<p><strong>School-wide default bar</strong> (above the bank list): a dropdown to select which bank is the school-wide default, with a "Set Default" button.</p>
+
+<p><strong>Bank list table:</strong> Bank Name (with "School Default" badge on the current default), Subskills (count), Last Modified, Applied To.</p>
+
+<p><strong>Actions per bank:</strong></p>
+<ul>
+  <li><strong>Replace (⬆):</strong> Opens Upload modal with bank name pre-filled and locked; uploading a new CSV replaces all entries in that bank entirely.</li>
+  <li><strong>Download (⬇ CSV):</strong> Downloads the bank in the standard five-column format.</li>
+  <li><strong>Delete:</strong> Removes the bank. Cannot delete if the bank is currently assigned anywhere or is the school-wide default. The UI shows which assignments must be changed first.</li>
+</ul>
+
+<p><strong>Upload New Bank button:</strong> Opens a modal with: Bank Name (required), file drop zone (CSV), a format reference showing the expected column headers and one example row. Submit reads "Upload &amp; Preview" — after parsing, shows a preview (row count, first few entries, any parse errors) before creating the bank. Admin can cancel from the preview or confirm to create.</p>
+
+<p class="note">Note: Individual teachers' custom comments are not managed here. Teachers manage their own via the comment panel.</p>
+
+<!-- ─────────────────────────────────────────────────────── 10 -->
+<h2 id="s10">10. Admin — Prompts, Assignments &amp; Report Cards</h2>
+
+<h3>Student Reflection Prompts section</h3>
+<p>Prompts are authored here. Assignments to specific departments and courses are managed in the Assignments section.</p>
+
+<p><strong>Prompt list:</strong> Displayed as cards, filterable by term and scope. Each card shows: prompt name and scope tag, terms the prompt is active in, a preview of the prompt text (truncated), min and max character requirements, and Edit / Delete action buttons.</p>
+
+<p><strong>Create / Edit Prompt modal:</strong></p>
+<ul>
+  <li><strong>Prompt Name</strong> (internal label for admin reference)</li>
+  <li><strong>Default For</strong> (radio buttons): "All classes (Universal)" or "A specific department"</li>
+  <li><strong>Terms</strong> (checkboxes for available terms)</li>
+  <li><strong>Prompt Text</strong> (textarea — shown to students)</li>
+  <li><strong>Min Characters</strong> and <strong>Max Characters</strong> (0 = not enforced)</li>
+</ul>
+
+<p><strong>Delete Prompt:</strong> If the prompt is currently the active assignment for any class, department, or universal scope, those assignments revert to the next broader default automatically.</p>
+
+<h3>Assignments section</h3>
+<p>A unified view for managing which comment bank and which reflection prompt applies to each department and course. All assignments are per-term; changing one term does not affect another.</p>
+
+<p><strong>Term selector</strong> (top): changing the term reloads the assignment table. When a new term is created, it inherits all assignments from the most recent preceding term automatically.</p>
+
+<p><strong>Assignment table:</strong> Three columns — Scope, Comment Bank, Student Prompt — plus an action column. Rows are organized in a three-level hierarchy:</p>
+
+<p><strong>School Default row</strong> (always first): dropdowns select the school-wide default bank and prompt. An "Apply to all depts &amp; courses" button resets all department and course overrides for this term.</p>
+
+<p><strong>Department rows</strong>: each shows its current bank and prompt in one of two states:</p>
+<ul>
+  <li><strong>Inherited:</strong> selector is grayed out with the inherited value and a badge identifying the source; an "Override" link activates the selector.</li>
+  <li><strong>Overridden:</strong> selector is active with the chosen value; a "× Reset" link reverts to inherited.</li>
+</ul>
+<p>An "Apply to all courses" button within each department row clears course-level overrides for that department. Clicking a department row header toggles its course rows visible/hidden.</p>
+
+<p><strong>Course rows</strong> (indented under each department): same inherited/overridden pattern, inheriting from the department.</p>
+
+<p>Individual cell changes save immediately. The effective value resolution for any course is: course override → department override → school default.</p>
+
+<h3>Report Cards section</h3>
+<p>Two sub-tabs: <strong>Status &amp; Export</strong> and <strong>PDF Settings</strong>.</p>
+
+<h4>Status &amp; Export sub-tab</h4>
+<p><strong>Filters:</strong> Term, Reporting Period (All / Midterm / Final), Teacher, Status (All / Draft / Finalized / Reviewed), Export Status (Any / Not Exported / Exported / Newly Reviewed).</p>
+<p><strong>Stat strip</strong> below filters: counts for current filter set — Total, Draft, Finalized, Reviewed, Exported.</p>
+<p><strong>Table columns:</strong> Student, Class, Teacher, Period, Status (color-coded pill badge), Advisor Reviewed (checkmark), Exported (checkmark), Actions.</p>
+<p><strong>Actions per row:</strong></p>
+<ul>
+  <li><strong>Unfinalize</strong> (only on finalized cards): reverts to Draft status; teacher regains edit access; advisor edits are preserved and the teacher will see the standard conflict notification.</li>
+  <li><strong>Note</strong>: Opens a modal for the admin to write or edit an internal admin note not visible to teachers/advisors/students.</li>
+</ul>
+
+<p><strong>Bulk Export button</strong> (top-right): opens a modal with: Term + Reporting Period selector, include filter (Reviewed only / Newly reviewed since last export / All finalized), optional Teacher and Class filters, a live count preview, and an "Export N PDFs" button that generates a ZIP download. After export, all included cards are marked with <code>last_exported_at</code>.</p>
+
+<h4>PDF Settings sub-tab</h4>
+<p>Controls branding applied to all generated PDFs.</p>
+<ul>
+  <li><strong>Branding &amp; Logo:</strong> Upload school logo (PNG or SVG; recommended 200×60px; max 1MB), School Name, District / Subtitle (optional)</li>
+  <li><strong>Footer:</strong> Footer text (appears at the bottom of every page)</li>
+  <li><strong>Boilerplate Text:</strong> Introductory paragraph (shown at the top of each report card body, before skills) and Competency / grading scale note</li>
+  <li><strong>Preview:</strong> Thumbnail preview of the header/footer layout; "Open Preview" button opens a full-size layout preview</li>
+</ul>
+<p>A single "Save PDF Settings" button persists all fields.</p>
+
+<!-- ─────────────────────────────────────────────────────── 11 -->
+<h2 id="s11">11. Admin — Analytics &amp; Data Management</h2>
+
+<h3>Analytics section</h3>
+<p>This is the <strong>default landing view</strong> when admin logs in.</p>
+
+<p><strong>Term + Period selector</strong> (top right): selects the term and reporting period governing all data on this page.</p>
+
+<p><strong>KPI cards</strong> (three across the top):</p>
+<ol>
+  <li><strong>Report Cards Completed:</strong> count and percentage that are finalized or reviewed out of the total</li>
+  <li><strong>Report Cards Reviewed:</strong> count and percentage marked as advisor-reviewed</li>
+  <li><strong>Student Reflections Submitted:</strong> count and percentage of enrolled students who have submitted</li>
+</ol>
+
+<p><strong>Summary cards</strong> (two side by side):</p>
+<ul>
+  <li><em>Report Card Completion by Class:</em> a one-sentence summary, a progress bar, and a "View Breakdown →" button opening the Completion Breakdown modal</li>
+  <li><em>Student Reflection Submission by Class:</em> same structure for reflections</li>
+</ul>
+
+<p><strong>Completion Breakdown modal:</strong> A sortable table — Class, Teacher, Students (enrolled count), Completed, Reviewed, % Done. Clicking a class row expands it to show individual students. Clicking a student name opens the Spoof Confirmation dialog. Modal footer has an "⬇ Export Table" button (CSV).</p>
+
+<p><strong>Reports panel</strong> (below the summary cards):</p>
+<ul>
+  <li><strong>Comment usage report (CSV):</strong> which standard comments were used, by how many teachers and in how many classes</li>
+  <li><strong>Completion status report (CSV):</strong> report card and reflection status for all students in the selected term</li>
+  <li><strong>Teacher custom comment banks:</strong> a teacher selector dropdown + "Download CSV" button</li>
+  <li><strong>Custom Report button:</strong> opens a modal with term selector and column checkboxes (Student name, Class, Teacher, Report card status, Reflection status, Advisor reviewed, Finalized date, Reviewed date, Last exported, Comment count, Narrative character count, Reflection character count) + "Generate CSV" button</li>
+</ul>
+
+<h3>Data Management section</h3>
+
+<h4>Export Data by Year</h4>
+<ul>
+  <li>School year dropdown</li>
+  <li>Records in scope preview: counts for the selected year (terms, classes, report cards, student reflections, export records)</li>
+  <li>Format selector: CSV files (one per data type) or ZIP archive of all</li>
+  <li>"⬇ Export Year Data" button — opens a confirmation modal summarizing the record counts; data remains in the live system after download</li>
+</ul>
+
+<p><em>Delete Year Records</em> (danger zone):</p>
+<ul>
+  <li>Permanently removes all records for the selected year</li>
+  <li>Admin must type "DELETE" in a confirmation input to enable the delete button</li>
+  <li>Cannot be undone; intended for data hygiene once records are no longer needed in the live system</li>
+</ul>
+
+<h4>Restore from Backup</h4>
+<ul>
+  <li>Uploads a previously exported archive (ZIP or CSV) to restore data for a selected school year</li>
+  <li>Admin must type "RESTORE" in a confirmation input to enable the restore button</li>
+  <li>Restoring replaces all current records for the selected year with the backup contents</li>
+</ul>
+
+<h4>Data Integrity</h4>
+<p>"Run Check" button scans for orphaned records, broken foreign-key relationships, and data inconsistencies. Results appear inline with pass / warn / fail indicators per check category.</p>
+
+<h4>Audit Log</h4>
+<p>A persistent, automatically maintained log of significant admin actions.</p>
+<p><strong>Events captured:</strong> user role changes, user archiving/reactivation, spoof sessions (start and end), term locks, bulk PDF exports, comment bank uploads/replacements, term creation, data exports, data deletions.</p>
+<p><strong>Displayed as</strong> a scrollable table: Date, Admin, Action (descriptive text). "⬇ Export Full Audit Log" button downloads the complete log as CSV.</p>
+
+<!-- ─────────────────────────────────────────────────────── 12 -->
+<h2 id="s12">12. Keyboard Navigation &amp; Accessibility</h2>
+
+<p>The teacher interface uses a <strong>3-layer arrow-key menu system</strong> optimized for sequential report card entry. The goal is to let a teacher move through every student and fill in every field without touching the mouse. Mouse functionality is fully preserved alongside keyboard navigation — the two modes stay in sync at all times.</p>
+
+<p>The student, advisor, and admin interfaces use standard browser Tab-based keyboard navigation and are not subject to the 3-layer system described here.</p>
+
+<h3 id="s12-1">12.1 Teacher interface — 3-layer navigation model</h3>
+
+<p>Navigation is controlled entirely by the <strong>arrow keys</strong>. The interface is always in one of three layers, indicated by a context-sensitive key hint bar displayed just above the status-dot legend in the left sidebar.</p>
+
+<h4>Layer 1 — Student selection (default)</h4>
+<p>The cursor is positioned on a student row in the class roster.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>↓</td><td>Move to the next student (wraps across class boundaries, bottom to top of next class)</td></tr>
+    <tr><td>↑</td><td>Move to the previous student (wraps across class boundaries)</td></tr>
+    <tr><td>→</td><td>Move focus to Layer 2 (skill list for the active student)</td></tr>
+  </tbody>
+</table></div>
+<ul>
+  <li>Pressing ↑ or ↓ <strong>immediately activates</strong> the student (loads the report card), identical to clicking the row.</li>
+  <li>The keyboard-focused student row shows a distinct highlight (lighter blue left border) that differs from the selected-student highlight (solid blue background).</li>
+  <li>Switching between My Classes / My Advisory tabs, or changing the Grading Period dropdown, must be done with the mouse. Either action resets keyboard focus to Layer 1.</li>
+</ul>
+
+<h4>Layer 2 — Skill selection</h4>
+<p>Entered by pressing → from Layer 1. The cursor moves to the first transferable skill item.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>↓ or Tab</td><td>Move to the next skill item</td></tr>
+    <tr><td>↑ or Shift+Tab</td><td>Move to the previous skill item</td></tr>
+    <tr><td>→ or Enter</td><td>Open the comment panel for the highlighted skill → enter Layer 3</td></tr>
+    <tr><td>↓ / Tab (past last skill)</td><td>Move to the narrative textarea and focus it for text entry</td></tr>
+    <tr><td>←</td><td>Return to Layer 1; restore cursor to the active student row</td></tr>
+  </tbody>
+</table></div>
+<p><strong>Narrative textarea entry:</strong> Once the textarea has focus, arrow keys move only the text cursor — they do not navigate the skill list. Enter inserts a line break. <strong>Shift+Tab</strong> or <strong>Esc</strong> blurs the textarea and returns keyboard focus to the last skill item in Layer 2. <strong>Tab</strong> (forward) blurs the textarea and moves focus to the "Mark as finalized" checkbox (if enabled); if the checkbox is disabled, focus returns to the last skill item instead.</p>
+
+<h4>Layer 3 — Comment panel (skill detail)</h4>
+<p>Entered by pressing → from a skill item in Layer 2. Focus is placed on the first item in the panel's navigable list. The panel's navigable list top-to-bottom order is:</p>
+<ol>
+  <li>Standard skill rows (one per subskill label, grouped by subcategory)</li>
+  <li>"Add comment for this student" custom input row</li>
+  <li>Any one-time comments already added for this student</li>
+  <li>"Edit comment bank…" link</li>
+  <li>Saved bank comment items</li>
+</ol>
+<div class="table-wrap"><table>
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>↓</td><td>Move to the next item in the list</td></tr>
+    <tr><td>↑</td><td>Move to the previous item in the list</td></tr>
+    <tr><td>→ or Enter</td><td>Activate the focused item (see per-item behavior below)</td></tr>
+    <tr><td>← or Esc</td><td>Close the panel and return to Layer 2; restore cursor to the skill that was open</td></tr>
+    <tr><td>A–Z (1–3 chars, within 600 ms)</td><td>Jump forward to the next standard skill row or saved bank comment whose label starts with the typed prefix</td></tr>
+  </tbody>
+</table></div>
+
+<p><strong>Per-item behavior for → / Enter:</strong></p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Item type</th><th>→ / Enter behavior</th></tr></thead>
+  <tbody>
+    <tr><td>Standard skill row</td><td>Cycle the selection: <strong>none → Strength → Growth → none</strong></td></tr>
+    <tr><td>Custom input row</td><td>Focus the text field for typing</td></tr>
+    <tr><td>One-time comment</td><td>Remove the comment from this student's report card</td></tr>
+    <tr><td>"Edit comment bank…"</td><td>Open the Custom Comment Bank modal with the add-comment field focused; Esc closes the modal and returns focus to this item</td></tr>
+    <tr><td>Bank comment item</td><td>Toggle the comment on/off for this student</td></tr>
+  </tbody>
+</table></div>
+
+<p><strong>Custom input field behavior (while the text field has focus):</strong></p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>Any printable key</td><td>Types into the field</td></tr>
+    <tr><td>← / →</td><td>Move text cursor within the field</td></tr>
+    <tr><td>Enter</td><td>Submit the comment (adds it to the report card; field clears and stays focused for another entry)</td></tr>
+    <tr><td>↑ / ↓</td><td>Blur the field and move to the adjacent item; text in the field is <strong>discarded</strong></td></tr>
+    <tr><td>Esc</td><td>Blur the field and stay on the custom input row; text is <strong>discarded</strong></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="s12-2">12.2 Nav hint bar</h3>
+<p>A compact key-hint strip is displayed just above the status-dot legend in the left sidebar. It updates automatically to reflect the current layer and context:</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Context</th><th>Hint shown</th></tr></thead>
+  <tbody>
+    <tr><td>Layer 1</td><td><code>↑</code> <code>↓</code> students &nbsp; <code>→</code> select</td></tr>
+    <tr><td>Layer 2 (skill focused)</td><td><code>↑</code> <code>↓</code> <code>Tab</code> skills &nbsp; <code>→</code> <code>↵</code> open &nbsp; <code>←</code> back</td></tr>
+    <tr><td>Layer 2 (narrative focused)</td><td><code>Tab</code> next &nbsp; <code>⇧Tab</code> back &nbsp; <code>Esc</code> exit narrative</td></tr>
+    <tr><td>Layer 3 (panel item focused)</td><td><code>↑</code> <code>↓</code> move &nbsp; <code>→</code> <code>↵</code> toggle &nbsp; <code>←</code> back &nbsp; A–Z jump</td></tr>
+    <tr><td>Layer 3 (custom input focused)</td><td><code>↵</code> add &nbsp; <code>↑</code> <code>↓</code> exit field &nbsp; <code>Esc</code> back</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="s12-3">12.3 Mouse and keyboard coexistence</h3>
+<ul>
+  <li>Mouse clicks on a student row activate the student and reset keyboard state to Layer 1.</li>
+  <li>Mouse clicks on a "Skill Selection" button open the comment panel and reset keyboard state to Layer 3 (focused on the first panel item).</li>
+  <li>Mouse clicks anywhere in the right panel (other than a skill button) clear Layer 2 highlights and reset to Layer 1 state while keeping the student active.</li>
+  <li>Closing the comment panel by clicking ✕ or clicking outside it returns keyboard state to Layer 2.</li>
+  <li>Any action that changes the roster (term change, mode switch, reset) clears all keyboard highlights and returns to Layer 1.</li>
+  <li><strong>Clicking or tabbing into the narrative textarea</strong> correctly suspends skill-list navigation — arrow keys move the text cursor only, regardless of how the field gained focus.</li>
+  <li><strong>"Mark as finalized" checkbox:</strong> When this checkbox has keyboard focus (e.g., reached via Tab from the narrative), pressing <strong>Enter</strong> toggles it, equivalent to Space or a mouse click.</li>
+</ul>
+
+<h3 id="s12-4">12.4 Student, advisor, and admin interfaces</h3>
+
+<p>These interfaces use standard browser Tab-based navigation — no 3-layer system.</p>
+
+<p><strong>Advisor interface (My Advisory mode):</strong> The 3-layer arrow-key system is active only in <strong>My Classes</strong> mode. Switching to <strong>My Advisory</strong> mode disables it entirely. Switching back restores Layer 1 focus.</p>
+
+<p><strong>Student interface:</strong></p>
+<ul>
+  <li>Tab/Shift+Tab moves through all interactive elements in reading order.</li>
+  <li>Reflection textarea: standard textarea behavior; Tab exits the field.</li>
+  <li>Submit button: Enter or Space triggers the confirmation modal.</li>
+  <li>Confirmation modal: Tab cycles between Cancel and Submit; Escape = Cancel; Enter on Submit confirms.</li>
+</ul>
+
+<p><strong>Admin interface:</strong></p>
+<ul>
+  <li>Tab through all interactive elements in reading order.</li>
+  <li>Modals: Tab cycles within the modal; Escape closes it; focus returns to the triggering element.</li>
+  <li>Confirmation inputs (DELETE / RESTORE): standard text fields; confirm button enables as the user types.</li>
+</ul>
+
+<h3 id="s12-5">12.5 Screen reader support</h3>
+<ul>
+  <li>All icons and status dots have <code>aria-label</code> values describing their meaning (e.g., <code>aria-label="Report card: finalized; Reflection: submitted"</code>).</li>
+  <li>Color is never the sole means of conveying information — status dots are distinguished by both color and shape (round = report card, square = reflection).</li>
+  <li>Live regions (<code>aria-live="polite"</code>) announce sync status changes ("Saved") and validation hint updates.</li>
+  <li>The comment panel's open/close state is communicated via <code>aria-expanded</code> on the triggering "Skill Selection" button.</li>
+  <li>Visible focus indicators meet WCAG 2.1 AA contrast requirements (minimum 2px outline, high-contrast color).</li>
+</ul>
+
+<h3 id="s12-6">12.6 Responsive design targets</h3>
+<ul>
+  <li><strong>Primary:</strong> Laptop/desktop (1280px and up)</li>
+  <li><strong>Secondary:</strong> Tablet (768px and up) — teacher and admin interfaces</li>
+  <li><strong>Full mobile support:</strong> Student interface only (360px and up); sidebar becomes a drawer, back button appears in main area</li>
+</ul>
+<p>Browser zoom up to 200% must not break layout or hide content.</p>
+
+<hr>
+<p class="note"><em>End of specification.</em></p>
+
+</main>
+</body>
+</html>
