@@ -885,7 +885,9 @@
           <div class="save-hint" id="saveHint">Changes saved automatically</div>
           <div class="finalize-row">
             <label class="finalize-label">
-              <input type="checkbox" id="finalizeCheck" onchange="onFinalizeChange()" disabled />
+              <input type="checkbox" id="finalizeCheck" onchange="onFinalizeChange()"
+                onkeydown="if(!this.disabled&&event.key==='Enter'){this.checked=!this.checked;onFinalizeChange();event.preventDefault()}"
+                disabled />
               Mark as finalized
             </label>
             <span class="finalize-hint" id="finalizeHint"></span>
@@ -1597,8 +1599,8 @@ let customizeCtx = null; // { skill }
 function k(key) { return `<kbd>${key}</kbd>`; }
 const NAV_HINTS = {
   1: `${k('↑')}${k('↓')} students &nbsp; ${k('→')} select`,
-  2: `${k('↑')}${k('↓')} skills &nbsp; ${k('→')} open &nbsp; ${k('←')} back`,
-  '2n': `${k('↑')}${k('↓')} skills &nbsp; ${k('←')} back &nbsp; ${k('Tab')} exit narrative`,
+  2: `${k('↑')}${k('↓')}${k('Tab')} skills &nbsp; ${k('→')}${k('↵')} open &nbsp; ${k('←')} back`,
+  '2n': `${k('Tab')} next &nbsp; ${k('⇧Tab')} back &nbsp; ${k('Esc')} exit narrative`,
   3: `${k('↑')}${k('↓')} move &nbsp; ${k('→')}${k('↵')} toggle &nbsp; ${k('←')} back &nbsp; A–Z jump`,
   '3c': `${k('↵')} add &nbsp; ${k('↑')}${k('↓')} exit field &nbsp; ${k('Esc')} back`,
 };
@@ -3372,7 +3374,7 @@ document.addEventListener('keydown', function(e) {
   if (openModal && openModal.id !== 'customizeModal') return;
 
   const tag = document.activeElement?.tagName;
-  const inTextInput = (tag === 'INPUT' || tag === 'SELECT');
+  const inTextInput = (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA');
 
   // ── Layer 1: student selection ──────────────────────────────────
   if (navLayer === 1) {
@@ -3398,12 +3400,25 @@ document.addEventListener('keydown', function(e) {
   // ── Layer 2: skill list ─────────────────────────────────────────
   if (navLayer === 2) {
     const items = getSkillItems();
-    const narrativeActive = (navSkillIdx === items.length);
+    const narrativeTA = document.getElementById('narrativeInput');
+    const narrativeActive = (navSkillIdx === items.length) || (document.activeElement === narrativeTA);
 
     if (narrativeActive) {
-      if (e.key === 'Tab' || e.key === 'Escape') {
+      if (navSkillIdx !== items.length) navSkillIdx = items.length;
+      if (e.key === 'Tab') {
         e.preventDefault();
-        document.getElementById('narrativeInput').blur();
+        narrativeTA.blur();
+        if (e.shiftKey) {
+          layer2SetFocus(items.length - 1);
+        } else {
+          clearKbFocus();
+          const fin = document.getElementById('finalizeCheck');
+          if (fin && !fin.disabled) fin.focus();
+          else layer2SetFocus(items.length - 1);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        narrativeTA.blur();
         layer2SetFocus(items.length - 1);
       }
       return;
@@ -3411,7 +3426,26 @@ document.addEventListener('keydown', function(e) {
 
     if (inTextInput) return;
 
-    if (e.key === 'ArrowDown') {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        if (navSkillIdx > 0) layer2SetFocus(navSkillIdx - 1);
+      } else {
+        const next = navSkillIdx < 0 ? 0 : navSkillIdx + 1;
+        if (next === items.length) {
+          layer2SetFocus(items.length);
+          setTimeout(() => { if (narrativeTA && !narrativeTA.disabled) narrativeTA.focus(); }, 0);
+        } else if (next < items.length) {
+          layer2SetFocus(next);
+        }
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (navSkillIdx >= 0 && navSkillIdx < items.length) {
+        const btn = items[navSkillIdx].querySelector('.skill-btn');
+        if (btn && !btn.disabled) openPanel(btn);
+      }
+    } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       const next = navSkillIdx + 1;
       if (next > items.length) return;
@@ -3419,8 +3453,7 @@ document.addEventListener('keydown', function(e) {
         navLayer = 2;
         layer2SetFocus(items.length);
         setTimeout(() => {
-          const ta = document.getElementById('narrativeInput');
-          if (ta && !ta.disabled) ta.focus();
+          if (narrativeTA && !narrativeTA.disabled) narrativeTA.focus();
         }, 0);
       } else {
         layer2SetFocus(next);
