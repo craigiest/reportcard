@@ -866,6 +866,73 @@ reflection_prompts ──&lt; prompt_assignments</pre>
 <h3>Historical context</h3>
 <p>The advisor can switch to any past term while staying on the same advisee. The grading period dropdown lists all periods across all terms. Switching to a past period loads that advisee's report cards in read-only mode. Only the current term's finalized cards are editable.</p>
 
+<!-- ─────────────────────────────────────────────────────── 8 -->
+<h2 id="s8">8. Admin — Users &amp; Settings</h2>
+
+<h3>Admin interface layout</h3>
+<p>The admin interface is separate from the teacher/student interface. It has:</p>
+<ul>
+  <li><strong>Top nav:</strong> School name/logo, "Admin" badge, current user name, Logout button</li>
+  <li><strong>Left sidebar</strong> (~200px fixed): navigation menu</li>
+  <li><strong>Main content area:</strong> the active section's content</li>
+</ul>
+<p>Left sidebar menu items in order:</p>
+<ol>
+  <li>Terms &amp; Rosters</li>
+  <li>Report Cards</li>
+  <li>Analytics ← <strong>default landing view on login</strong></li>
+  <li>Users</li>
+  <li>Comment Banks</li>
+  <li>Student Reflection Prompts</li>
+  <li>Assignments</li>
+  <li>Settings</li>
+  <li>Data Management</li>
+</ol>
+
+<h3>Users section</h3>
+<p><strong>Toolbar:</strong> Search input (live filter by name or email) + Role filter dropdown + Status filter (Active Only / Active &amp; Archived / Archived Only) + "New User" button.</p>
+<p><strong>User table columns:</strong> Name, Email, Roles (colored tag chips), Status, Last Login, Actions.</p>
+<p><strong>Actions per row:</strong></p>
+<ul>
+  <li><strong>Edit</strong> — opens the User modal pre-filled</li>
+  <li><strong>Spoof</strong> — opens a Spoof Confirmation modal; on confirming, the admin's session switches to that user's interface with a persistent banner</li>
+  <li><strong>Archive</strong> — sets <code>is_active = false</code>, preventing login while preserving all data. Archived users can be reactivated via edit.</li>
+</ul>
+<p><strong>New/Edit User modal fields:</strong></p>
+<ul>
+  <li>Full Name (text, required)</li>
+  <li>School Email (text, required; read-only in edit mode — cannot be changed after account creation)</li>
+  <li>Roles (checkboxes): Teacher, Advisor, Admin, Student — any combination allowed</li>
+  <li>Active toggle (edit mode only)</li>
+</ul>
+<p>Role changes take effect on the user's next page load.</p>
+
+<h3>Settings section (Validation Rules)</h3>
+<p>Two side-by-side cards: <strong>Midterm</strong> and <strong>Final</strong>. Each card has its own Save button. Setting any numeric field to <strong>0</strong> disables that rule.</p>
+
+<p><strong>Student Reflection group:</strong></p>
+<ul>
+  <li>Minimum characters (before Submit button activates)</li>
+  <li>Maximum characters (0 = no limit)</li>
+</ul>
+
+<p><strong>Skill Comments group:</strong></p>
+<ul>
+  <li>Minimum skill areas with ≥1 comment selected</li>
+  <li>Required skills: comma-separated list of Transferable Skill names that must have at least one comment before finalization</li>
+  <li>Minimum total skill comments per report card</li>
+  <li>Maximum comments per skill area</li>
+  <li>Maximum characters for a custom skill comment</li>
+</ul>
+
+<p><strong>Narrative group:</strong></p>
+<ul>
+  <li>Minimum characters</li>
+  <li>Maximum characters (0 = no limit)</li>
+</ul>
+
+<p>Each card saves independently. A success indicator confirms when saved.</p>
+
 </main>
 </body>
 </html>
